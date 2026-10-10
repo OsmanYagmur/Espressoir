@@ -5,17 +5,582 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      brands: {
+        Row: {
+          aliases: string[];
+          country: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          is_specialty_roaster: boolean | null;
+          name: string;
+          slug: string;
+          updated_at: string;
+          website: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          aliases?: string[];
+          country?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_specialty_roaster?: boolean | null;
+          name: string;
+          slug?: string;
+          updated_at?: string;
+          website?: string | null;
+        };
+        Update: {
+          aliases?: string[];
+          country?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_specialty_roaster?: boolean | null;
+          name?: string;
+          slug?: string;
+          updated_at?: string;
+          website?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "brands_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "brands_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      brew_methods: {
+        Row: {
+          category: Database["public"]["Enums"]["brew_category"];
+          id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          category: Database["public"]["Enums"]["brew_category"];
+          id?: string;
+          name: string;
+          slug?: string;
+          sort_order?: number;
+        };
+        Update: {
+          category?: Database["public"]["Enums"]["brew_category"];
+          id?: string;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      coffees: {
+        Row: {
+          brand_id: string;
+          brand_intensity: number | null;
+          capsule_system: Database["public"]["Enums"]["capsule_system"] | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          form: Database["public"]["Enums"]["coffee_form"] | null;
+          id: string;
+          image_url: string | null;
+          is_blend: boolean | null;
+          name: string;
+          origin_country: string | null;
+          process: Database["public"]["Enums"]["coffee_process"] | null;
+          region: string | null;
+          roast_level: Database["public"]["Enums"]["roast_level"] | null;
+          slug: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand_id: string;
+          brand_intensity?: number | null;
+          capsule_system?: Database["public"]["Enums"]["capsule_system"] | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          form?: Database["public"]["Enums"]["coffee_form"] | null;
+          id?: string;
+          image_url?: string | null;
+          is_blend?: boolean | null;
+          name: string;
+          origin_country?: string | null;
+          process?: Database["public"]["Enums"]["coffee_process"] | null;
+          region?: string | null;
+          roast_level?: Database["public"]["Enums"]["roast_level"] | null;
+          slug?: string;
+          updated_at?: string;
+        };
+        Update: {
+          brand_id?: string;
+          brand_intensity?: number | null;
+          capsule_system?: Database["public"]["Enums"]["capsule_system"] | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          form?: Database["public"]["Enums"]["coffee_form"] | null;
+          id?: string;
+          image_url?: string | null;
+          is_blend?: boolean | null;
+          name?: string;
+          origin_country?: string | null;
+          process?: Database["public"]["Enums"]["coffee_process"] | null;
+          region?: string | null;
+          roast_level?: Database["public"]["Enums"]["roast_level"] | null;
+          slug?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "coffees_brand_id_fkey";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coffees_brand_id_fkey";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "coffee_overview";
+            referencedColumns: ["brand_id"];
+          },
+          {
+            foreignKeyName: "coffees_brand_id_fkey";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["brand_id"];
+          },
+          {
+            foreignKeyName: "coffees_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coffees_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      flavor_tags: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+          tag_group: Database["public"]["Enums"]["flavor_group"];
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: string;
+          name: string;
+          slug?: string;
+          sort_order?: number;
+          tag_group: Database["public"]["Enums"]["flavor_group"];
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+          tag_group?: Database["public"]["Enums"]["flavor_group"];
+        };
+        Relationships: [];
+      };
+      follows: {
+        Row: {
+          created_at: string;
+          follower_id: string;
+          following_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          follower_id: string;
+          following_id: string;
+        };
+        Update: {
+          created_at?: string;
+          follower_id?: string;
+          following_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      profiles: {
+        Row: {
+          avatar_url: string | null;
+          bio: string | null;
+          created_at: string;
+          display_name: string | null;
+          id: string;
+          role: Database["public"]["Enums"]["user_role"];
+          updated_at: string;
+          username: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id: string;
+          role?: Database["public"]["Enums"]["user_role"];
+          updated_at?: string;
+          username: string;
+        };
+        Update: {
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          role?: Database["public"]["Enums"]["user_role"];
+          updated_at?: string;
+          username?: string;
+        };
+        Relationships: [];
+      };
+      tasting_flavor_tags: {
+        Row: {
+          flavor_tag_id: string;
+          tasting_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          flavor_tag_id: string;
+          tasting_id: string;
+        };
+        Update: {
+          flavor_tag_id?: string;
+          tasting_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tasting_flavor_tags_flavor_tag_id_fkey";
+            columns: ["flavor_tag_id"];
+            isOneToOne: false;
+            referencedRelation: "flavor_tags";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tasting_flavor_tags_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "tasting_flavor_tags_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tastings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tastings: {
+        Row: {
+          acidity: number | null;
+          aftertaste: number | null;
+          bitterness: number | null;
+          body: number | null;
+          brew_method_id: string | null;
+          coffee_id: string;
+          created_at: string;
+          device: string | null;
+          id: string;
+          notes: string | null;
+          price_paid: number | null;
+          score: number | null;
+          source: Database["public"]["Enums"]["tasting_source"];
+          source_ref: string | null;
+          status: Database["public"]["Enums"]["tasting_status"];
+          sweetness: number | null;
+          tasted_at: string | null;
+          updated_at: string;
+          user_id: string;
+          visibility: Database["public"]["Enums"]["tasting_visibility"];
+          would_buy_again: boolean | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          acidity?: number | null;
+          aftertaste?: number | null;
+          bitterness?: number | null;
+          body?: number | null;
+          brew_method_id?: string | null;
+          coffee_id: string;
+          created_at?: string;
+          device?: string | null;
+          id?: string;
+          notes?: string | null;
+          price_paid?: number | null;
+          score?: number | null;
+          source?: Database["public"]["Enums"]["tasting_source"];
+          source_ref?: string | null;
+          status?: Database["public"]["Enums"]["tasting_status"];
+          sweetness?: number | null;
+          tasted_at?: string | null;
+          updated_at?: string;
+          user_id: string;
+          visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          would_buy_again?: boolean | null;
+        };
+        Update: {
+          acidity?: number | null;
+          aftertaste?: number | null;
+          bitterness?: number | null;
+          body?: number | null;
+          brew_method_id?: string | null;
+          coffee_id?: string;
+          created_at?: string;
+          device?: string | null;
+          id?: string;
+          notes?: string | null;
+          price_paid?: number | null;
+          score?: number | null;
+          source?: Database["public"]["Enums"]["tasting_source"];
+          source_ref?: string | null;
+          status?: Database["public"]["Enums"]["tasting_status"];
+          sweetness?: number | null;
+          tasted_at?: string | null;
+          updated_at?: string;
+          user_id?: string;
+          visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          would_buy_again?: boolean | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tastings_brew_method_id_fkey";
+            columns: ["brew_method_id"];
+            isOneToOne: false;
+            referencedRelation: "brew_methods";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffee_overview";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "tastings_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffee_stats";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "tastings_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "tastings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
     };
     Views: {
-      [_ in never]: never;
+      coffee_overview: {
+        Row: {
+          avg_score: number | null;
+          brand_id: string | null;
+          brand_intensity: number | null;
+          brand_name: string | null;
+          brand_slug: string | null;
+          brew_method_slugs: string[] | null;
+          capsule_system: Database["public"]["Enums"]["capsule_system"] | null;
+          coffee_id: string | null;
+          coffee_name: string | null;
+          coffee_slug: string | null;
+          created_at: string | null;
+          description: string | null;
+          first_tasted_at: string | null;
+          form: Database["public"]["Enums"]["coffee_form"] | null;
+          image_url: string | null;
+          is_blend: boolean | null;
+          last_tasted_at: string | null;
+          origin_country: string | null;
+          process: Database["public"]["Enums"]["coffee_process"] | null;
+          rated_count: number | null;
+          region: string | null;
+          roast_level: Database["public"]["Enums"]["roast_level"] | null;
+          score_distribution: number[] | null;
+          tasting_count: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
+      coffee_stats: {
+        Row: {
+          avg_score: number | null;
+          brew_method_slugs: string[] | null;
+          coffee_id: string | null;
+          first_tasted_at: string | null;
+          last_tasted_at: string | null;
+          rated_count: number | null;
+          score_distribution: number[] | null;
+          tasting_count: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
+      tasting_feed: {
+        Row: {
+          acidity: number | null;
+          aftertaste: number | null;
+          bitterness: number | null;
+          body: number | null;
+          brand_id: string | null;
+          brand_intensity: number | null;
+          brand_name: string | null;
+          brand_slug: string | null;
+          brew_category: Database["public"]["Enums"]["brew_category"] | null;
+          brew_method_name: string | null;
+          brew_method_slug: string | null;
+          coffee_id: string | null;
+          coffee_name: string | null;
+          coffee_slug: string | null;
+          created_at: string | null;
+          device: string | null;
+          display_name: string | null;
+          form: Database["public"]["Enums"]["coffee_form"] | null;
+          notes: string | null;
+          origin_country: string | null;
+          score: number | null;
+          status: Database["public"]["Enums"]["tasting_status"] | null;
+          sweetness: number | null;
+          tasted_at: string | null;
+          tasting_id: string | null;
+          user_id: string | null;
+          username: string | null;
+          visibility: Database["public"]["Enums"]["tasting_visibility"] | null;
+          would_buy_again: boolean | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
     };
     Functions: {
+      find_brand_id: { Args: { p_name: string }; Returns: string };
       fold_tr: { Args: { input: string }; Returns: string };
       immutable_unaccent: { Args: { input: string }; Returns: string };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      log_tasting_v1: {
+        Args: {
+          p_acidity?: number;
+          p_aftertaste?: number;
+          p_bitterness?: number;
+          p_body?: number;
+          p_brand_intensity?: number;
+          p_brand_name?: string;
+          p_brew_method_slug?: string;
+          p_capsule_system?: Database["public"]["Enums"]["capsule_system"];
+          p_coffee_id?: string;
+          p_coffee_name?: string;
+          p_device?: string;
+          p_form?: Database["public"]["Enums"]["coffee_form"];
+          p_notes?: string;
+          p_origin_country?: string;
+          p_price_paid?: number;
+          p_score?: number;
+          p_status?: Database["public"]["Enums"]["tasting_status"];
+          p_sweetness?: number;
+          p_tasted_at?: string;
+          p_visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          p_would_buy_again?: boolean;
+        };
+        Returns: {
+          brand_slug: string;
+          coffee_id: string;
+          coffee_slug: string;
+          tasting_id: string;
+        }[];
+      };
+      slugify: { Args: { input: string }; Returns: string };
     };
     Enums: {
-      [_ in never]: never;
+      brew_category: "espresso" | "filter" | "immersion" | "capsule" | "turkish";
+      capsule_system: "nespresso_original" | "vertuo" | "dolce_gusto";
+      coffee_form: "whole_bean" | "ground" | "capsule";
+      coffee_process: "washed" | "natural" | "honey" | "anaerobic" | "wet_hulled" | "other";
+      flavor_group: "fruity" | "floral" | "chocolate" | "nutty" | "spice" | "sweet" | "other";
+      roast_level: "light" | "medium_light" | "medium" | "medium_dark" | "dark";
+      tasting_source: "web" | "notion_import";
+      tasting_status: "logged" | "wishlist";
+      tasting_visibility: "public" | "followers" | "private";
+      user_role: "user" | "admin";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -126,6 +691,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      brew_category: ["espresso", "filter", "immersion", "capsule", "turkish"],
+      capsule_system: ["nespresso_original", "vertuo", "dolce_gusto"],
+      coffee_form: ["whole_bean", "ground", "capsule"],
+      coffee_process: ["washed", "natural", "honey", "anaerobic", "wet_hulled", "other"],
+      flavor_group: ["fruity", "floral", "chocolate", "nutty", "spice", "sweet", "other"],
+      roast_level: ["light", "medium_light", "medium", "medium_dark", "dark"],
+      tasting_source: ["web", "notion_import"],
+      tasting_status: ["logged", "wishlist"],
+      tasting_visibility: ["public", "followers", "private"],
+      user_role: ["user", "admin"],
+    },
   },
 } as const;
