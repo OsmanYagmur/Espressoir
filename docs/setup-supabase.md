@@ -92,7 +92,7 @@ pnpm import:notion               # dev'e yazar
 pnpm import:notion --env prod    # prod'a yazar (proje ref'ini sorar)
 ```
 
-Her çalıştırma `data/import-report.md` dosyasını yazar: kaç marka/kahve/tadım eklendi, hangi markalar birleştirildi, hangi alanlar boş bırakıldı, hangi değerler kurallardan türetildi, hangi notlar için yazım önerisi var.
+Her çalıştırma `data/import-report.md` dosyasını yazar: kaç marka/kahve/tadım eklendi, hangi markalar birleştirildi, hangi alanlar boş bırakıldı, hangi değerler kurallardan türetildi, hangi kahve adları ve notlarda yazım düzeltildi (önce → sonra).
 
 - **Tekrar çalıştırmak güvenli:** daha önce aktarılan satırlar tanınır ve atlanır; kopya oluşmaz. Sitede düzelttiğin bir kayıt, sonraki import'ta ezilmez.
 - **Kurallar tek dosyada:** marka eşleştirmeleri, yazım düzeltmeleri, form/yöntem eşlemeleri ve menşe çıkarımı `scripts/notion/rules.ts` içinde. Bir çıkarımı istemiyorsan o satırı sil.

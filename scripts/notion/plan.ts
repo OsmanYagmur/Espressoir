@@ -16,7 +16,7 @@ import {
   COLUMNS,
   DEVICE_CAPSULE_SYSTEMS,
   FORMS,
-  NOTE_SUGGESTIONS,
+  NOTE_FIXES,
   ORIGIN_TERMS,
 } from "./rules";
 
@@ -164,14 +164,15 @@ function looksAlike(a: string, b: string): boolean {
   return longest >= 5 && 1 - levenshtein(x, y) / longest >= 0.8;
 }
 
-function suggestNote(note: string): string {
+/** Applies the approved word fixes and tidies spacing (" ," and doubled spaces). */
+function fixNote(note: string): string {
   let result = note;
-  for (const [word, replacement] of NOTE_SUGGESTIONS) {
+  for (const [word, replacement] of NOTE_FIXES) {
     const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${word}(?![\\p{L}\\p{N}])`, "gu");
     result = result.replace(pattern, replacement);
   }
   return result
-    .replace(/\s+,/g, ",")
+    .replace(/[ \t]+,/g, ",")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
@@ -275,6 +276,13 @@ export function buildImportPlan(
     }
 
     let notes = (values[COLUMNS.notes] ?? "").trim() || null;
+    if (notes) {
+      const fixed = fixNote(notes);
+      if (fixed !== notes) {
+        note("fixed", line, `${label}: not düzeltildi\n  - önce: ${notes}\n  - sonra: ${fixed}`);
+        notes = fixed;
+      }
+    }
     const page = pageFor(record, pages);
     if (page === "several") {
       note("missing", line, `${label}: birden fazla Notion sayfası eşleşti; sayfa notu eklenmedi.`);
@@ -485,13 +493,6 @@ export function buildImportPlan(
       notes: row.notes,
       status,
     });
-
-    if (row.notes) {
-      const suggested = suggestNote(row.notes);
-      if (suggested !== row.notes) {
-        note("suggestion", row.line, `${label}:\n  - şimdi: ${row.notes}\n  - öneri: ${suggested}`);
-      }
-    }
   }
 
   return { rowCount: records.length, brands, coffees: coffeeList, tastings, findings };
