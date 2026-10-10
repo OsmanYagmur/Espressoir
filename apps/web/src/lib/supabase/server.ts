@@ -3,6 +3,7 @@ import "server-only";
 import type { Database, TypedSupabaseClient } from "@espressoir/db";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 import { getSupabasePublicEnv } from "./env";
 
@@ -14,6 +15,9 @@ export async function createServerSupabase(): Promise<TypedSupabaseClient> {
   // Cookies first: while a page shell is being prerendered this is where rendering pauses,
   // before anything below can run without a request.
   const cookieStore = await cookies();
+  // Checking a session means comparing token expiry with the clock, so whatever uses this
+  // client must render for the actual request, never ahead of it as part of a prefetch.
+  await connection();
   const { url, publishableKey } = getSupabasePublicEnv();
 
   return createServerClient<Database>(url, publishableKey, {

@@ -21,11 +21,19 @@ test.skip(!configured, "needs a Supabase with test accounts (E2E_* variables)");
 // One browser at a time: these tests write to the shared database.
 test.describe.configure({ mode: "serial" });
 
-async function signIn(page: Page, account: { email?: string; password?: string }) {
+type Account = { email?: string; password?: string };
+
+async function submitLogin(page: Page, account: Account) {
   await page.goto("/giris");
   await page.getByLabel("E-posta", { exact: true }).fill(account.email ?? "");
   await page.getByLabel("Parola", { exact: true }).fill(account.password ?? "");
   await page.getByRole("button", { name: "Giriş yap" }).click();
+}
+
+/** Logs in and waits for the panel: navigating away earlier would race the session cookie. */
+async function signIn(page: Page, account: Account) {
+  await submitLogin(page, account);
+  await expect(page).toHaveURL(/\/panel$/);
 }
 
 test("registration is closed: the auth server refuses new accounts", async ({ request }) => {
@@ -38,7 +46,7 @@ test("registration is closed: the auth server refuses new accounts", async ({ re
 });
 
 test("a wrong password is refused without saying which part was wrong", async ({ page }) => {
-  await signIn(page, { email: owner.email, password: "definitely-not-the-password" });
+  await submitLogin(page, { email: owner.email, password: "definitely-not-the-password" });
   await expect(page.getByText("E-posta ya da parola hatalı.")).toBeVisible();
   await expect(page).toHaveURL(/\/giris$/);
 });
@@ -49,7 +57,6 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
   const slug = coffeeName.toLowerCase().replaceAll(" ", "-");
 
   await signIn(page, owner);
-  await expect(page).toHaveURL(/\/panel$/);
   await expect(page.getByText(/olarak giriş yapıldı/)).toBeVisible();
 
   // Add: a new coffee under a new brand, scored 7, brewed with a V60.
@@ -114,7 +121,6 @@ test("another user cannot open the owner's tasting for editing", async ({ page, 
   expect(tastingId).toBeTruthy();
 
   await signIn(page, guest);
-  await expect(page).toHaveURL(/\/panel$/);
   await page.goto(`/panel/tadim/${tastingId}`);
   await expect(page.getByText("Bu tadım bulunamadı ya da sana ait değil.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Kaydet" })).toHaveCount(0);
