@@ -1,0 +1,178 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Espressoir palette — a tasting notebook: cream paper, caramel, roasted brown,
+ * espresso black, and a single accent: coffee-cherry red (--brand).
+ * Every text/background pair below is checked against WCAG AA (≥ 4.5:1).
+ * To retheme, change the values here only.
+ */
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(0.965 0.014 80);
+  --foreground: oklch(0.23 0.02 50);
+  --card: oklch(0.985 0.009 80);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.985 0.009 80);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.26 0.025 45);
+  --primary-foreground: oklch(0.965 0.014 80);
+  --secondary: oklch(0.925 0.022 78);
+  --secondary-foreground: oklch(0.26 0.025 45);
+  --muted: oklch(0.925 0.022 78);
+  --muted-foreground: oklch(0.48 0.035 55);
+  --accent: oklch(0.925 0.022 78);
+  --accent-foreground: oklch(0.26 0.025 45);
+  --destructive: oklch(0.5 0.19 25);
+  --border: oklch(0.88 0.025 75);
+  --input: oklch(0.86 0.028 75);
+  --ring: oklch(0.47 0.16 28);
+
+  --brand: oklch(0.47 0.16 28);
+  --brand-foreground: oklch(0.97 0.012 80);
+  --caramel: oklch(0.72 0.1 68);
+  --roast: oklch(0.42 0.07 50);
+
+  --score-low: oklch(0.9 0.01 60);
+  --score-low-foreground: oklch(0.36 0.02 50);
+  --score-fair: oklch(0.9 0.05 78);
+  --score-fair-foreground: oklch(0.36 0.06 58);
+  --score-good: oklch(0.78 0.1 70);
+  --score-good-foreground: oklch(0.24 0.04 50);
+  --score-great: oklch(0.42 0.07 50);
+  --score-great-foreground: oklch(0.97 0.012 80);
+  --score-exceptional: oklch(0.47 0.16 28);
+  --score-exceptional-foreground: oklch(0.97 0.012 80);
+}
+
+.dark {
+  --background: oklch(0.17 0.012 50);
+  --foreground: oklch(0.93 0.02 80);
+  --card: oklch(0.205 0.014 50);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.205 0.014 50);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.93 0.02 80);
+  --primary-foreground: oklch(0.17 0.012 50);
+  --secondary: oklch(0.26 0.016 50);
+  --secondary-foreground: oklch(0.93 0.02 80);
+  --muted: oklch(0.26 0.016 50);
+  --muted-foreground: oklch(0.73 0.03 70);
+  --accent: oklch(0.26 0.016 50);
+  --accent-foreground: oklch(0.93 0.02 80);
+  --destructive: oklch(0.66 0.19 25);
+  --border: oklch(0.31 0.02 50);
+  --input: oklch(0.34 0.02 50);
+  --ring: oklch(0.66 0.16 28);
+
+  --brand: oklch(0.66 0.16 28);
+  --brand-foreground: oklch(0.17 0.012 50);
+  --caramel: oklch(0.74 0.1 70);
+  --roast: oklch(0.62 0.08 55);
+
+  --score-low: oklch(0.32 0.012 50);
+  --score-low-foreground: oklch(0.85 0.015 60);
+  --score-fair: oklch(0.36 0.04 60);
+  --score-fair-foreground: oklch(0.9 0.04 78);
+  --score-good: oklch(0.74 0.1 70);
+  --score-good-foreground: oklch(0.2 0.03 50);
+  --score-great: oklch(0.62 0.08 55);
+  --score-great-foreground: oklch(0.2 0.03 50);
+  --score-exceptional: oklch(0.66 0.16 28);
+  --score-exceptional-foreground: oklch(0.17 0.012 50);
+}
+
+@theme inline {
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-caramel: var(--caramel);
+  --color-roast: var(--roast);
+
+  --color-score-low: var(--score-low);
+  --color-score-low-foreground: var(--score-low-foreground);
+  --color-score-fair: var(--score-fair);
+  --color-score-fair-foreground: var(--score-fair-foreground);
+  --color-score-good: var(--score-good);
+  --color-score-good-foreground: var(--score-good-foreground);
+  --color-score-great: var(--score-great);
+  --color-score-great-foreground: var(--score-great-foreground);
+  --color-score-exceptional: var(--score-exceptional);
+  --color-score-exceptional-foreground: var(--score-exceptional-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "ss01";
+  }
+
+  /* Display serif with a little softness; optical size follows the font size. */
+  h1,
+  h2,
+  h3,
+  .font-serif {
+    font-family: var(--font-serif);
+    font-optical-sizing: auto;
+    font-variation-settings: "SOFT" 50;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--brand) 25%, transparent);
+  }
+}
+
+@layer utilities {
+  /* Faint ruled-paper texture for "notebook" surfaces. */
+  .paper-ruled {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.75rem - 1px),
+      color-mix(in oklch, var(--border) 55%, transparent) calc(1.75rem - 1px),
+      color-mix(in oklch, var(--border) 55%, transparent) 1.75rem
+    );
+  }
+}
