@@ -27,24 +27,35 @@ export const tr = {
     system: "Sistem",
   },
   home: {
-    eyebrow: "Kahve tadım defteri",
-    lead: "İçtiğin her kahve için bir sayfa: V60'ta demlediğin filtre kahveden sabah kapsülüne, French press'ten cezvedeki Türk kahvesine kadar. Puanla, not al, yıllar sonra o fincanı yeniden hatırla.",
-    methodsTitle: "Her demleme yöntemine açık",
+    title: "Tadım defteri",
+    intro:
+      "Kişisel kahve tadım arşivi: puan, not ve demleme yöntemiyle. Filtreden kapsüle, cezveden espressoya.",
+    methodsLine: "V60 · filtre · kapsül · French press · espresso · Türk kahvesi",
+    fields: {
+      tastings: "Tadım",
+      coffees: "Kahve",
+      brands: "Marka",
+      average: "Ort. puan",
+    },
+    fieldEmpty: "henüz kayıt yok",
+    latestTitle: "Son tadımlar",
+    latestEmpty:
+      "Form henüz boş. İlk kayıtlar Notion arşivinden aktarıldığında burada listelenecek.",
+    scaleTitle: "Puan skalası",
+    scaleBody: "1–10. Renk yalnızca yardımcı; puan her zaman sayıyla yazılır.",
+    methodsTitle: "Demleme yöntemleri",
     methods: [
       "V60",
-      "Filtre kahve",
-      "Kapsül",
+      "Filtre kahve makinesi",
+      "Kapsül makinesi",
+      "Taşınabilir espresso",
       "French press",
       "AeroPress",
       "Moka pot",
       "Chemex",
-      "Espresso",
+      "Espresso makinesi",
       "Türk kahvesi",
     ],
-    comingSoonTitle: "Arşiv demleniyor",
-    comingSoonBody: "İlk tadım notları çok yakında burada olacak.",
-    scaleTitle: "Puan skalası",
-    scaleBody: "1'den 10'a. Renk yalnızca yardımcı; puan her zaman yazıyla da görünür.",
   },
   comingSoon: {
     title: "Bu sayfa demleniyor",
@@ -56,7 +67,6 @@ export const tr = {
     none: "Puansız",
   },
   footer: {
-    note: "Kahve notları, özenle tutuldu.",
     copyright: "© {year} {name}",
   },
   states: {

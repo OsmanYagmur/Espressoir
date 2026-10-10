@@ -43,7 +43,7 @@ Postgres + `supabase/tests/local-shim.sql` can stand in for Supabase (initdb mus
 ```
 apps/web/src/app/(site)/   public pages — layout sets ensureStatic = 'navigation'
 apps/web/src/app/          root layout, 404/error/loading, icon
-apps/web/src/components/   ui/ (shadcn), site/ (chrome), coffee/
+apps/web/src/components/   ui/ (shadcn), site/ (chrome, SectionHeading), coffee/ (ScoreBadge)
 apps/web/src/lib/          i18n (t, format), site-url, supabase/{public,server,browser}
 packages/core|i18n|db|config, scripts/, supabase/{migrations,rollbacks,tests}, docs/
 ```
@@ -65,8 +65,14 @@ packages/core|i18n|db|config, scripts/, supabase/{migrations,rollbacks,tests}, d
   edit an applied migration; expand → migrate → contract (old app versions stay in the wild);
   version RPCs (`_v2`) instead of changing signatures. Regenerate types after each migration
   (CI fails on stale `database.types.ts`).
-- Design tokens only in `apps/web/src/app/globals.css` (AA-checked OKLCH palette, `--brand` =
-  coffee-cherry red). Score colour never carries meaning alone — the number is always shown.
+- **Design = "tasting form"** (owner picked it over two alternatives; the earlier cream/serif look
+  read as AI-made): off-white paper, black ink, hard rules instead of rounded cards, one accent
+  (signal red `--brand`), Archivo (wide via `.font-wide`) + IBM Plex Mono (labels/data,
+  `.label-caps`), radius 0, numbered section headings (`SectionHeading`). Tokens only in
+  `apps/web/src/app/globals.css` (AA-checked, light + dark). Score colour never carries meaning
+  alone — the number is always shown.
+- CSS `uppercase` follows `lang="tr"` (i → İ). Uppercase only Turkish UI copy; never coffee or
+  brand names (render those as written), and give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
 
 ## Phase status

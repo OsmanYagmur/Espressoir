@@ -1,6 +1,6 @@
 import { siteConfig } from "@espressoir/core";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Instrument_Sans } from "next/font/google";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -10,17 +10,18 @@ import { getSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
 
-const fraunces = Fraunces({
+// Variable width axis: expanded for display headings, normal for running text.
+const archivo = Archivo({
   subsets: ["latin", "latin-ext"],
-  axes: ["SOFT", "opsz"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
+  axes: ["wdth"],
+  variable: "--font-archivo",
   display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-instrument-sans",
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -43,28 +44,24 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8f3e9" },
-    { media: "(prefers-color-scheme: dark)", color: "#140e0b" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f4f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#141211" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="tr"
-      suppressHydrationWarning
-      className={`${fraunces.variable} ${instrumentSans.variable}`}
-    >
+    <html lang="tr" suppressHydrationWarning className={`${archivo.variable} ${plexMono.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <ThemeProvider>
           <a
             href="#icerik"
-            className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+            className="sr-only z-50 bg-primary px-4 py-2 font-mono text-xs text-primary-foreground uppercase focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
           >
             {t.a11y.skipToContent}
           </a>
           <SiteHeader />
-          <main id="icerik" className="flex-1 overflow-x-clip">
+          <main id="icerik" className="flex-1">
             {children}
           </main>
           <SiteFooter />

@@ -17,7 +17,7 @@ export function NavLinks({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
-    <ul className={cn("flex items-center gap-1", className)}>
+    <ul className={cn("flex items-center gap-5", className)}>
       {NAV_ITEMS.map(({ href, label }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
@@ -26,9 +26,8 @@ export function NavLinks({ className }: { className?: string }) {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-                active &&
-                  "text-foreground underline decoration-brand decoration-2 underline-offset-8",
+                "font-mono text-xs font-medium tracking-wide uppercase underline-offset-[6px] hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                active && "underline decoration-brand decoration-2",
               )}
             >
               {label}
