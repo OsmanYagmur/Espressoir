@@ -1,0 +1,32 @@
+{
+  "name": "espressoir",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@espressoir/web",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter @espressoir/web test:e2e",
+    "check": "turbo run lint typecheck test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:new": "supabase migration new",
+    "db:push:dev": "tsx scripts/db-push.ts --env dev",
+    "db:push:prod": "tsx scripts/db-push.ts --env prod",
+    "types:gen": "tsx scripts/gen-types.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "^2.120.0",
+    "tsx": "^4.23.15",
+    "turbo": "^2.11.7",
+    "typescript": "^5.9.3"
+  }
+}

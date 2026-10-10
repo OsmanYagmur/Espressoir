@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+PROJECT_BRIEF.md
+**/.next/
+**/.turbo/
+**/node_modules/
+**/playwright-report/
+**/test-results/
+packages/db/src/database.types.ts
+supabase/.temp/
+data/
