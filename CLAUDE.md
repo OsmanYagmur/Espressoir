@@ -96,7 +96,11 @@ data/                        owner's Notion export + reports (git-ignored)
 - Client components shared with the server must not format with `Intl` (hydration); prepare
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
-- No secret/service key at app runtime; only in local scripts. Vercel gets URL + publishable key.
+- No secret/service key at app runtime; only in local scripts. Vercel gets URL + publishable key
+  (as **Config** variables: a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
+- Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
+  `turbo.json` (`globalEnv`), Vercel's own `VERCEL_*` included, or the build silently sees it as
+  unset. `getSiteUrl()` depends on `VERCEL_ENV` / `VERCEL_URL` / `VERCEL_PROJECT_PRODUCTION_URL`.
 - Files read at runtime must be real files inside `apps/web`, read by literal path (the share-image
   fonts: `src/assets/fonts`, also listed in `outputFileTracingIncludes`). Never read through
   `node_modules`: under pnpm that is a symlink a Vercel function does not contain. Next loads
@@ -129,13 +133,20 @@ data/                        owner's Notion export + reports (git-ignored)
 - [x] Phase 0 — setup: monorepo, design base, Supabase infra, CI, docs.
 - [x] Phase 1 — archive + multi-user infra (signup stays closed): schema/RLS/RPC, Notion import,
       login + tasting panel, public pages, stats, SEO/OG, backup + keepalive workflows, CI on a
-      real Supabase. Built without access to the cloud projects: applying migrations, the
-      owner account and the import on dev/prod are the owner's steps (docs/setup-supabase.md).
+      real Supabase. **Live since 2026-10-10 at https://espressoir.vercel.app** (prod Supabase
+      migrated, owner account created, Notion archive imported, login + adding a tasting used
+      on the live site).
 - [ ] Phase 2 community · Phase 3 social depth · Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
 ephemeral Supabase on the GitHub runner instead of the cloud dev project.
+
+Still open after Phase 1, all on the owner's side (remind, don't do for them): point
+`espressoir.com` at Vercel (DNS is still Squarespace parking); give the Vercel Preview environment
+the two public variables; make the repo private, then add the backup secrets and keepalive
+variables (docs/backup.md) — until then prod has no backups. Only the prod Supabase project
+exists; a dev project is optional and was skipped, so `:dev` commands have no target yet.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to

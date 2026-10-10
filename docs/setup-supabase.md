@@ -2,6 +2,8 @@
 
 Docker gerekmez. Geliştirme doğrudan bulut **dev** projesine karşı yapılır; **prod** yalnızca canlı site içindir.
 
+> **Yalnızca prod ile başlanabilir.** Site şu an tek projeyle (`espressoir-prod`) yayında. Bu durumda aşağıdaki adımları yalnızca prod için yap, `.env.prod.local` dosyasını doldur ve komutların `:prod` / `--env prod` biçimlerini kullan. Dev projesi, canlı veriye dokunmadan deneme yapmak istediğinde eklenir; Vercel'in önizleme (Preview) derlemeleri de o zaman dev'i okuyabilir.
+
 ## 1. İki projeyi aç
 
 [supabase.com/dashboard](https://supabase.com/dashboard) → **New project** (Free plan). Bu adımı iki kez yap:
@@ -19,7 +21,7 @@ Docker gerekmez. Geliştirme doğrudan bulut **dev** projesine karşı yapılır
 **Authentication → Sign In / Providers → Email**
 
 - Email sağlayıcısı: **açık**
-- **Allow new users to sign up: KAPALI.** Kayıt Faz 2'ye kadar kapalı. Hesabın `pnpm admin:bootstrap` ile oluşturulur (aşağıda, 6. adım).
+- **Allow new users to sign up: KAPALI.** Yeni projede bu ayar **açık gelir**; kapatmayı unutma. Sitede kayıt formu olmasa da açık kalırsa API üzerinden hesap açılabilir. Kayıt Faz 2'ye kadar kapalı; hesabın `pnpm admin:bootstrap` ile oluşturulur (aşağıda, 6. adım).
 - Minimum parola uzunluğu: **10**. Email sağlayıcı ayarlarında "Minimum password length" alanı; dashboard sürümüne göre parola güvenliği ayarlarında da olabilir.
 
 **Authentication → URL Configuration:**
@@ -30,17 +32,21 @@ Docker gerekmez. Geliştirme doğrudan bulut **dev** projesine karşı yapılır
 
 Her proje için:
 
-| Değişken                               | Nerede                                                                                         |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Project Settings → Data API → Project URL (`https://<ref>.supabase.co`)                        |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Project Settings → API Keys → **Publishable key** (`sb_publishable_…`)                         |
-| `SUPABASE_SECRET_KEY`                  | Project Settings → API Keys → **Secret key** (`sb_secret_…`)                                   |
-| `SUPABASE_DB_URL`                      | Üstteki **Connect** düğmesi → **Session pooler** → URI. `[YOUR-PASSWORD]` yerine parolanı yaz. |
-| `SUPABASE_*_PROJECT_REF`               | Proje URL'sindeki `<ref>` kısmı                                                                |
+| Değişken                               | Nerede                                                                                          |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Project Settings → Data API → Project URL (`https://<ref>.supabase.co`)                         |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Project Settings → API Keys → **Publishable key** (`sb_publishable_…`)                          |
+| `SUPABASE_SECRET_KEY`                  | Project Settings → API Keys → **Secret key** (`sb_secret_…`)                                    |
+| `SUPABASE_DB_URL`                      | Üstteki **Connect** düğmesi → **Direct** (Connection string) sekmesi → **Session pooler** → URI |
+| `SUPABASE_*_PROJECT_REF`               | Proje URL'sindeki `<ref>` kısmı                                                                 |
 
 Projende hâlâ eski adlı anahtarlar varsa: **anon** = publishable, **service_role** = secret.
 
-**Neden Session pooler?** Free planda doğrudan bağlantı yalnızca IPv6 destekliyor; çoğu ev ağı ve GitHub Actions IPv4 kullanıyor. Session pooler IPv4 ile çalışır.
+**Veritabanı adresi hakkında:**
+
+- Doğru adres `postgresql://postgres.<ref>:[YOUR-PASSWORD]@aws-…pooler.supabase.com:5432/postgres` biçimindedir: içinde `pooler.supabase.com` geçer ve `:5432` ile biter. `:6543` görüyorsan Transaction pooler seçilidir.
+- `[YOUR-PASSWORD]` kısmını köşeli parantezleriyle birlikte silip veritabanı parolanı yaz. Parolayı hatırlamıyorsan aynı ekrandaki **Reset database password** ile yenile; yalnızca harf ve rakam kullanırsan adres bozulmaz.
+- **Neden Session pooler?** Free planda doğrudan bağlantı (`db.<ref>.supabase.co`) yalnızca IPv6 destekliyor; çoğu ev ağı ve GitHub Actions IPv4 kullanıyor. Session pooler IPv4 ile çalışır.
 
 ## 4. Env dosyalarını doldur
 
@@ -49,7 +55,9 @@ cp .env.example .env.local        # dev projesinin değerleri
 cp .env.example .env.prod.local   # prod projesinin değerleri
 ```
 
-İki dosyaya da `SUPABASE_DEV_PROJECT_REF` ve `SUPABASE_PROD_PROJECT_REF` değerlerini yaz. Script'ler bunlarla yanlış projeye bağlanmayı engeller. İki dosya da git'e girmez.
+İki dosyaya da `SUPABASE_DEV_PROJECT_REF` ve `SUPABASE_PROD_PROJECT_REF` değerlerini yaz (dev projen yoksa onunki boş kalır). Script'ler bunlarla yanlış projeye bağlanmayı engeller. İki dosya da git'e girmez.
+
+Dosyalar nokta ile başladığı için Finder'da görünmez; düzenlemek için `open -e .env.prod.local` yaz. Değerleri `=` işaretinin hemen sağına, boşluksuz ve tırnaksız yapıştır.
 
 ⚠️ `SUPABASE_SECRET_KEY` RLS'i atlar. Yalnızca yerel script'lerde kullanılır; **Vercel'e veya başka bir yere koyma.**
 
