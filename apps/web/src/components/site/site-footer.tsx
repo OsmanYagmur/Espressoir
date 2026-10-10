@@ -3,28 +3,24 @@ import { cacheLife } from "next/cache";
 
 import { format, t } from "@/lib/i18n";
 
-import { RingMark } from "./logo";
-
 async function CopyrightLine() {
   "use cache";
   cacheLife("days");
   return (
-    <p>{format(t.footer.copyright, { year: new Date().getFullYear(), name: siteConfig.name })}</p>
+    <span>
+      {format(t.footer.copyright, { year: new Date().getFullYear(), name: siteConfig.name })}
+    </span>
   );
 }
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-border/70">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-3 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="flex items-center gap-2">
-          <RingMark className="size-5" />
-          <span className="font-serif italic">{siteConfig.tagline.tr}</span>
-        </p>
-        <div className="flex flex-col gap-1 sm:items-end">
-          <p>{t.footer.note}</p>
-          <CopyrightLine />
-        </div>
+    <footer className="mx-auto mt-20 w-full max-w-[1240px] px-5">
+      <div className="flex flex-col gap-1 border-t-2 border-rule pt-3 pb-10 font-mono text-xs text-muted-foreground sm:flex-row sm:justify-between">
+        <span>
+          {siteConfig.name} — {siteConfig.tagline.tr.toLocaleLowerCase("tr")}
+        </span>
+        <CopyrightLine />
       </div>
     </footer>
   );

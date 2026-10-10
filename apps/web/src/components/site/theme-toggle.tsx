@@ -19,13 +19,19 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t.theme.toggle} data-testid="theme-toggle">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9"
+          aria-label={t.theme.toggle}
+          data-testid="theme-toggle"
+        >
           {/* Both icons render; CSS shows the right one, so server and client markup match. */}
-          <SunIcon className="size-5 dark:hidden" aria-hidden />
-          <MoonIcon className="hidden size-5 dark:block" aria-hidden />
+          <SunIcon className="size-[18px] dark:hidden" aria-hidden />
+          <MoonIcon className="hidden size-[18px] dark:block" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="border-rule font-mono text-xs">
         <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light">
             <SunIcon aria-hidden /> {t.theme.light}

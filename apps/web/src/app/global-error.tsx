@@ -16,35 +16,42 @@ export default function GlobalError({
         style={{
           margin: 0,
           minHeight: "100dvh",
-          display: "grid",
-          placeItems: "center",
-          background: "#f8f3e9",
-          color: "#251a15",
-          fontFamily: "Georgia, serif",
-          textAlign: "center",
-          padding: "1rem",
+          padding: "2.5rem 1.25rem",
+          background: "#f4f4f1",
+          color: "#161616",
+          fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
-        <div>
-          <h1 style={{ fontSize: "2rem", fontWeight: 500 }}>{t.states.errorTitle}</h1>
-          <p style={{ color: "#6e594b" }}>{t.states.errorBody}</p>
-          <button
-            type="button"
-            onClick={() => reset()}
-            style={{
-              marginTop: "1.5rem",
-              padding: "0.6rem 1.2rem",
-              borderRadius: "0.5rem",
-              border: "none",
-              background: "#2e201a",
-              color: "#f8f3e9",
-              fontSize: "1rem",
-              cursor: "pointer",
-            }}
-          >
-            {t.states.retry}
-          </button>
-        </div>
+        <h1
+          style={{
+            margin: 0,
+            paddingBottom: "1rem",
+            borderBottom: "2px solid #161616",
+            fontSize: "2.5rem",
+            fontWeight: 800,
+            textTransform: "uppercase",
+          }}
+        >
+          {t.states.errorTitle}
+          <span style={{ color: "#cc291f" }}>.</span>
+        </h1>
+        <p style={{ color: "#64645e", maxWidth: "52ch" }}>{t.states.errorBody}</p>
+        <button
+          type="button"
+          onClick={() => reset()}
+          style={{
+            marginTop: "1rem",
+            padding: "0.7rem 1.2rem",
+            border: "none",
+            background: "#161616",
+            color: "#f4f4f1",
+            fontFamily: "monospace",
+            textTransform: "uppercase",
+            cursor: "pointer",
+          }}
+        >
+          {t.states.retry}
+        </button>
       </body>
     </html>
   );

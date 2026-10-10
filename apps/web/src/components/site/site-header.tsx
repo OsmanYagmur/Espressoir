@@ -8,24 +8,26 @@ import { ThemeToggle } from "./theme-toggle";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-border/70">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="mx-auto w-full max-w-[1240px] px-5">
+      <div className="flex flex-wrap items-center justify-between gap-y-1 border-b-2 border-rule py-2.5">
         <Link
           href="/"
-          className="rounded-md focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
           aria-label={t.nav.home}
+          className="py-1 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <Wordmark />
         </Link>
-        <nav aria-label={t.nav.label} className="hidden sm:block">
+        <div className="flex items-center gap-5">
+          <nav aria-label={t.nav.label} className="max-sm:hidden">
+            <NavLinks />
+          </nav>
+          <ThemeToggle />
+        </div>
+        {/* Small screens: links get their own row under a hairline instead of a menu button. */}
+        <nav aria-label={t.nav.label} className="w-full border-t py-2 sm:hidden">
           <NavLinks />
         </nav>
-        <ThemeToggle />
       </div>
-      {/* Small screens: links get their own row instead of hiding behind a menu button. */}
-      <nav aria-label={t.nav.label} className="border-t border-border/50 sm:hidden">
-        <NavLinks className="mx-auto max-w-5xl justify-center px-2 py-1" />
-      </nav>
     </header>
   );
 }

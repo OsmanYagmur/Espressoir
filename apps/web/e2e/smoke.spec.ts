@@ -1,11 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("home page introduces the notebook for every brew method", async ({ page }) => {
+test("home page shows the tasting form for every brew method", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Espressoir/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Her fincanın bir hatırası var.",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tadım defteri.");
   await expect(page.getByText("Türk kahvesi", { exact: true })).toBeVisible();
   await expect(page.getByRole("img", { name: "10 üzerinden 8 puan" })).toBeVisible();
 });
@@ -18,7 +16,7 @@ test("main navigation reaches the coffee list", async ({ page }) => {
     .getByRole("link", { name: "Kahveler" })
     .click();
   await expect(page).toHaveURL(/\/kahveler$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveler");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveler.");
 });
 
 test("theme can be switched to dark and back", async ({ page }) => {
