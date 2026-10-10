@@ -34,18 +34,29 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
 1. Vercel → proje → **Settings → Domains → Add** → `espressoir.com`.
 2. Vercel `www.espressoir.com`'u da eklemeyi önerecek. **"Redirect www.espressoir.com to espressoir.com"** seçeneğini seç (kalıcı yönlendirme, 308).
-3. Alan adını aldığın firmanın DNS panelinde şu kayıtları gir. **Değerleri Vercel'in Domains ekranında gösterdiği gibi kopyala**; Vercel projeye özel değerler verebiliyor.
+3. Vercel sana iki kayıt gösterecek. **Değerleri Vercel'in Domains ekranındaki gibi kopyala**; Vercel projeye özel değerler verebiliyor:
 
-   | Tür     | Ad (Host)          | Değer                                                                                | TTL                    |
-   | ------- | ------------------ | ------------------------------------------------------------------------------------ | ---------------------- |
-   | `A`     | `@` (kök alan adı) | Vercel'in gösterdiği IP (çoğunlukla `76.76.21.21` ya da `216.198.79.1`)              | 3600 (veya varsayılan) |
-   | `CNAME` | `www`              | Vercel'in gösterdiği değer (ör. `cname.vercel-dns.com` ya da `….vercel-dns-0xx.com`) | 3600 (veya varsayılan) |
+   | Tür     | Host  | Değer (örnek, Vercel'deki gerçek değeri kullan)          |
+   | ------- | ----- | -------------------------------------------------------- |
+   | `A`     | `@`   | `76.76.21.21` ya da `216.198.79.1` gibi bir IP           |
+   | `CNAME` | `www` | `cname.vercel-dns.com` ya da `….vercel-dns-0xx.com` gibi |
 
-4. `@` ve `www` için önceden kalmış `A`, `AAAA` veya `CNAME` kayıtlarını (park sayfası, yönlendirme hizmeti) **sil**. Çakışan kayıt doğrulamayı engeller.
-5. Bir `CAA` kaydın varsa Let's Encrypt'e izin verdiğinden emin ol (`0 issue "letsencrypt.org"`). Hiç `CAA` kaydı yoksa bir şey yapman gerekmez.
-6. Doğrulama birkaç dakikadan birkaç saate kadar sürebilir. Vercel iki alan adını da "Valid Configuration" olarak gösterdiğinde SSL sertifikası otomatik oluşturulur.
+### Squarespace Domains'te adım adım
 
-**Alternatif:** Alan adının nameserver'larını Vercel'e (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`) yönlendirirsen tüm DNS'i Vercel yönetir. Bu durumda e-posta (MX) gibi diğer kayıtları Vercel'de yeniden oluşturman gerekir.
+Alan adı Squarespace'te kayıtlı. Squarespace'in DNS'ini kullanmaya devam edip yalnızca kayıt ekleyeceğiz; e-posta gibi diğer kayıtlar etkilenmez.
+
+1. [account.squarespace.com/domains](https://account.squarespace.com/domains) → **espressoir.com** → sol menüde **DNS** → **DNS Settings**.
+2. **Önce çakışan kayıtları sil.** "Squarespace Defaults" (veya "Squarespace Domain Parking") adlı hazır kayıt grubu varsa, grubun yanındaki çöp kutusu simgesiyle grubun tamamını sil. Bu grupta kökü Squarespace sunucularına bağlayan `A` kayıtları (`198.185.159.x`, `198.49.23.x`) ve `www` → `ext-sq.squarespace.com` `CNAME`'i bulunur. Silmezsen Vercel doğrulaması başarısız olur.
+   - "Google Workspace" gibi e-posta (`MX`) kayıtları varsa **onlara dokunma**.
+   - Domain ayarlarında bir **Domain Forwarding** (yönlendirme) tanımlıysa onu da kapat.
+3. **Custom Records → Add Record:**
+   - Type **A**, Host **@**, Data: Vercel'deki IP → **Save**
+   - Type **CNAME**, Host **www**, Data: Vercel'deki değer → **Save**
+   - TTL varsayılan kalabilir.
+4. Vercel → Domains ekranında iki alan adının da **"Valid Configuration"** olmasını bekle. Genelde 5–30 dakika sürer, en fazla birkaç saat. SSL sertifikası otomatik oluşturulur.
+5. Kontrol: tarayıcıda `https://www.espressoir.com` açınca adres `https://espressoir.com`'a dönmeli.
+
+**Alternatif (önermiyorum):** Squarespace'te **Domain Nameservers → Use custom nameservers** ile `ns1.vercel-dns.com` / `ns2.vercel-dns.com` girersen tüm DNS'i Vercel yönetir. O zaman e-posta kayıtlarını Vercel'de yeniden kurman gerekir. **DNSSEC** açıksa önce kapatman gerekir, yoksa alan adı bir süre erişilemez olur.
 
 Domain bağlandıktan sonra:
 
