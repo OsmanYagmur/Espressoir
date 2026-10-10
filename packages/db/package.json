@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.3"
+    "@espressoir/core": "workspace:*",
+    "@supabase/supabase-js": "^2.117.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@espressoir/config": "workspace:*",

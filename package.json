@@ -21,7 +21,9 @@
     "types:gen": "tsx scripts/gen-types.ts",
     "import:notion": "tsx scripts/import-notion.ts",
     "seed:dev": "tsx scripts/import-notion.ts --env dev --file scripts/notion/fixtures/sample-export.csv",
-    "admin:bootstrap": "tsx scripts/admin-bootstrap.ts"
+    "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",
+    "snapshot:offline": "tsx scripts/offline-snapshot.ts",
+    "dev:offline": "pnpm snapshot:offline && ARCHIVE_SNAPSHOT=1 turbo run dev --filter=@espressoir/web"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
