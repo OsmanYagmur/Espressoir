@@ -22,6 +22,10 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
    ⛔ `SUPABASE_SECRET_KEY` ve `SUPABASE_DB_URL` Vercel'e **girmez**. Uygulama çalışırken bunlara hiç ihtiyaç duymuyor.
 
+   - **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
+   - Yalnızca prod projen varsa Preview + Development sütununa da prod değerlerini gir; yoksa PR önizlemeleri derlenmez.
+   - Vercel'in önerdiği **Supabase entegrasyonunu ekleme** ("Optional Integrations → Add"). Proje zaten var; entegrasyon yeni bir veritabanı kurar ve gizli anahtarları Vercel'e taşır.
+
 5. **Deploy.** İlk yayın `https://<proje-adı>.vercel.app` adresinde açılır.
 
 ## 3. Proje ayarları (bir kez)
@@ -78,3 +82,20 @@ Site artık derlenirken veritabanını okuyor. Sıra önemli: **önce veritaban�
 4. Önizleme (Preview) derlemeleri dev projesini okur; dev'e de aynı üç adımı uygula.
 
 Sitede bir tadım ekleyip düzenlediğinde ilgili sayfalar hemen yenilenir. Veritabanını başka bir yoldan değiştirirsen (import, SQL) sayfalar en geç bir saat içinde kendini günceller.
+
+## Derleme hata verirse
+
+Vercel → **Deployments** → başarısız yayın → **Build Logs**; hata günlüğün sonundadır.
+
+| Günlükteki satır                                                             | Anlamı ve çözümü                                                                                                                                         |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `… okunamadı: Invalid API key`                                               | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` yanlış ya da eksik kopyalanmış. `.env.prod.local` içindeki değerin aynısını gir (başında/sonunda boşluk olmasın). |
+| `NEXT_PUBLIC_SUPABASE_URL ve … tanımlı olmalı`                               | İki değişken o ortam (Production ya da Preview) için tanımlı değil.                                                                                      |
+| Bir tablonun ya da görünümün bulunamadığını söyleyen `… okunamadı: …` hatası | Migration'lar o veritabanına uygulanmamış: `pnpm db:push:prod`.                                                                                          |
+| Yalnızca PR'daki **Vercel** satırı kırmızı, `main` yayını yeşil              | Preview ortamının değişkenleri eksik. Canlı siteyi etkilemez.                                                                                            |
+
+Değişkeni düzelttikten sonra: **Deployments** → **⋯** → **Redeploy**. Başarısız bir derleme yayına alınmaz; site son başarılı sürümle açık kalır.
+
+## Site adresi
+
+Sayfaların kalıcı adresi (canonical), sitemap ve paylaşım görselleri projenin **üretim alan adını** kullanır: `espressoir.com` Vercel'e bağlanana kadar `https://<proje>.vercel.app`, bağlandıktan sonraki ilk derlemeden itibaren `https://espressoir.com`. Kodda değişiklik gerekmez.
