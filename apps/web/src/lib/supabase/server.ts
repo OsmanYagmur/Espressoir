@@ -11,8 +11,10 @@ import { getSupabasePublicEnv } from "./env";
  * route dynamic, so never use it on public pages — use createPublicClient() there.
  */
 export async function createServerSupabase(): Promise<TypedSupabaseClient> {
-  const { url, publishableKey } = getSupabasePublicEnv();
+  // Cookies first: while a page shell is being prerendered this is where rendering pauses,
+  // before anything below can run without a request.
   const cookieStore = await cookies();
+  const { url, publishableKey } = getSupabasePublicEnv();
 
   return createServerClient<Database>(url, publishableKey, {
     cookies: {

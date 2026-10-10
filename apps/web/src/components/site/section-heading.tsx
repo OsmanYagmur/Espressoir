@@ -25,7 +25,11 @@ export function SectionHeading({
       <span>
         {String(index).padStart(2, "0")} — {title}
       </span>
-      {aside ? <span className="font-medium text-muted-foreground">{aside}</span> : null}
+      {aside ? (
+        <span className="font-medium tracking-normal text-muted-foreground normal-case">
+          {aside}
+        </span>
+      ) : null}
     </h2>
   );
 }

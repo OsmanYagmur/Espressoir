@@ -21,3 +21,12 @@ export {
   type Coffee,
   type Tasting,
 } from "./archive";
+
+export {
+  TASTING_INPUT_ERRORS,
+  tastingInputSchema,
+  toLogTastingArgs,
+  toTastingUpdate,
+  type TastingInput,
+  type TastingInputError,
+} from "./tasting-input";

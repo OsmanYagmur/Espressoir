@@ -48,3 +48,31 @@ export const BRAND_NAME_MAX_LENGTH = 80;
 export const COFFEE_NAME_MAX_LENGTH = 120;
 /** Brands print their own strength scales; 20 comfortably covers all of them. */
 export const BRAND_INTENSITY_MAX = 20;
+
+/** Coffee-growing countries offered when a coffee's origin is entered (ISO 3166-1 alpha-2). */
+export const COFFEE_ORIGIN_COUNTRIES = [
+  "BR",
+  "BI",
+  "CO",
+  "CR",
+  "CU",
+  "EC",
+  "ET",
+  "GT",
+  "HN",
+  "ID",
+  "IN",
+  "JM",
+  "KE",
+  "MX",
+  "NI",
+  "PA",
+  "PE",
+  "PG",
+  "RW",
+  "SV",
+  "TZ",
+  "UG",
+  "VN",
+  "YE",
+] as const;

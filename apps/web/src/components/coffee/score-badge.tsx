@@ -18,9 +18,21 @@ const SIZE_CLASSES = {
   lg: "size-20 border-2 text-4xl",
 } as const;
 
+// An average such as "7,5" needs one more character than a whole score.
+const LONG_TEXT_CLASSES = {
+  sm: "text-[11px]",
+  md: "text-[19px]",
+  lg: "text-[28px]",
+} as const;
+
+/** Whole scores as they are, averages with one decimal and a Turkish decimal comma. */
+function scoreText(score: number): string {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1).replace(".", ",");
+}
+
 /**
- * Score box. The number is always printed and announced, so colour never carries the
- * meaning on its own.
+ * Score box, for a single score or an average. The number is always printed and
+ * announced, so colour never carries the meaning on its own.
  */
 export function ScoreBadge({
   score,
@@ -47,20 +59,22 @@ export function ScoreBadge({
     );
   }
 
-  const tier = scoreTier(score);
+  const text = scoreText(score);
+  const tier = scoreTier(Math.round(score));
   return (
     <span
       role="img"
-      aria-label={format(t.score.aria, { score })}
+      aria-label={format(t.score.aria, { score: text })}
       data-tier={tier}
       className={cn(
         "inline-grid shrink-0 place-items-center font-extrabold tabular-nums",
         SIZE_CLASSES[size],
+        text.length > 2 && LONG_TEXT_CLASSES[size],
         TIER_CLASSES[tier],
         className,
       )}
     >
-      {score}
+      {text}
     </span>
   );
 }

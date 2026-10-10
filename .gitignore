@@ -36,3 +36,6 @@ blob-report/
 npm-debug.log*
 pnpm-debug.log*
 .vercel
+
+# local Claude Code launch config
+.claude/
