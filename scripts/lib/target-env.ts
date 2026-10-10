@@ -29,6 +29,8 @@ export function parseTargetEnv(argv: readonly string[] = process.argv.slice(2)):
 export function loadTargetEnv(target: TargetEnv): void {
   const file = resolve(repoRoot, ENV_FILES[target]);
   if (!existsSync(file)) {
+    // CI and other scripted runs pass the variables directly instead of an env file.
+    if (process.env.SUPABASE_DB_URL) return;
     throw new Error(
       `${ENV_FILES[target]} bulunamadı. .env.example dosyasını kopyalayıp doldur (bkz. docs/setup-supabase.md).`,
     );

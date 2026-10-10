@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
-  "globalEnv": ["NEXT_PUBLIC_*"],
+  "globalEnv": ["NEXT_PUBLIC_*", "ARCHIVE_SNAPSHOT"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

@@ -57,13 +57,23 @@ jobs:
           pnpm types:gen --db-url "$LOCAL_DB_URL"
           git diff --exit-code -- packages/db/src/database.types.ts \
             || (echo "::error::database.types.ts is stale. Run 'pnpm types:gen' and commit it." && exit 1)
+      # The same tests `pnpm check` runs on an in-process Postgres, now on the real thing.
+      - name: RLS, RPC and import tests on Supabase Postgres
+        run: pnpm --filter @espressoir/scripts test
+        env:
+          TEST_DB_URL: ${{ env.LOCAL_DB_URL }}
       - if: always()
         run: pnpm exec supabase stop --no-backup || true
 
   e2e:
-    name: Build · E2E (Playwright)
+    name: Build · E2E on a local Supabase (Playwright)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      OWNER_USERNAME: owner
+      OWNER_EMAIL: owner@example.test
+      E2E_GUEST_EMAIL: guest@example.test
+      NEXT_PUBLIC_SIGNUP_ENABLED: "false"
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -74,6 +84,35 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm --filter @espressoir/web exec playwright install --with-deps chromium
+      # Database, API and auth only; the migrations are applied from scratch.
+      # Docker runs here on GitHub's machine, never on a developer laptop.
+      - name: Start local Supabase
+        run: >-
+          pnpm exec supabase start
+          -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor,mailpit
+      - name: Export connection settings and one-off test passwords
+        run: |
+          pnpm exec supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          set -a; source "$RUNNER_TEMP/supabase.env"; set +a
+          owner_password="$(openssl rand -hex 16)"
+          guest_password="$(openssl rand -hex 16)"
+          echo "::add-mask::$owner_password"
+          echo "::add-mask::$guest_password"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}"
+            echo "SUPABASE_SECRET_KEY=${SECRET_KEY:-$SERVICE_ROLE_KEY}"
+            echo "SUPABASE_DB_URL=$DB_URL"
+            echo "OWNER_PASSWORD=$owner_password"
+            echo "E2E_OWNER_EMAIL=$OWNER_EMAIL"
+            echo "E2E_OWNER_PASSWORD=$owner_password"
+            echo "E2E_GUEST_PASSWORD=$guest_password"
+          } >> "$GITHUB_ENV"
+      - name: Create the test accounts and load the sample archive
+        run: |
+          pnpm admin:bootstrap
+          pnpm exec tsx scripts/e2e-setup.ts
+          pnpm seed:dev
       - run: pnpm turbo run build --filter=@espressoir/web
       - run: pnpm test:e2e
       - if: failure()
@@ -82,3 +121,5 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report
           retention-days: 7
+      - if: always()
+        run: pnpm exec supabase stop --no-backup || true

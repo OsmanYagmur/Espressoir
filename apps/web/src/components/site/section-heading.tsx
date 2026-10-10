@@ -18,14 +18,18 @@ export function SectionHeading({
     <h2
       id={id}
       className={cn(
-        "flex items-baseline justify-between gap-4 border-b border-rule pt-4 pb-2.5 font-mono text-xs font-semibold tracking-wide uppercase",
+        "flex items-baseline justify-between gap-4 border-b border-rule pt-4 pb-2.5 font-mono text-xs font-medium tracking-wide uppercase",
         className,
       )}
     >
       <span>
         {String(index).padStart(2, "0")} — {title}
       </span>
-      {aside ? <span className="font-medium text-muted-foreground">{aside}</span> : null}
+      {aside ? (
+        <span className="font-medium tracking-normal text-muted-foreground normal-case">
+          {aside}
+        </span>
+      ) : null}
     </h2>
   );
 }

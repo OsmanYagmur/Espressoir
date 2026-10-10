@@ -1,0 +1,231 @@
+/**
+ * The archive's read models, as the apps consume them. Rows from the `coffee_overview`,
+ * `tasting_feed` and `brew_methods` relations are validated here and reshaped into
+ * camelCase objects, so a schema change that would break the UI fails loudly at this
+ * boundary instead of rendering "undefined" somewhere.
+ *
+ * Framework-free: web uses it today, the mobile app can use it unchanged.
+ */
+import {
+  BREW_CATEGORIES,
+  CAPSULE_SYSTEMS,
+  COFFEE_FORMS,
+  COFFEE_PROCESSES,
+  ROAST_LEVELS,
+  TASTING_STATUSES,
+  TASTING_VISIBILITIES,
+} from "@espressoir/core";
+import { z } from "zod";
+
+import type { TypedSupabaseClient } from "./index";
+
+const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const taste = z.number().int().min(1).max(5).nullable();
+
+export const coffeeRowSchema = z
+  .object({
+    coffee_id: z.uuid(),
+    coffee_slug: z.string().min(1),
+    coffee_name: z.string().min(1),
+    form: z.enum(COFFEE_FORMS).nullable(),
+    capsule_system: z.enum(CAPSULE_SYSTEMS).nullable(),
+    brand_intensity: z.number().int().nullable(),
+    origin_country: z.string().length(2).nullable(),
+    region: z.string().nullable(),
+    process: z.enum(COFFEE_PROCESSES).nullable(),
+    roast_level: z.enum(ROAST_LEVELS).nullable(),
+    is_blend: z.boolean().nullable(),
+    description: z.string().nullable(),
+    image_url: z.string().nullable(),
+    created_at: z.string(),
+    brand_id: z.uuid(),
+    brand_slug: z.string().min(1),
+    brand_name: z.string().min(1),
+    tasting_count: z.number().int().nonnegative(),
+    rated_count: z.number().int().nonnegative(),
+    // Postgres `numeric` arrives as a JSON number from the API, as text from a raw driver.
+    avg_score: z.coerce.number().nullable(),
+    score_distribution: z.array(z.number().int().nonnegative()).length(10),
+    first_tasted_at: day.nullable(),
+    last_tasted_at: day.nullable(),
+    brew_method_slugs: z.array(z.string()),
+  })
+  .transform((row) => ({
+    id: row.coffee_id,
+    slug: row.coffee_slug,
+    name: row.coffee_name,
+    brand: { id: row.brand_id, slug: row.brand_slug, name: row.brand_name },
+    form: row.form,
+    capsuleSystem: row.capsule_system,
+    brandIntensity: row.brand_intensity,
+    originCountry: row.origin_country,
+    region: row.region,
+    process: row.process,
+    roastLevel: row.roast_level,
+    isBlend: row.is_blend,
+    description: row.description,
+    imageUrl: row.image_url,
+    createdAt: row.created_at,
+    stats: {
+      tastingCount: row.tasting_count,
+      ratedCount: row.rated_count,
+      avgScore: row.avg_score,
+      /** Index 0 = score 1 … index 9 = score 10. */
+      distribution: row.score_distribution,
+      firstTastedAt: row.first_tasted_at,
+      lastTastedAt: row.last_tasted_at,
+      brewMethodSlugs: row.brew_method_slugs,
+    },
+  }));
+
+export const tastingRowSchema = z
+  .object({
+    tasting_id: z.uuid(),
+    status: z.enum(TASTING_STATUSES),
+    visibility: z.enum(TASTING_VISIBILITIES),
+    score: z.number().int().min(1).max(10).nullable(),
+    tasted_at: day.nullable(),
+    notes: z.string().nullable(),
+    device: z.string().nullable(),
+    body: taste,
+    acidity: taste,
+    bitterness: taste,
+    sweetness: taste,
+    aftertaste: taste,
+    would_buy_again: z.boolean().nullable(),
+    created_at: z.string(),
+    user_id: z.uuid(),
+    username: z.string().min(1),
+    display_name: z.string().nullable(),
+    coffee_id: z.uuid(),
+    coffee_slug: z.string().min(1),
+    coffee_name: z.string().min(1),
+    form: z.enum(COFFEE_FORMS).nullable(),
+    brand_intensity: z.number().int().nullable(),
+    origin_country: z.string().length(2).nullable(),
+    brand_id: z.uuid(),
+    brand_slug: z.string().min(1),
+    brand_name: z.string().min(1),
+    brew_method_slug: z.string().nullable(),
+    brew_method_name: z.string().nullable(),
+    brew_category: z.enum(BREW_CATEGORIES).nullable(),
+  })
+  .transform((row) => ({
+    id: row.tasting_id,
+    status: row.status,
+    visibility: row.visibility,
+    score: row.score,
+    tastedAt: row.tasted_at,
+    notes: row.notes,
+    device: row.device,
+    profile: {
+      body: row.body,
+      acidity: row.acidity,
+      bitterness: row.bitterness,
+      sweetness: row.sweetness,
+      aftertaste: row.aftertaste,
+    },
+    wouldBuyAgain: row.would_buy_again,
+    createdAt: row.created_at,
+    author: { id: row.user_id, username: row.username, displayName: row.display_name },
+    coffee: {
+      id: row.coffee_id,
+      slug: row.coffee_slug,
+      name: row.coffee_name,
+      form: row.form,
+      brandIntensity: row.brand_intensity,
+      originCountry: row.origin_country,
+    },
+    brand: { id: row.brand_id, slug: row.brand_slug, name: row.brand_name },
+    brewMethod:
+      row.brew_method_slug && row.brew_method_name && row.brew_category
+        ? { slug: row.brew_method_slug, name: row.brew_method_name, category: row.brew_category }
+        : null,
+  }));
+
+export const brewMethodRowSchema = z
+  .object({
+    id: z.uuid(),
+    slug: z.string().min(1),
+    name: z.string().min(1),
+    category: z.enum(BREW_CATEGORIES),
+    sort_order: z.number().int(),
+  })
+  .transform((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    category: row.category,
+    sortOrder: row.sort_order,
+  }));
+
+export type Coffee = z.infer<typeof coffeeRowSchema>;
+export type Tasting = z.infer<typeof tastingRowSchema>;
+export type BrewMethod = z.infer<typeof brewMethodRowSchema>;
+
+export interface Archive {
+  coffees: Coffee[];
+  tastings: Tasting[];
+  brewMethods: BrewMethod[];
+}
+
+/** Raw rows of the three relations, exactly as the API (or a snapshot file) returns them. */
+export interface ArchiveRows {
+  coffees: unknown[];
+  tastings: unknown[];
+  brewMethods: unknown[];
+}
+
+export function parseArchive(rows: ArchiveRows): Archive {
+  return {
+    coffees: z.array(coffeeRowSchema).parse(rows.coffees),
+    tastings: z.array(tastingRowSchema).parse(rows.tastings),
+    brewMethods: z.array(brewMethodRowSchema).parse(rows.brewMethods),
+  };
+}
+
+/** The API caps a response at 1000 rows (supabase/config.toml: max_rows), so read in pages. */
+const PAGE_SIZE = 1000;
+
+async function readAll<Row>(
+  what: string,
+  page: (
+    from: number,
+    to: number,
+  ) => PromiseLike<{
+    data: Row[] | null;
+    error: { message: string } | null;
+  }>,
+): Promise<Row[]> {
+  const rows: Row[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(`${what} okunamadı: ${error.message}`);
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) return rows;
+  }
+}
+
+/**
+ * Everything the public archive shows: all coffees, every public tasting, the brew methods.
+ * Works with any client; what comes back still depends on that client's rights (RLS).
+ */
+export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<ArchiveRows> {
+  const [coffees, tastings, brewMethods] = await Promise.all([
+    readAll("Kahveler", (from, to) =>
+      client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
+    ),
+    readAll("Tadımlar", (from, to) =>
+      client
+        .from("tasting_feed")
+        .select("*")
+        .eq("visibility", "public")
+        .order("tasting_id")
+        .range(from, to),
+    ),
+    readAll("Demleme yöntemleri", (from, to) =>
+      client.from("brew_methods").select("*").order("sort_order").range(from, to),
+    ),
+  ]);
+  return { coffees, tastings, brewMethods };
+}

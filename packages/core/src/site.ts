@@ -7,6 +7,8 @@ export const siteConfig = {
   /** Canonical production URL. Apps may override it per deployment (e.g. preview URLs). */
   url: "https://espressoir.com",
   locale: "tr-TR",
+  /** "Today" for tasting dates is the calendar day in this time zone. */
+  timeZone: "Europe/Istanbul",
   /** Kept out of the i18n dictionary on purpose: it is part of the brand, not UI copy. */
   tagline: {
     tr: "Her fincanın bir hatırası var.",

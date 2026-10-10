@@ -12,13 +12,19 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "pnpm --filter @espressoir/web test:e2e",
+    "test:e2e:offline": "tsx scripts/offline-snapshot.ts --file scripts/notion/fixtures/sample-export.csv && ARCHIVE_SNAPSHOT=1 pnpm --filter @espressoir/web build && ARCHIVE_SNAPSHOT=1 pnpm --filter @espressoir/web test:e2e",
     "check": "turbo run lint typecheck test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:new": "supabase migration new",
     "db:push:dev": "tsx scripts/db-push.ts --env dev",
     "db:push:prod": "tsx scripts/db-push.ts --env prod",
-    "types:gen": "tsx scripts/gen-types.ts"
+    "types:gen": "tsx scripts/gen-types.ts",
+    "import:notion": "tsx scripts/import-notion.ts",
+    "seed:dev": "tsx scripts/import-notion.ts --env dev --file scripts/notion/fixtures/sample-export.csv",
+    "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",
+    "snapshot:offline": "tsx scripts/offline-snapshot.ts",
+    "dev:offline": "pnpm snapshot:offline && ARCHIVE_SNAPSHOT=1 turbo run dev --filter=@espressoir/web"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

@@ -9,14 +9,19 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.3"
+    "@espressoir/core": "workspace:*",
+    "@supabase/supabase-js": "^2.117.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@espressoir/config": "workspace:*",
     "eslint": "^9.39.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
   }
 }

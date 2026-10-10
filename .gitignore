@@ -27,9 +27,15 @@ test-results/
 blob-report/
 /playwright/.cache/
 
+# personal Notion export and import reports stay on the owner's machine
+/data/
+
 # misc
 .DS_Store
 *.pem
 npm-debug.log*
 pnpm-debug.log*
 .vercel
+
+# local Claude Code launch config
+.claude/

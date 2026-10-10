@@ -1,5 +1,6 @@
 import { siteConfig } from "@espressoir/core";
 import { cacheLife } from "next/cache";
+import Link from "next/link";
 
 import { format, t } from "@/lib/i18n";
 
@@ -20,7 +21,17 @@ export function SiteFooter() {
         <span>
           {siteConfig.name} — {siteConfig.tagline.tr.toLocaleLowerCase("tr")}
         </span>
-        <CopyrightLine />
+        <span className="flex gap-4">
+          {/* The way in for people with an account; visitors are sent to the login page. */}
+          <Link
+            href="/panel"
+            prefetch={false}
+            className="underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            {t.nav.panel}
+          </Link>
+          <CopyrightLine />
+        </span>
       </div>
     </footer>
   );

@@ -3,6 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -13,13 +14,11 @@ const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
   { href: "/hakkinda", label: t.nav.about },
 ];
 
-export function NavLinks({ className }: { className?: string }) {
-  const pathname = usePathname();
-
+function NavLinkList({ pathname, className }: { pathname: string | null; className?: string }) {
   return (
     <ul className={cn("flex items-center gap-5", className)}>
       {NAV_ITEMS.map(({ href, label }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
+        const active = pathname !== null && (pathname === href || pathname.startsWith(`${href}/`));
         return (
           <li key={href}>
             <Link
@@ -36,5 +35,22 @@ export function NavLinks({ className }: { className?: string }) {
         );
       })}
     </ul>
+  );
+}
+
+function CurrentNavLinks({ className }: { className?: string }) {
+  return <NavLinkList pathname={usePathname()} className={className} />;
+}
+
+/**
+ * The main links, with the current section underlined. Which section is current depends
+ * on the URL, which a page shell prerendered for an unknown URL does not have yet; the
+ * fallback shows the same links without a marker until it is known.
+ */
+export function NavLinks({ className }: { className?: string }) {
+  return (
+    <Suspense fallback={<NavLinkList pathname={null} className={className} />}>
+      <CurrentNavLinks className={className} />
+    </Suspense>
   );
 }
