@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch cancels the older run (saves Actions minutes).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  checks:
+    name: Format · Lint · Typecheck · Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm turbo run lint typecheck test
+
+  database:
+    name: Migrations on a fresh Supabase Postgres
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LOCAL_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres?sslmode=disable
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Docker runs here on GitHub's machine, never on a developer laptop.
+      - name: Start local Supabase Postgres (applies all migrations from scratch)
+        run: pnpm exec supabase db start
+      - name: Every migration rolls back and re-applies
+        run: scripts/verify-migrations.sh "$LOCAL_DB_URL"
+      - name: Generated DB types match the migrations
+        run: |
+          pnpm types:gen --db-url "$LOCAL_DB_URL"
+          git diff --exit-code -- packages/db/src/database.types.ts \
+            || (echo "::error::database.types.ts is stale. Run 'pnpm types:gen' and commit it." && exit 1)
+      - if: always()
+        run: pnpm exec supabase stop --no-backup || true
+
+  e2e:
+    name: Build · E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm --filter @espressoir/web exec playwright install --with-deps chromium
+      - run: pnpm turbo run build --filter=@espressoir/web
+      - run: pnpm test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
