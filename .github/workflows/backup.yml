@@ -1,0 +1,56 @@
+name: Backup (prod database)
+
+# Supabase Free has no automatic backups, so this takes one every week: a pg_dump of the
+# live database, encrypted before it leaves the runner and kept as a workflow artifact.
+# Setup and restore steps: docs/backup.md
+
+on:
+  schedule:
+    - cron: "17 3 * * 1" # Mondays 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    name: Encrypted pg_dump
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check that the backup is configured
+        run: |
+          if [ -z "$PROD_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::PROD_DB_URL and BACKUP_PASSPHRASE repository secrets are required (docs/backup.md)."
+            exit 1
+          fi
+      # The dump holds accounts and private tastings: it is only ever written encrypted.
+      # pg_dump comes from the postgres:17 image so its version matches the server's.
+      - name: Dump and encrypt
+        run: |
+          set -euo pipefail
+          file="espressoir-prod-$(date -u +%Y-%m-%d).dump.gpg"
+          docker run --rm -e PROD_DB_URL postgres:17 \
+            sh -c 'pg_dump "$PROD_DB_URL" --format=custom --no-owner --no-privileges --schema=public --schema=auth' \
+            | gpg --batch --symmetric --cipher-algo AES256 --passphrase-fd 3 --output "$file" 3<<<"$BACKUP_PASSPHRASE"
+          bytes="$(stat -c %s "$file")"
+          if [ "$bytes" -lt 1024 ]; then
+            echo "::error::The dump is suspiciously small ($bytes bytes)."
+            exit 1
+          fi
+          echo "BACKUP_FILE=$file" >> "$GITHUB_ENV"
+          echo "Backup: $file ($bytes bytes)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 90
+          if-no-files-found: error
+          compression-level: 0

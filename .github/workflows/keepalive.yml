@@ -1,0 +1,43 @@
+name: Keepalive (Supabase)
+
+# A Supabase Free project is paused after 7 days without activity. Twice a week this asks
+# each project's API for one row, which counts as activity, so neither the live site nor
+# preview builds find their database asleep.
+# Uses repository *variables* (public values): docs/backup.md
+
+on:
+  schedule:
+    - cron: "23 5 * * 2,5" # Tuesdays and Fridays 05:23 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Ping ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: prod
+            url: ${{ vars.PROD_SUPABASE_URL }}
+            key: ${{ vars.PROD_SUPABASE_PUBLISHABLE_KEY }}
+          - target: dev
+            url: ${{ vars.DEV_SUPABASE_URL }}
+            key: ${{ vars.DEV_SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - name: Read one row through the API
+        env:
+          SUPABASE_URL: ${{ matrix.url }}
+          SUPABASE_KEY: ${{ matrix.key }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::warning::${{ matrix.target }} is not configured (repository variables); skipped."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 30 \
+            -H "apikey: $SUPABASE_KEY" \
+            "$SUPABASE_URL/rest/v1/brew_methods?select=slug&limit=1"
+          echo

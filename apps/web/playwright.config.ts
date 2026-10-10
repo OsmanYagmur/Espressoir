@@ -18,8 +18,16 @@ export default defineConfig({
     launchOptions: executablePath ? { executablePath } : {},
   },
   projects: [
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", use: { ...devices["Pixel 7"] }, testIgnore: /panel\.spec/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /panel\.spec/ },
+    // The signed-in tests add data, which the public tests' exact counts would trip over,
+    // so they run once (on a phone, where tastings are mostly entered) after the others.
+    {
+      name: "signed-in",
+      use: { ...devices["Pixel 7"] },
+      testMatch: /panel\.spec/,
+      dependencies: ["mobile", "desktop"],
+    },
   ],
   // Runs against a production build (`pnpm build` first), the same output Vercel serves.
   webServer: process.env.E2E_BASE_URL

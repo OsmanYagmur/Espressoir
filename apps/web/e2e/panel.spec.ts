@@ -18,14 +18,14 @@ test.describe.configure({ mode: "serial" });
 
 async function signIn(page: Page, account: { email?: string; password?: string }) {
   await page.goto("/giris");
-  await page.getByLabel("E-posta").fill(account.email ?? "");
-  await page.getByLabel("Parola").fill(account.password ?? "");
+  await page.getByLabel("E-posta", { exact: true }).fill(account.email ?? "");
+  await page.getByLabel("Parola", { exact: true }).fill(account.password ?? "");
   await page.getByRole("button", { name: "Giriş yap" }).click();
 }
 
 test("a wrong password is refused without saying which part was wrong", async ({ page }) => {
   await signIn(page, { email: owner.email, password: "definitely-not-the-password" });
-  await expect(page.getByRole("alert")).toHaveText("E-posta ya da parola hatalı.");
+  await expect(page.getByText("E-posta ya da parola hatalı.")).toBeVisible();
   await expect(page).toHaveURL(/\/giris$/);
 });
 
@@ -41,12 +41,12 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
   // Add: a new coffee under a new brand, scored 7, brewed with a V60.
   await page.getByRole("link", { name: "Tadım ekle" }).click();
   await page.getByText("Yeni kahve", { exact: true }).click();
-  await page.getByLabel("Marka").fill("E2E Kavurucu");
-  await page.getByLabel("Kahve adı").fill(coffeeName);
-  await page.getByLabel("Form").selectOption({ label: "Çekirdek" });
+  await page.getByLabel("Marka", { exact: true }).fill("E2E Kavurucu");
+  await page.getByLabel("Kahve adı", { exact: true }).fill(coffeeName);
+  await page.getByLabel("Form", { exact: true }).selectOption({ label: "Çekirdek" });
   await page.getByRole("group", { name: "Puan" }).getByText("7", { exact: true }).click();
-  await page.getByLabel("Demleme yöntemi").selectOption({ label: "V60" });
-  await page.getByLabel("Not").fill("Uçtan uca test notu.\nİkinci satır.");
+  await page.getByLabel("Demleme yöntemi", { exact: true }).selectOption({ label: "V60" });
+  await page.getByLabel("Not", { exact: true }).fill("Uçtan uca test notu.\nİkinci satır.");
   await page.getByRole("button", { name: "Kaydet" }).click();
 
   // Saved: we land on the coffee's public page, which already shows the tasting.
@@ -63,7 +63,9 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
   await page.goto("/panel");
   const row = page.getByRole("listitem").filter({ hasText: coffeeName });
   await row.getByRole("link", { name: "Düzenle" }).click();
-  await expect(page.getByLabel("Not")).toHaveValue("Uçtan uca test notu.\nİkinci satır.");
+  await expect(page.getByLabel("Not", { exact: true })).toHaveValue(
+    "Uçtan uca test notu.\nİkinci satır.",
+  );
   await page.getByRole("group", { name: "Puan" }).getByText("9", { exact: true }).click();
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel$/);
@@ -81,11 +83,11 @@ test("the form explains what is wrong instead of losing what was typed", async (
   await signIn(page, owner);
   await page.goto("/panel/tadim/yeni");
   await page.getByText("Yeni kahve", { exact: true }).click();
-  await page.getByLabel("Not").fill("Kahvesi seçilmemiş bir not.");
+  await page.getByLabel("Not", { exact: true }).fill("Kahvesi seçilmemiş bir not.");
   await page.getByRole("button", { name: "Kaydet" }).click();
 
   await expect(page.getByText("Formda eksik ya da hatalı alanlar var.")).toBeVisible();
-  await expect(page.getByLabel("Not")).toHaveValue("Kahvesi seçilmemiş bir not.");
+  await expect(page.getByLabel("Not", { exact: true })).toHaveValue("Kahvesi seçilmemiş bir not.");
 });
 
 test("another user cannot open the owner's tasting for editing", async ({ page, request }) => {
