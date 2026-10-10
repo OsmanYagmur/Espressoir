@@ -25,11 +25,13 @@ export const BRAND_ALIASES: Readonly<Record<string, string>> = {
 /** Confirmed typos in coffee names: as written → corrected. */
 export const COFFEE_NAME_FIXES: Readonly<Record<string, string>> = {
   "Papua New Guine": "Papua New Guinea",
+  // Confirmed by the owner on 2026-10-10 (the product is Starbucks "Creamy Vanilla").
+  "Creamy Vanilia": "Creamy Vanilla",
 };
 
 /** Possible typos in coffee names. Only listed in the report, never applied. */
 export const COFFEE_NAME_SUGGESTIONS: Readonly<Record<string, string>> = {
-  "Creamy Vanilia": "Creamy Vanilla",
+  // Left as written by the owner's choice: the real product name was not verified.
   "Rich Aroma Vivio&Spicy": "Rich Aroma Vivid&Spicy",
 };
 
@@ -84,11 +86,12 @@ export const ORIGIN_TERMS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Proofreading suggestions for tasting notes. Notes are imported exactly as written; these
- * only produce a "before → after" list in the report for the owner to accept or ignore.
+ * Spelling fixes applied to tasting notes: this exact word list was reviewed and approved by
+ * the owner on 2026-10-10. Nothing else in a note is touched (no rephrasing, no added
+ * punctuation); every changed note is listed "before → after" in the report.
  * Each pattern matches whole words (Turkish letters included).
  */
-export const NOTE_SUGGESTIONS: ReadonlyArray<readonly [pattern: string, replacement: string]> = [
+export const NOTE_FIXES: ReadonlyArray<readonly [pattern: string, replacement: string]> = [
   ["bi", "bir"],
   ["bişey", "bir şey"],
   ["tad", "tat"],

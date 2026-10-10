@@ -3,7 +3,11 @@ import type { Finding, ImportPlan, Section } from "./plan";
 
 const SECTIONS: ReadonlyArray<readonly [Section, title: string, intro: string]> = [
   ["merged", "Birleştirilen markalar", "Aynı markanın farklı yazımları tek markada toplandı."],
-  ["fixed", "Düzeltilen adlar", "Onaylı yazım düzeltmeleri (scripts/notion/rules.ts)."],
+  [
+    "fixed",
+    "Yazım düzeltmeleri",
+    "Senin onayladığın düzeltmeler: kahve adları ve notlardaki kelimeler (scripts/notion/rules.ts).",
+  ],
   [
     "inferred",
     "Çıkarımlar",
@@ -20,8 +24,8 @@ const SECTIONS: ReadonlyArray<readonly [Section, title: string, intro: string]> 
   ["skipped", "Atlanan satırlar", "Bu satırlar içe aktarılmadı."],
   [
     "suggestion",
-    "Yazım önerileri",
-    "Notlar yazıldığı gibi aktarıldı. Aşağıdakiler yalnızca öneri; onayladıklarını panelden düzeltebilirsin.",
+    "Emin olunamayan adlar",
+    "Yazım hatası olabilir ama doğrulanmadı; yazdığın gibi aktarıldı.",
   ],
 ];
 

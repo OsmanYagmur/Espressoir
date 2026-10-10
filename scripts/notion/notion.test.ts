@@ -167,21 +167,38 @@ describe("buildImportPlan", () => {
     ]);
   });
 
-  it("fixes confirmed typos and only suggests the rest", () => {
+  it("applies the approved fixes and only suggests what was not confirmed", () => {
     const result = plan(
-      'Starbucks,"October 12, 2025",,yumuşak bi kahve,Papua New Guıne,8,V60,Milled',
-      'Starbucks,"July 8, 2025",5,,Creamy Vanilia,8,Nespresso C30,Capsule',
+      'Starbucks,"October 12, 2025",,"yumuşak bi kahve , gövdesi gaywt iyi ",Papua New Guıne,8,V60,Milled',
+      'Starbucks,"July 8, 2025",5,Vanilya tadında bi kapsül,Creamy Vanilia,8,Nespresso C30,Capsule',
+      "Davidoff,,10,,Rich Aroma Vivio&Spicy,,Nespresso C30,Capsule",
+      'Tchibo,"March 5, 2023",,Tadı güzel; biraz bitter.,Gold Selection,6,V60,Milled',
     );
     expect(result.coffees.map((c) => [c.name, c.slug, c.originCountry])).toEqual([
       ["Papua New Guinea", "papua-new-guinea", "PG"],
-      ["Creamy Vanilia", "creamy-vanilia", null],
+      ["Creamy Vanilla", "creamy-vanilla", null],
+      // Not confirmed, so it stays as written.
+      ["Rich Aroma Vivio&Spicy", "rich-aroma-vivio-spicy", null],
+      ["Gold Selection", "gold-selection", null],
     ]);
-    // The note itself is imported untouched.
-    expect(result.tastings[0]!.notes).toBe("yumuşak bi kahve");
-    expect(messages(result, "fixed")).toHaveLength(1);
+
+    // Notes: only the approved words and stray spacing change…
+    expect(result.tastings.map((t) => t.notes)).toEqual([
+      "yumuşak bir kahve, gövdesi gayet iyi",
+      "Vanilya tadında bir kapsül",
+      null,
+      // …and words that merely contain them ("Tadı", "biraz", "bitter") are left alone.
+      "Tadı güzel; biraz bitter.",
+    ]);
+
+    expect(messages(result, "fixed")).toEqual([
+      'Kahve adı düzeltildi: "Papua New Guıne" → "Papua New Guinea".',
+      "Starbucks / Papua New Guinea: not düzeltildi\n  - önce: yumuşak bi kahve , gövdesi gaywt iyi\n  - sonra: yumuşak bir kahve, gövdesi gayet iyi",
+      'Kahve adı düzeltildi: "Creamy Vanilia" → "Creamy Vanilla".',
+      "Starbucks / Creamy Vanilla: not düzeltildi\n  - önce: Vanilya tadında bi kapsül\n  - sonra: Vanilya tadında bir kapsül",
+    ]);
     expect(messages(result, "suggestion")).toEqual([
-      'Kahve adı: "Creamy Vanilia" → "Creamy Vanilla" olabilir mi? (uygulanmadı)',
-      "Starbucks / Papua New Guinea:\n  - şimdi: yumuşak bi kahve\n  - öneri: yumuşak bir kahve",
+      'Kahve adı: "Rich Aroma Vivio&Spicy" → "Rich Aroma Vivid&Spicy" olabilir mi? (uygulanmadı)',
     ]);
   });
 

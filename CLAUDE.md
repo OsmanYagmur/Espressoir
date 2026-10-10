@@ -102,7 +102,9 @@ data/                        owner's Notion export + reports (git-ignored)
 - `fold_tr()` (SQL) and `foldTurkish()` (TS) must stay identical; slugs use `slugify()`.
 - Notion import (`scripts/notion/`): pure plan (`plan.ts`) → transactional apply (`apply.ts`);
   insert-only and idempotent via `tastings.source_ref`; everything it "knows" lives in
-  `rules.ts`; unreadable values stay null and are reported. Never invent values.
+  `rules.ts`; unreadable values stay null and are reported. Never invent values. Notes are
+  imported as written except for the owner-approved word list `NOTE_FIXES` (reported
+  before → after); add to it only with the owner's say-so.
 - Migrations: forward-only files + hand-written `supabase/rollbacks/<same-name>.down.sql`; never
   edit an applied migration; expand → migrate → contract (old app versions stay in the wild);
   version RPCs (`_v2`) instead of changing signatures. Regenerate types after each migration
