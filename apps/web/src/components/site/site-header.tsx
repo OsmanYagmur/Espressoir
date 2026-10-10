@@ -1,3 +1,4 @@
+import { siteConfig } from "@espressoir/core";
 import Link from "next/link";
 
 import { t } from "@/lib/i18n";
@@ -12,7 +13,7 @@ export function SiteHeader() {
       <div className="flex flex-wrap items-center justify-between gap-y-1 border-b-2 border-rule py-2.5">
         <Link
           href="/"
-          aria-label={t.nav.home}
+          aria-label={`${siteConfig.name} — ${t.nav.home}`}
           className="py-1 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <Wordmark />

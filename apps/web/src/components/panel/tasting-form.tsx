@@ -351,7 +351,7 @@ export function TastingForm({
       </div>
 
       <details className="border-b border-border" open={hasDetails || undefined}>
-        <summary className="cursor-pointer py-4 font-mono text-xs font-semibold tracking-wide uppercase focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none">
+        <summary className="cursor-pointer py-4 font-mono text-xs font-medium tracking-wide uppercase focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none">
           03 — {f.detailsSection}
         </summary>
         <div className="grid gap-5 pb-5">

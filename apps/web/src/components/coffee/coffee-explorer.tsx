@@ -229,7 +229,7 @@ export function CoffeeExplorer({
       </div>
 
       {visible.length > 0 ? (
-        <CoffeeList coffees={visible} view={view} label={t.coffees.title} />
+        <CoffeeList coffees={visible} view={view} heading="h2" label={t.coffees.title} />
       ) : (
         <p className="border-b border-border py-10 text-muted-foreground">{t.coffees.empty}</p>
       )}

@@ -20,7 +20,7 @@ import { brandPath, coffeePath } from "@/lib/routes";
 type Props = PageProps<"/marka/[slug]">;
 
 const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+  "inline-block py-1.5 underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
 export async function generateStaticParams() {
   const brands = brandSummaries(await getArchive());

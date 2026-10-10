@@ -61,9 +61,20 @@ Alan adı Squarespace'te kayıtlı. Squarespace'in DNS'ini kullanmaya devam edip
 Domain bağlandıktan sonra:
 
 - Kod tarafında ek bir şey gerekmiyor; site adresi Vercel'in production domain değişkeninden otomatik okunuyor.
-- Supabase prod → Authentication → URL Configuration → Site URL: `https://espressoir.com` (Faz 1'de giriş eklenince).
+- Supabase prod → Authentication → URL Configuration → Site URL: `https://espressoir.com`.
 
 ## Hobby notları
 
 - Hobby yalnızca kişisel, ticari olmayan kullanım içindir. Reklam, sponsor veya ücretli üyelik gelirse Pro'ya geçmek gerekir. Mimari buna hazır, kod değişikliği gerekmez.
 - Limit aşılırsa fatura çıkmaz, ilgili özellik o ay için durur.
+
+## Faz 1'i canlıya alma sırası
+
+Site artık derlenirken veritabanını okuyor. Sıra önemli: **önce veritabanı, sonra kod.**
+
+1. `pnpm db:push:prod` (şema), `pnpm admin:bootstrap --env prod` (hesabın), `pnpm import:notion --env prod` (arşiv). Ayrıntılar: [`setup-supabase.md`](./setup-supabase.md), 5–7. adımlar.
+2. Vercel'de **Production** ortam değişkenlerinin prod projesini gösterdiğini doğrula (yukarıdaki tablo).
+3. PR'ı `main`'e merge et; Vercel derleyip yayınlar. Migration uygulanmamış bir veritabanına karşı derleme **başarısız olur** (bilerek: boş ya da yanlış bir site yayınlanmasın).
+4. Önizleme (Preview) derlemeleri dev projesini okur; dev'e de aynı üç adımı uygula.
+
+Sitede bir tadım ekleyip düzenlediğinde ilgili sayfalar hemen yenilenir. Veritabanını başka bir yoldan değiştirirsen (import, SQL) sayfalar en geç bir saat içinde kendini günceller.

@@ -24,8 +24,9 @@ type Props = PageProps<"/kahve/[marka]/[kahve]">;
 
 const SIMILAR_COUNT = 4;
 
+// py-1.5 makes the small breadcrumb links tall enough to tap.
 const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+  "inline-block py-1.5 underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
 // Every coffee gets its own prerendered page. A coffee added later is rendered on its
 // first visit and stored. The placeholder keeps an empty archive buildable (it renders
@@ -252,13 +253,14 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
               <SectionHeading index={++section} title={t.coffeeDetail.detailsTitle} />
               <dl className="font-mono text-[0.8rem]">
                 {rows.map((row) => (
-                  <div key={row.label} className="border-b border-border py-2">
-                    <div className="flex items-baseline justify-between gap-4">
-                      <dt className="text-muted-foreground">{row.label}</dt>
-                      <dd className="text-right font-medium">{row.value}</dd>
-                    </div>
+                  <div
+                    key={row.label}
+                    className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-border py-2"
+                  >
+                    <dt className="text-muted-foreground">{row.label}</dt>
+                    <dd className="text-right font-medium">{row.value}</dd>
                     {row.hint ? (
-                      <dd className="mt-0.5 text-xs text-muted-foreground">{row.hint}</dd>
+                      <dd className="mt-0.5 w-full text-xs text-muted-foreground">{row.hint}</dd>
                     ) : null}
                   </div>
                 ))}

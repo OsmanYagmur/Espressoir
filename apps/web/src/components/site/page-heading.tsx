@@ -26,7 +26,7 @@ export function PageHeading({
       )}
     >
       <div>
-        {kicker ? <div className="label-caps mb-3 text-muted-foreground">{kicker}</div> : null}
+        {kicker ? <div className="label-caps mb-1.5 text-muted-foreground">{kicker}</div> : null}
         <h1
           className={cn(
             "font-wide leading-[0.9] font-extrabold tracking-[-0.03em]",

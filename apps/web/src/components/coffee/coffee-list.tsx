@@ -47,11 +47,14 @@ export function CoffeeList({
   coffees,
   view = "list",
   showBrand = true,
+  heading: Heading = "h3",
   label,
 }: {
   coffees: readonly CoffeeCard[];
   view?: "list" | "cards";
   showBrand?: boolean;
+  /** The level that fits the page outline: "h2" when the list hangs directly under the title. */
+  heading?: "h2" | "h3";
   label: string;
 }) {
   if (view === "cards") {
@@ -70,16 +73,19 @@ export function CoffeeList({
                 {showBrand ? (
                   <Link
                     href={brandPath(coffee.brandSlug)}
-                    className={cn("font-mono text-xs text-muted-foreground", linkFocus)}
+                    className={cn(
+                      "inline-block py-1 font-mono text-xs text-muted-foreground",
+                      linkFocus,
+                    )}
                   >
                     {coffee.brandName}
                   </Link>
                 ) : null}
-                <h3 className="font-semiwide text-xl leading-tight font-bold [overflow-wrap:anywhere]">
+                <Heading className="font-semiwide text-xl leading-tight font-bold [overflow-wrap:anywhere]">
                   <Link href={coffee.href} className={linkFocus}>
                     {coffee.name}
                   </Link>
-                </h3>
+                </Heading>
               </div>
               <ScoreBadge score={coffee.avgScore} />
             </div>
@@ -106,16 +112,19 @@ export function CoffeeList({
             {showBrand ? (
               <Link
                 href={brandPath(coffee.brandSlug)}
-                className={cn("font-mono text-xs text-muted-foreground", linkFocus)}
+                className={cn(
+                  "inline-block py-1 font-mono text-xs text-muted-foreground",
+                  linkFocus,
+                )}
               >
                 {coffee.brandName}
               </Link>
             ) : null}
-            <h3 className="font-semiwide text-lg leading-snug font-bold [overflow-wrap:anywhere]">
+            <Heading className="font-semiwide text-lg leading-snug font-bold [overflow-wrap:anywhere]">
               <Link href={coffee.href} className={linkFocus}>
                 {coffee.name}
               </Link>
-            </h3>
+            </Heading>
             <p className="mt-0.5 font-mono text-xs text-muted-foreground">
               {facts(coffee).join(" · ") || t.coffee.unknown}
             </p>

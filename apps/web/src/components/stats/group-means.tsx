@@ -127,7 +127,7 @@ export function GroupMeans({
                 />
               </span>
             </td>
-            <td className="py-2.5 pl-2 text-right text-sm font-semibold tabular-nums">
+            <td className="py-2.5 pl-2 text-right text-sm font-medium tabular-nums">
               {formatDecimal(row.mean!)}
             </td>
           </tr>

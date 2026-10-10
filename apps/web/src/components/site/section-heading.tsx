@@ -18,7 +18,7 @@ export function SectionHeading({
     <h2
       id={id}
       className={cn(
-        "flex items-baseline justify-between gap-4 border-b border-rule pt-4 pb-2.5 font-mono text-xs font-semibold tracking-wide uppercase",
+        "flex items-baseline justify-between gap-4 border-b border-rule pt-4 pb-2.5 font-mono text-xs font-medium tracking-wide uppercase",
         className,
       )}
     >

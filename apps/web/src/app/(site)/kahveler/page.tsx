@@ -52,7 +52,7 @@ export default async function CoffeesPage() {
               <p className="border-b border-rule py-3 font-mono text-xs">
                 {format(t.coffees.resultCount, { count: coffees.length })}
               </p>
-              <CoffeeList coffees={coffees} label={t.coffees.title} />
+              <CoffeeList coffees={coffees} heading="h2" label={t.coffees.title} />
             </div>
           }
         >
