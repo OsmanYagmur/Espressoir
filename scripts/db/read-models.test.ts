@@ -24,7 +24,7 @@ beforeAll(async () => {
   db = await createTestDb();
 });
 afterAll(async () => {
-  await db.close();
+  await db?.close();
 });
 
 describe("database ↔ app contract", () => {

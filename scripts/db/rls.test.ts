@@ -18,7 +18,7 @@ beforeAll(async () => {
   db = await createTestDb();
 });
 afterAll(async () => {
-  await db.close();
+  await db?.close();
 });
 
 beforeEach(async () => {
