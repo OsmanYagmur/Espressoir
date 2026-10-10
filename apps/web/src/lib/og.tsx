@@ -21,34 +21,45 @@ export const OG_COLORS = {
   white: "#ffffff",
 } as const;
 
-// Each subset is registered under its own name and the two are listed as fallbacks of one
-// another: registering both under one name makes the renderer use only the first.
-const FONT_FILES = [
-  ["Archivo", 800, "@fontsource/archivo/files/archivo-latin-800-normal.woff"],
-  // latin-ext carries the Turkish letters (İ, ı, ş, ğ).
-  ["Archivo Ext", 800, "@fontsource/archivo/files/archivo-latin-ext-800-normal.woff"],
-  ["Plex Mono", 500, "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff"],
-  ["Plex Mono Ext", 500, "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-ext-500-normal.woff"],
-] as const;
-
 export const OG_FONTS = {
   display: '"Archivo", "Archivo Ext"',
   mono: '"Plex Mono", "Plex Mono Ext"',
 } as const;
 
+// The font files live inside the app (src/assets/fonts) and are read by literal paths, so
+// the build can see them and ship them with every server function. They used to be read
+// from node_modules: under pnpm that path is a symlink, which a Vercel function does not
+// contain, and since Next.js loads this module for every page's metadata, the missing
+// files took all on-demand pages down with them (not just the images).
+const font = (file: string) => readFile(join(process.cwd(), "src/assets/fonts", file));
+
 // Read once, when the module loads: the fonts never depend on the request, and keeping
 // file access out of the image functions lets the images be generated at build time.
-const fontData = await Promise.all(
-  FONT_FILES.map(async ([name, weight, file]) => ({
-    name,
-    weight,
-    style: "normal" as const,
-    data: await readFile(join(process.cwd(), "node_modules", file)),
-  })),
+// A failure here must never break a page, so it is held back until an image asks.
+//
+// Each subset is registered under its own name and the two are listed as fallbacks of one
+// another: registering both under one name makes the renderer use only the first.
+// latin-ext carries the Turkish letters (İ, ı, ş, ğ).
+const fonts = await Promise.all([
+  font("archivo-latin-800-normal.woff"),
+  font("archivo-latin-ext-800-normal.woff"),
+  font("ibm-plex-mono-latin-500-normal.woff"),
+  font("ibm-plex-mono-latin-ext-500-normal.woff"),
+]).then(
+  ([archivo, archivoExt, plexMono, plexMonoExt]) => [
+    { name: "Archivo", weight: 800 as const, style: "normal" as const, data: archivo },
+    { name: "Archivo Ext", weight: 800 as const, style: "normal" as const, data: archivoExt },
+    { name: "Plex Mono", weight: 500 as const, style: "normal" as const, data: plexMono },
+    { name: "Plex Mono Ext", weight: 500 as const, style: "normal" as const, data: plexMonoExt },
+  ],
+  (error: unknown) => (error instanceof Error ? error : new Error(String(error))),
 );
 
 export function loadOgFonts() {
-  return fontData;
+  if (fonts instanceof Error) {
+    throw new Error(`Share-image fonts could not be read: ${fonts.message}`);
+  }
+  return fonts;
 }
 
 /** The card frame: wordmark on top, a label on the right, the site address at the bottom. */

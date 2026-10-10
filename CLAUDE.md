@@ -97,6 +97,11 @@ data/                        owner's Notion export + reports (git-ignored)
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
 - No secret/service key at app runtime; only in local scripts. Vercel gets URL + publishable key.
+- Files read at runtime must be real files inside `apps/web`, read by literal path (the share-image
+  fonts: `src/assets/fonts`, also listed in `outputFileTracingIncludes`). Never read through
+  `node_modules`: under pnpm that is a symlink a Vercel function does not contain. Next loads
+  `opengraph-image` modules for every page's metadata, so a throw at their module scope breaks
+  all on-demand pages, not just the image: keep such loads guarded (`lib/og.tsx`).
 - Workspace packages ship TS source (`transpilePackages`); keep `core`/`db`/`i18n` free of Next
   and DOM APIs so Expo can reuse them.
 - `fold_tr()` (SQL) and `foldTurkish()` (TS) must stay identical; slugs use `slugify()`.
