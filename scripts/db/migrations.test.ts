@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyMigrations, createEmbeddedPostgres, listMigrations } from "../lib/test-db";
+import { applyMigrations, createEmbeddedPostgres, listMigrations } from "../lib/postgres";
 
 /** Everything our migrations own, as comparable strings. */
 const SNAPSHOT_SQL = `

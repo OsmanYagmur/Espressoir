@@ -184,6 +184,12 @@ importers:
       '@espressoir/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@espressoir/db':
+        specifier: workspace:*
+        version: link:../packages/db
+      '@supabase/supabase-js':
+        specifier: ^2.117.3
+        version: 2.117.3
       pg:
         specifier: ^8.23.1
         version: 8.23.1

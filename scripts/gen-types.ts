@@ -12,7 +12,7 @@ import { promisify } from "node:util";
 import { PGLiteSocketServer } from "@electric-sql/pglite-socket";
 
 import { repoRoot } from "./lib/target-env";
-import { applyMigrations, createEmbeddedPostgres } from "./lib/test-db";
+import { applyMigrations, createEmbeddedPostgres } from "./lib/postgres";
 
 const OUTPUT = resolve(repoRoot, "packages/db/src/database.types.ts");
 const EMBEDDED_PORT = 54329;

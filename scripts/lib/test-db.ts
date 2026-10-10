@@ -1,28 +1,22 @@
 /**
  * Database for tests. By default an in-process Postgres (PGlite) with the Supabase shim and
- * every migration applied: no Docker, no cloud project, a fresh database per test file.
+ * every migration applied: a fresh database per test file, no Docker, no cloud project.
  * With TEST_DB_URL set (CI), the same tests run against a real Supabase Postgres whose
  * migrations are already applied.
  *
  * Each test runs inside a transaction that is rolled back, so tests never see each other.
  */
 import { randomUUID } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 
-import { PGlite } from "@electric-sql/pglite";
-import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
-import { unaccent } from "@electric-sql/pglite/contrib/unaccent";
-import pg from "pg";
+import {
+  applyMigrations,
+  connectPostgres,
+  createEmbeddedPostgres,
+  type Queryable,
+  type Row,
+} from "./postgres";
 
-import { repoRoot } from "./target-env";
-
-export type Row = Record<string, unknown>;
-
-/** The two calls the importer and the tests need; both PGlite and node-postgres provide them. */
-export interface Queryable {
-  query(text: string, params?: unknown[]): Promise<{ rows: Row[] }>;
-}
+export type { Queryable, Row } from "./postgres";
 
 interface Driver extends Queryable {
   exec(text: string): Promise<unknown>;
@@ -47,48 +41,10 @@ export interface TestDb extends Queryable {
   close(): Promise<void>;
 }
 
-const MIGRATIONS_DIR = resolve(repoRoot, "supabase/migrations");
-const ROLLBACKS_DIR = resolve(repoRoot, "supabase/rollbacks");
-const SHIM_FILE = resolve(repoRoot, "supabase/tests/local-shim.sql");
-
-export function listMigrations(): { name: string; up: string; down: string }[] {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((file) => file.endsWith(".sql"))
-    .sort()
-    .map((file) => {
-      const name = file.replace(/\.sql$/, "");
-      return {
-        name,
-        up: readFileSync(resolve(MIGRATIONS_DIR, file), "utf8"),
-        down: readFileSync(resolve(ROLLBACKS_DIR, `${name}.down.sql`), "utf8"),
-      };
-    });
-}
-
-/** A bare PGlite with the Supabase shim, before any migration. */
-export async function createEmbeddedPostgres(): Promise<PGlite> {
-  const db = new PGlite({ extensions: { pg_trgm, unaccent } });
-  await db.exec(readFileSync(SHIM_FILE, "utf8"));
-  return db;
-}
-
-export async function applyMigrations(db: { exec(text: string): Promise<unknown> }): Promise<void> {
-  for (const migration of listMigrations()) {
-    try {
-      await db.exec(migration.up);
-    } catch (error) {
-      throw new Error(`Migration ${migration.name} failed: ${(error as Error).message}`, {
-        cause: error,
-      });
-    }
-  }
-}
-
 async function createDriver(): Promise<{ driver: Driver; embedded: boolean }> {
   const url = process.env.TEST_DB_URL;
   if (url) {
-    const client = new pg.Client({ connectionString: url });
-    await client.connect();
+    const client = await connectPostgres(url);
     return {
       embedded: false,
       driver: {
