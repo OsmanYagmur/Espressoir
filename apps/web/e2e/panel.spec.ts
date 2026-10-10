@@ -12,6 +12,11 @@ const owner = { email: process.env.E2E_OWNER_EMAIL, password: process.env.E2E_OW
 const guest = { email: process.env.E2E_GUEST_EMAIL, password: process.env.E2E_GUEST_PASSWORD };
 const configured = Boolean(owner.email && owner.password && guest.email && guest.password);
 
+// The public API settings, sent the way supabase-js sends them.
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+const apiHeaders = { apikey: key, Authorization: `Bearer ${key}` };
+
 test.skip(!configured, "needs a Supabase with test accounts (E2E_* variables)");
 // One browser at a time: these tests write to the shared database.
 test.describe.configure({ mode: "serial" });
@@ -22,6 +27,15 @@ async function signIn(page: Page, account: { email?: string; password?: string }
   await page.getByLabel("Parola", { exact: true }).fill(account.password ?? "");
   await page.getByRole("button", { name: "Giriş yap" }).click();
 }
+
+test("registration is closed: the auth server refuses new accounts", async ({ request }) => {
+  const response = await request.post(`${url}/auth/v1/signup`, {
+    headers: apiHeaders,
+    data: { email: "intruder@example.test", password: "a-long-enough-password" },
+  });
+  expect(response.ok()).toBe(false);
+  expect(JSON.stringify(await response.json())).toMatch(/signup/i);
+});
 
 test("a wrong password is refused without saying which part was wrong", async ({ page }) => {
   await signIn(page, { email: owner.email, password: "definitely-not-the-password" });
@@ -92,10 +106,8 @@ test("the form explains what is wrong instead of losing what was typed", async (
 
 test("another user cannot open the owner's tasting for editing", async ({ page, request }) => {
   // Any public tasting of the owner will do; its id is public information.
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const response = await request.get(`${url}/rest/v1/tasting_feed?select=tasting_id&limit=1`, {
-    headers: { apikey: key ?? "" },
+    headers: apiHeaders,
   });
   const rows = (await response.json()) as { tasting_id: string }[];
   const tastingId = rows[0]?.tasting_id;

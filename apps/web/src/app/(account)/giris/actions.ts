@@ -26,9 +26,17 @@ export async function signIn(_previous: SignInState, formData: FormData): Promis
     const { error } = await supabase.auth.signInWithPassword(parsed.data);
     if (error) {
       // One message for "no such account" and "wrong password": never reveal which.
-      return { error: error.status === 400 ? t.auth.invalid : t.auth.failed, email };
+      // (Older auth servers send no code, only a 400.)
+      if (error.code === "invalid_credentials" || (!error.code && error.status === 400)) {
+        return { error: t.auth.invalid, email };
+      }
+      // Anything else is ours to fix (provider switched off, auth server down). The visitor
+      // gets a neutral message; the reason goes to the server log, without the credentials.
+      console.error("[auth] sign-in refused:", error.status, error.code, error.message);
+      return { error: t.auth.failed, email };
     }
-  } catch {
+  } catch (error) {
+    console.error("[auth] sign-in failed:", error instanceof Error ? error.message : error);
     return { error: t.auth.failed, email };
   }
   redirect("/panel");
