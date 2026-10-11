@@ -47,7 +47,7 @@ test("a member signs in with the code from the e-mail", async ({ page, request }
   await requestCode(page, guest.email!);
   const mail = await waitForMail(request, guest.email!, since);
   expect(mail.subject).toContain("Espressoir giriş kodun");
-  expect(mail.code).toMatch(/^\d{6}$/);
+  expect(mail.code).toMatch(/^\d{6,10}$/);
 
   // A wrong code is refused and the form stays where it is.
   await enterCode(page, mail.code === "000000" ? "111111" : "000000");

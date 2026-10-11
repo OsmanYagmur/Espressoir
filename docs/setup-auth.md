@@ -2,7 +2,7 @@
 
 Faz 2A ile giriş şöyle çalışıyor:
 
-- **E-posta kodu:** adresini yazan kişiye 6 haneli tek kullanımlık bir kod ve aynı işi gören bir bağlantı gider.
+- **E-posta kodu:** adresini yazan kişiye tek kullanımlık bir kod ve aynı işi gören bir bağlantı gider. Kodun kaç haneli olduğunu Supabase projesi belirler (bulut projelerinde 8, yerel test ortamında 6); site 6–10 haneyi kabul eder.
 - **Google:** isteğe bağlı ikinci yol.
 - **Parola:** yalnızca önceden parolası olan hesaplar (seninki) için duruyor; parolayla kayıt yok.
 - **Kayıt kapalı:** yeni hesap yalnızca davetle açılır (`pnpm user:invite`).
@@ -55,7 +55,7 @@ Supabase'in kendi e-posta servisi yalnızca proje ekibindeki adreslere yazar (sa
 
 ## 4. E-posta şablonları
 
-Supabase → **Authentication → Emails → Templates**. Üç şablonun içeriğini depodaki dosyalardan kopyala:
+Supabase → **Authentication → Emails → Templates**. Üç şablonun içeriğini depodaki dosyalardan kopyala. Terminalden panoya alırken Türkçe harflerin bozulmaması için: `LC_ALL=en_US.UTF-8 pbcopy < supabase/templates/magic-link.html`.
 
 | Şablon         | Konu                                   | İçerik dosyası                         |
 | -------------- | -------------------------------------- | -------------------------------------- |
@@ -100,7 +100,7 @@ Birden fazla adres yazılabilir. Davet edilen kişi bağlantıya tıklar, kullan
 
 **Bağlantı bir saat geçerlidir.** Davet kabul edilene kadar o kişinin hesabı yoktur; bu yüzden süresi dolan biri giriş sayfasından kod **isteyemez** (kayıt kapalı). Çözüm aynı komutu aynı adresle yeniden çalıştırmak: yeni bir bağlantı gider, eskisi geçersiz olur. Davet atmadan önce karşı tarafa haber vermek işi kolaylaştırır.
 
-Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP Expiration", en fazla 86400 saniye = 24 saat), ama bu ayar giriş kodlarını da kapsar: 6 haneli bir kodun 24 saat geçerli kalması tahmin edilmesini kolaylaştırır. Uzatacaksan aynı ekranda kod uzunluğunu 8'e çıkar.
+Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP Expiration", en fazla 86400 saniye = 24 saat), ama bu ayar giriş kodlarını da kapsar: kod ne kadar uzun süre geçerliyse tahmin edilmesi o kadar kolaylaşır. Uzatacaksan kod uzunluğunu 8'in altına indirme.
 
 İlk daveti göndermeden önce: repoyu private yap ve yedekleri kur ([`backup.md`](./backup.md)). Başkalarının verisi yedeksiz bir veritabanında durmamalı.
 
