@@ -231,6 +231,16 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
         }
       />
 
+      {coffee.isReviewed ? null : (
+        // Added by a member and not checked by an admin yet: say so, in words.
+        <p role="note" className="border-b border-rule py-3 font-mono text-xs leading-relaxed">
+          <span className="mr-2 border border-foreground px-1.5 py-0.5 uppercase">
+            {t.coffee.unreviewed}
+          </span>
+          {t.coffee.unreviewedNote}
+        </p>
+      )}
+
       <div className="grid md:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-labelledby="tadimlar" className="md:border-r md:border-rule md:pr-6">
           <SectionHeading id="tadimlar" index={++section} title={t.coffeeDetail.tastingsTitle} />
@@ -241,7 +251,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
           ) : (
             <ol aria-label={t.coffeeDetail.tastingsTitle}>
               {tastings.map((tasting) => (
-                <TastingItem key={tasting.id} tasting={tasting} />
+                <TastingItem key={tasting.id} tasting={tasting} showAuthor />
               ))}
             </ol>
           )}

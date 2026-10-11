@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils";
 
 import type { TastingFormState } from "@/app/(account)/panel/actions";
 
+import { CoffeePicker, SimilarCoffees, type CoffeeOption } from "./coffee-picker";
+
 const f = t.panel.form;
 const SCORES = Array.from({ length: SCORE_MAX - SCORE_MIN + 1 }, (_, i) => SCORE_MIN + i);
 const TASTE_LEVELS = Array.from({ length: TASTE_MAX - TASTE_MIN + 1 }, (_, i) => TASTE_MIN + i);
@@ -108,6 +110,13 @@ export function TastingForm({
   const [coffeeMode, setCoffeeMode] = useState(
     value("coffeeMode") || (options.coffees.length > 0 ? "existing" : "new"),
   );
+  // The coffee chosen from the catalog; after a failed submit it is found again by its id.
+  const [picked, setPicked] = useState<CoffeeOption | null>(
+    () => options.coffees.find((coffee) => coffee.id === value("coffeeId")) ?? null,
+  );
+  // Mirrors of the two "new coffee" names, for the duplicate check next to them.
+  const [brandName, setBrandName] = useState(value("brandName"));
+  const [coffeeName, setCoffeeName] = useState(value("coffeeName"));
   const [status, setStatus] = useState(value("status") || "logged");
   const [coffeeForm, setCoffeeForm] = useState(value("form"));
   const logged = status === "logged";
@@ -140,21 +149,16 @@ export function TastingForm({
               ]}
             />
             {coffeeMode === "existing" ? (
-              <Field label={f.chooseCoffee} htmlFor="coffeeId" error={error("coffeeId")}>
-                <Select
-                  id="coffeeId"
-                  name="coffeeId"
-                  defaultValue={value("coffeeId")}
-                  aria-invalid={Boolean(error("coffeeId"))}
-                >
-                  <option value="">{f.choosePlaceholder}</option>
-                  {options.coffees.map((coffee) => (
-                    <option key={coffee.id} value={coffee.id}>
-                      {coffee.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+              <CoffeePicker
+                catalog={options.coffees}
+                picked={picked}
+                onPick={setPicked}
+                onAddNew={(query) => {
+                  setCoffeeName(query);
+                  setCoffeeMode("new");
+                }}
+                error={error("coffeeId")}
+              />
             ) : (
               <>
                 <div className="grid gap-5 sm:grid-cols-2">
@@ -170,7 +174,8 @@ export function TastingForm({
                       list="brand-options"
                       autoComplete="off"
                       maxLength={BRAND_NAME_MAX_LENGTH}
-                      defaultValue={value("brandName")}
+                      value={brandName}
+                      onChange={(event) => setBrandName(event.target.value)}
                       aria-invalid={Boolean(error("brandName"))}
                     />
                     <datalist id="brand-options">
@@ -185,11 +190,21 @@ export function TastingForm({
                       name="coffeeName"
                       autoComplete="off"
                       maxLength={COFFEE_NAME_MAX_LENGTH}
-                      defaultValue={value("coffeeName")}
+                      value={coffeeName}
+                      onChange={(event) => setCoffeeName(event.target.value)}
                       aria-invalid={Boolean(error("coffeeName"))}
                     />
                   </Field>
                 </div>
+                <SimilarCoffees
+                  brandName={brandName}
+                  coffeeName={coffeeName}
+                  catalog={options.coffees}
+                  onPick={(coffee) => {
+                    setPicked(coffee);
+                    setCoffeeMode("existing");
+                  }}
+                />
                 <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
                   <Field label={f.form} htmlFor="form" className="col-span-2 sm:col-span-1">
                     <Select

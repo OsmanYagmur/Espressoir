@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { brandPath, coffeePath } from "@/lib/routes";
+import { brandPath, coffeePath, profilePath } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { ScoreBadge } from "./score-badge";
@@ -25,15 +25,18 @@ export function brewLabel(tasting: Pick<Tasting, "brewMethod" | "device">): stri
 /**
  * One tasting as a form entry: date and method on the label line, the note beneath, the
  * score boxed on the right. With `showCoffee` the coffee is the entry's title (feeds);
- * without it the entry sits on that coffee's own page.
+ * without it the entry sits on that coffee's own page. With `showAuthor` the label line
+ * starts with who wrote it (everywhere but on that person's own page).
  */
 export function TastingItem({
   tasting,
   showCoffee = false,
+  showAuthor = false,
   clampNotes = false,
 }: {
   tasting: Tasting;
   showCoffee?: boolean;
+  showAuthor?: boolean;
   clampNotes?: boolean;
 }) {
   const wishlist = tasting.status === "wishlist";
@@ -50,6 +53,17 @@ export function TastingItem({
     <li className="grid grid-cols-[minmax(0,1fr)_54px] gap-4 border-b border-border py-4">
       <div className="min-w-0">
         <p className="font-mono text-xs text-muted-foreground">
+          {showAuthor ? (
+            <>
+              <Link
+                href={profilePath(tasting.author.username)}
+                className={cn("text-foreground", linkFocus)}
+              >
+                @{tasting.author.username}
+              </Link>
+              {" · "}
+            </>
+          ) : null}
           {tasting.tastedAt && !wishlist ? (
             <>
               <time dateTime={tasting.tastedAt}>{meta[0]}</time>
