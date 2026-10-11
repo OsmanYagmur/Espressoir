@@ -14,11 +14,15 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 3. **Root Directory: `apps/web`** (Edit'e tıklayıp seç). Framework otomatik olarak Next.js algılanır. Install ve build komutlarını varsayılan bırak; pnpm, lockfile'dan algılanır.
 4. **Environment Variables:**
 
-   | Değişken                               | Production   | Preview + Development |
-   | -------------------------------------- | ------------ | --------------------- |
-   | `NEXT_PUBLIC_SUPABASE_URL`             | prod projesi | dev projesi           |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | prod projesi | dev projesi           |
-   | `NEXT_PUBLIC_SIGNUP_ENABLED`           | `false`      | `false`               |
+   | Değişken                               | Production    | Preview + Development |
+   | -------------------------------------- | ------------- | --------------------- |
+   | `NEXT_PUBLIC_SUPABASE_URL`             | prod projesi  | dev projesi           |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | prod projesi  | dev projesi           |
+   | `NEXT_PUBLIC_SIGNUP_ENABLED`           | `false`       | `false`               |
+   | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`       | site anahtarı | aynı anahtar          |
+   | `NEXT_PUBLIC_AUTH_GOOGLE`              | `true`/boş    | `true`/boş            |
+
+   Son iki satır giriş kurulumuyla gelir ([`setup-auth.md`](./setup-auth.md)); o adımlar yapılana kadar boş kalır.
 
    ⛔ `SUPABASE_SECRET_KEY` ve `SUPABASE_DB_URL` Vercel'e **girmez**. Uygulama çalışırken bunlara hiç ihtiyaç duymuyor.
 

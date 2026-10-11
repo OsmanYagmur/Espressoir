@@ -37,6 +37,7 @@ pnpm format / format:check
 pnpm db:new <name> | db:push:dev | db:push:prod
 pnpm types:gen [--db-url <url>]               # default: from supabase/migrations via PGlite
 pnpm admin:bootstrap [--env prod]             # owner account (signup is closed)
+pnpm user:invite [--env prod] <email>…        # invitation e-mail (the only way in for now)
 pnpm import:notion [--offline|--dry-run|--env prod]   # report: data/import-report.md
 pnpm seed:dev                                 # sample archive into dev; refuses prod
 scripts/verify-migrations.sh <db-url>         # rollback + re-apply every migration (CI)
@@ -52,19 +53,29 @@ Playwright suite, signed-in flows included, against `supabase start` on the runn
 
 ```
 apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'navigation'
-apps/web/src/app/(account)/  /giris, /panel (dynamic; session read behind <Suspense>)
+                             (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
+                             /kvkk, /gizlilik, /kosullar)
+apps/web/src/app/(account)/  /giris, /panel, /hesap, /hesap/kurulum (dynamic; session read
+                             behind <Suspense>)
+apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
-apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /giris only
-apps/web/src/components/     ui/, site/ (chrome), coffee/, stats/ (charts), panel/ (forms)
+apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*, /giris only
+apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
+                             panel/ (forms), account/ (header link, Turnstile, form message)
+apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (pure views)
-apps/web/e2e/                archive.spec (public, sample data) · panel.spec (needs Supabase)
-packages/core                siteConfig, fold/slug, score tiers, catalog enums, stats, list filter
-packages/db                  generated types, archive read models (Zod), tasting input schema
-packages/i18n | config       UI copy (tr) · shared tsconfig/eslint
+apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec
+                             (need Supabase + its mail catcher) · helpers.ts
+packages/core                siteConfig, fold/slug, score tiers, catalog enums, stats, list filter,
+                             account rules (usernames, TERMS_VERSION)
+packages/db                  generated types, read models (archive, profile; Zod), input schemas
+packages/i18n | config       UI copy (tr.ts, legal-tr.ts) · shared tsconfig/eslint
 scripts/                     db-push, gen-types, import-notion (+ notion/), admin-bootstrap,
-                             offline-snapshot, e2e-setup, db/*.test.ts (RLS, RPC, contract)
-supabase/                    migrations/, rollbacks/, tests/local-shim.sql
-docs/                        setup-supabase, deploy-vercel, backup
+                             user-invite, offline-snapshot, e2e-setup, db/*.test.ts (RLS, RPC,
+                             accounts, contract)
+supabase/                    migrations/, rollbacks/, templates/ (auth e-mails),
+                             tests/local-shim.sql
+docs/                        setup-supabase, setup-auth, deploy-vercel, backup
 data/                        owner's Notion export + reports (git-ignored)
 ```
 
@@ -101,11 +112,10 @@ data/                        owner's Notion export + reports (git-ignored)
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
-  On the live project the Vercel step does not take effect (measured 2026-10-11: build-time and
-  request-time pages both fall back to `espressoir.com`, while a local build with the same
-  variables gets it right; the cause sits in the Vercel project settings and is unknown), so the
-  owner pins `NEXT_PUBLIC_SITE_URL` there. Never build sign-in redirects from `getSiteUrl()`:
-  use the origin of the request.
+  On the live project the Vercel step never applies: "Enable access to System Environment
+  Variables" is off there (seen 2026-10-11), so pages fall back to `siteConfig.url`. That is
+  correct now that `espressoir.com` serves the site, but previews advertise it too. Never build
+  sign-in redirects from `getSiteUrl()`: use the origin of the request.
 - Files read at runtime must be real files inside `apps/web`, read by literal path (the share-image
   fonts: `src/assets/fonts`, also listed in `outputFileTracingIncludes`). Never read through
   `node_modules`: under pnpm that is a symlink a Vercel function does not contain. Next loads
@@ -133,6 +143,35 @@ data/                        owner's Notion export + reports (git-ignored)
   brand names (render those as written), and give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
 
+Accounts (Phase 2A):
+
+- **Sign-in runs in the browser**, straight against Supabase Auth (`giris/login-form.tsx`): the
+  auth server's rate limits are per address, and a server action would make every visitor share
+  Vercel's. The session lands in cookies the server reads. Three ways in: e-mail code (the same
+  mail carries a link), Google, and a password for accounts that already have one.
+- **`/auth/callback`** exchanges `?code=` (Google, Supabase's stock e-mail link) and hands
+  `?token_hash=` links from our templates to **`/auth/confirm`**, which signs in only after a
+  click: mail scanners open links, and a link that signed in on sight would be spent.
+- **CAPTCHA:** when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set every auth call carries a Turnstile
+  token (single use: reset after each call). It must be set exactly when Supabase's CAPTCHA
+  protection is on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
+- **`profiles` is public; `profile_private` is not** (accepted terms, username changes,
+  restrictions): own row + admins may read, only SECURITY DEFINER functions write. Put nothing
+  private on `profiles`.
+- **Every write policy includes `(select public.can_post())`** (onboarded and not restricted).
+  A new table people write to needs it too. Restricted members can still read and delete.
+- **Usernames:** placeholder `u_<16 hex>` until `complete_onboarding_v1`; reserved names live in
+  `reserved_usernames()` and `RESERVED_USERNAMES` (a test compares them); a trigger allows one
+  change per 30 days. Admins and scripts (no API user) are exempt.
+- `requireUser()` sends signed-out visitors to `/giris` and members without a username to
+  `/hesap/kurulum`; `requireSession()` is for the onboarding page only. The test helper
+  `createUser()` returns onboarded users unless told `onboarded: false`.
+- **The header's account link reads the session cookie**, nothing else: public pages must not
+  pull in the Supabase client.
+- **Legal texts** are `packages/i18n/src/legal-tr.ts`, shown with a draft banner until the owner
+  has had them reviewed. Changing them means bumping `TERMS_VERSION` in `@espressoir/core`.
+- Members are part of the archive read (`archive.profiles`) until 2B splits it.
+
 ## Phase status
 
 - [x] Phase 0 — setup: monorepo, design base, Supabase infra, CI, docs.
@@ -143,8 +182,8 @@ data/                        owner's Notion export + reports (git-ignored)
       on the live site).
 - [ ] Phase 2 — community. Plan approved 2026-10-11. Four steps, each its own branch + PR; the
       next one starts only with the owner's go:
-  - [ ] 2.0 prep: dev Supabase project + Vercel Preview (owner's steps), docs.
-  - [ ] 2A accounts: e-mail code and Google sign-in, onboarding (username + terms),
+  - [x] 2.0 prep: dev Supabase project (`espressoir-dev`, created 2026-10-11), docs.
+  - [x] 2A accounts: e-mail code and Google sign-in, onboarding (username + terms),
         `/u/[username]`, `/hesap` (edit, export, delete), KVKK draft pages, `pnpm user:invite`.
   - [ ] 2B community tastings: pg_trgm coffee search + duplicate warning, rate limits, community
         numbers, follows, `/akis`, profile stats, the single archive read split up.
@@ -180,12 +219,19 @@ Phase 2 decisions (owner-approved; they become conventions as each step lands):
   out: a browser check cannot guard a table the browser writes to.
 - **Account deletion and data export are RPCs**; still no secret at app runtime.
 
-Still open on the owner's side (remind, don't do for them): pin `NEXT_PUBLIC_SITE_URL` on Vercel
-(docs/deploy-vercel.md, "Site adresi"); create the dev project and give Vercel Preview its
-variables (docs/setup-supabase.md); point `espressoir.com` at Vercel (DNS is still Squarespace
-parking); make the repo private, then add the backup secrets and keepalive variables
-(docs/backup.md) — until then prod has no backups, and nobody is invited before that. Until the
-dev project exists, `:dev` commands have no target.
+Still open on the owner's side (remind, don't do for them):
+
+- Apply the 2A migrations (`pnpm db:push:dev`, then prod) and do the sign-in setup in
+  docs/setup-auth.md: redirect URLs, Resend SMTP + DNS records, e-mail templates, Turnstile,
+  optionally Google. Until then only the password login works on the cloud projects.
+- Make the repo private, then add the backup secrets and keepalive variables (docs/backup.md).
+  Prod has no backups yet: **nobody is invited before that.**
+- Have the KVKK texts reviewed and fill in the contact address (`CONTACT` in `legal-tr.ts`);
+  signup stays closed to the public until then.
+- `espressoir.com` is connected (2026-10-11), but `www.espressoir.com` serves the site instead
+  of redirecting to the apex: set it to redirect in Vercel → Domains.
+- Vercel Preview needs the dev project's two public variables; whether they are set shows in
+  the Vercel check of the next PR.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to
