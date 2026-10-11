@@ -105,3 +105,21 @@ export function countPoints(
   }
   return [...merged.values()].sort((a, b) => a.x - b.x || a.y - b.y);
 }
+
+/** How many "average" ratings a coffee is assumed to start with when it is ranked. */
+export const RANKING_PRIOR_WEIGHT = 3;
+
+/**
+ * A mean pulled towards the overall mean in proportion to how little data it rests on:
+ * (n·mean + m·prior) / (n + m). Used for ranking only, so that one enthusiastic rating
+ * does not outrank a coffee twenty people liked; what is displayed stays the raw mean
+ * with its n.
+ */
+export function shrunkenMean(
+  mean: number,
+  n: number,
+  prior: number,
+  weight: number = RANKING_PRIOR_WEIGHT,
+): number {
+  return (n * mean + weight * prior) / (n + weight);
+}
