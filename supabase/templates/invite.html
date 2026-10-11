@@ -1,0 +1,17 @@
+<h2>Espressoir'a davetlisin</h2>
+
+<p>
+  Espressoir bir kahve tadım defteri: içtiğin kahveleri puanla, not al, başkalarının defterlerine
+  bak. Kayıt şimdilik davetle; bu davet <strong>{{ .Email }}</strong> adresi için.
+</p>
+
+<p>
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite">Hesabımı aç</a>
+</p>
+
+<p>
+  Bağlantı bir saat geçerlidir ve yalnızca bir kez kullanılabilir. Süresi dolduysa sorun değil:
+  giriş sayfasında bu e-posta adresini yazıp bir giriş kodu iste, hesabın yine açılır.
+</p>
+
+<p>Bu daveti beklemiyorsan bu e-postayı yok sayabilirsin.</p>

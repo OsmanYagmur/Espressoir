@@ -1,0 +1,16 @@
+<h2>Espressoir'a hoş geldin</h2>
+
+<p>Hesabını açmak için giriş sayfasında bu kodu yaz:</p>
+
+<p style="font-family: ui-monospace, Menlo, monospace; font-size: 28px; letter-spacing: 6px">
+  <strong>{{ .Token }}</strong>
+</p>
+
+<p>
+  Ya da aynı işi bu bağlantı görür:
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Hesabımı aç</a>
+</p>
+
+<p>Kod ve bağlantı bir saat geçerlidir, yalnızca bir kez kullanılabilir.</p>
+
+<p>Bu isteği sen yapmadıysan bu e-postayı yok sayabilirsin.</p>

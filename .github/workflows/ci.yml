@@ -74,6 +74,9 @@ jobs:
       OWNER_EMAIL: owner@example.test
       E2E_GUEST_EMAIL: guest@example.test
       NEXT_PUBLIC_SIGNUP_ENABLED: "false"
+      # Cloudflare's published test key ("always passes"), the pair of the test secret in
+      # supabase/config.toml: sign-in goes through the CAPTCHA step as it does in production.
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -84,12 +87,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm --filter @espressoir/web exec playwright install --with-deps chromium
-      # Database, API and auth only; the migrations are applied from scratch.
+      # Database, API, auth and the mail catcher (sign-in codes and invitations are read
+      # from it); the migrations are applied from scratch.
       # Docker runs here on GitHub's machine, never on a developer laptop.
       - name: Start local Supabase
         run: >-
           pnpm exec supabase start
-          -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor,mailpit
+          -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
       - name: Export connection settings and one-off test passwords
         run: |
           pnpm exec supabase status -o env > "$RUNNER_TEMP/supabase.env"
@@ -103,6 +107,7 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}"
             echo "SUPABASE_SECRET_KEY=${SECRET_KEY:-$SERVICE_ROLE_KEY}"
             echo "SUPABASE_DB_URL=$DB_URL"
+            echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}"
             echo "OWNER_PASSWORD=$owner_password"
             echo "E2E_OWNER_EMAIL=$OWNER_EMAIL"
             echo "E2E_OWNER_PASSWORD=$owner_password"

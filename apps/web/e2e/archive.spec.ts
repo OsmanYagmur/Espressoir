@@ -194,3 +194,53 @@ test("the signed-in area sends visitors to the login page", async ({ page }) => 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
   await expect(page.getByLabel("E-posta")).toBeVisible();
 });
+
+test.describe("members and legal texts", () => {
+  test("a member's notebook is a public page listed in the sitemap", async ({ page, request }) => {
+    // The archive's owner is the one member of the sample data; the sitemap knows the name.
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    const path = /<loc>[^<]*(\/u\/[a-z0-9_]+)<\/loc>/.exec(sitemap)?.[1];
+    expect(path).toBeTruthy();
+
+    await page.goto(path!);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`@${path!.slice(3)}.`);
+    // 17 public tastings, one of them unscored; 3 coffees wait on the wishlist.
+    const fields = page.locator("dl").first();
+    await expect(fields).toContainText("17");
+    await expect(fields).toContainText("3 denenecek");
+    await expect(fields).toContainText("n = 16");
+    await expect(page.getByRole("list", { name: "Tadımlar" }).getByRole("listitem")).toHaveCount(
+      17,
+    );
+    await expect(
+      page.getByRole("list", { name: "Denenecekler" }).getByRole("listitem"),
+    ).toHaveCount(3);
+  });
+
+  test("an unknown member is a 404", async ({ page }) => {
+    const response = await page.goto("/u/boyle_biri_yok");
+    expect(response?.status()).toBe(404);
+  });
+
+  test("the legal texts are linked from every page and marked as drafts", async ({ page }) => {
+    await page.goto("/");
+    const legal = page.getByRole("navigation", { name: "Yasal metinler" });
+    for (const [link, heading] of [
+      ["KVKK", "KVKK aydınlatma metni."],
+      ["Gizlilik", "Gizlilik politikası."],
+      ["Koşullar", "Kullanım koşulları."],
+    ] as const) {
+      await legal.getByRole("link", { name: link }).click();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+      await expect(page.getByRole("note")).toContainText("Taslak");
+    }
+  });
+
+  test("the header leads visitors to the login", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("banner").getByRole("link", { name: "Giriş" }).click();
+    await expect(page).toHaveURL(/\/giris$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
+    await expect(page.getByText(/Kayıt şimdilik davetle\./)).toBeVisible();
+  });
+});

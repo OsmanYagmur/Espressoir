@@ -6,47 +6,39 @@
  * Accounts come from the environment (created by `pnpm admin:bootstrap` and
  * `scripts/e2e-setup.ts`); nothing is hard-coded here.
  */
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-const owner = { email: process.env.E2E_OWNER_EMAIL, password: process.env.E2E_OWNER_PASSWORD };
-const guest = { email: process.env.E2E_GUEST_EMAIL, password: process.env.E2E_GUEST_PASSWORD };
-const configured = Boolean(owner.email && owner.password && guest.email && guest.password);
-
-// The public API settings, sent the way supabase-js sends them.
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
-const apiHeaders = { apikey: key, Authorization: `Bearer ${key}` };
+import {
+  apiHeaders,
+  configured,
+  guest,
+  owner,
+  signIn,
+  submitPassword,
+  supabaseUrl as url,
+} from "./helpers";
 
 test.skip(!configured, "needs a Supabase with test accounts (E2E_* variables)");
 // One browser at a time: these tests write to the shared database.
 test.describe.configure({ mode: "serial" });
 
-type Account = { email?: string; password?: string };
-
-async function submitLogin(page: Page, account: Account) {
-  await page.goto("/giris");
-  await page.getByLabel("E-posta", { exact: true }).fill(account.email ?? "");
-  await page.getByLabel("Parola", { exact: true }).fill(account.password ?? "");
-  await page.getByRole("button", { name: "Giriş yap" }).click();
-}
-
-/** Logs in and waits for the panel: navigating away earlier would race the session cookie. */
-async function signIn(page: Page, account: Account) {
-  await submitLogin(page, account);
-  await expect(page).toHaveURL(/\/panel$/);
-}
-
 test("registration is closed: the auth server refuses new accounts", async ({ request }) => {
   const response = await request.post(`${url}/auth/v1/signup`, {
     headers: apiHeaders,
-    data: { email: "intruder@example.test", password: "a-long-enough-password" },
+    data: {
+      email: "intruder@example.test",
+      password: "a-long-enough-password",
+      // Cloudflare's test token, which the stack's test secret accepts: the refusal below
+      // is about signup being closed, not about a missing CAPTCHA.
+      gotrue_meta_security: { captcha_token: "XXXX.DUMMY.TOKEN.XXXX" },
+    },
   });
   expect(response.ok()).toBe(false);
   expect(JSON.stringify(await response.json())).toMatch(/signup/i);
 });
 
 test("a wrong password is refused without saying which part was wrong", async ({ page }) => {
-  await submitLogin(page, { email: owner.email, password: "definitely-not-the-password" });
+  await submitPassword(page, { email: owner.email, password: "definitely-not-the-password" });
   await expect(page.getByText("E-posta ya da parola hatalı.")).toBeVisible();
   await expect(page).toHaveURL(/\/giris$/);
 });
@@ -128,8 +120,12 @@ test("another user cannot open the owner's tasting for editing", async ({ page, 
 
 test("signing out ends the session", async ({ page }) => {
   await signIn(page, owner);
+  // The header knows about the session without asking the server.
+  await expect(page.getByRole("banner").getByRole("link", { name: "Panel" })).toBeVisible();
+
   await page.getByRole("button", { name: "Çıkış yap" }).click();
   await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("banner").getByRole("link", { name: "Giriş" })).toBeVisible();
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/giris$/);
 });
