@@ -3,7 +3,7 @@
  * No I/O here, so these are cheap to call from any page and easy to reason about.
  */
 import { summarize, type CoffeeListItem, type Summary } from "@espressoir/core";
-import type { Archive, BrewMethod, Coffee, Tasting } from "@espressoir/db";
+import type { Archive, BrewMethod, Coffee, Profile, Tasting } from "@espressoir/db";
 
 /** Most recent first; undated tastings go last, newest entry first among equals. */
 export function byRecency(a: Tasting, b: Tasting): number {
@@ -200,4 +200,15 @@ export function brandSummaries(archive: Archive): BrandSummary[] {
         .sort((a, b) => b.stats.avgScore! - a.stats.avgScore!)[0] ?? null;
   }
   return [...brands.values()].sort((a, b) => a.name.localeCompare(b.name, "tr"));
+}
+
+/** A member by the name in their profile address; usernames are stored in lower case. */
+export function findProfile(archive: Archive, username: string): Profile | undefined {
+  const wanted = username.toLowerCase();
+  return archive.profiles.find((profile) => profile.username === wanted);
+}
+
+/** One member's public tastings and wishlist entries, most recent first. */
+export function tastingsBy(archive: Archive, userId: string): Tasting[] {
+  return archive.tastings.filter((tasting) => tasting.author.id === userId).sort(byRecency);
 }

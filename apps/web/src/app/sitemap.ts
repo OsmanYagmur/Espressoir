@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { getArchive } from "@/lib/data/archive";
 import { brandSummaries } from "@/lib/data/selectors";
-import { brandPath, coffeePath } from "@/lib/routes";
+import { brandPath, coffeePath, profilePath } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -29,6 +29,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: url(brandPath(brand.slug)),
       changeFrequency: "monthly" as const,
       priority: 0.5,
+    })),
+    // A notebook without public tastings is not listed (its page asks not to be indexed).
+    ...archive.profiles
+      .filter((profile) => profile.stats.tastingCount > 0)
+      .map((profile) => ({
+        url: url(profilePath(profile.username)),
+        lastModified: profile.stats.lastTastedAt ?? undefined,
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      })),
+    ...["/kvkk", "/gizlilik", "/kosullar"].map((path) => ({
+      url: url(path),
+      changeFrequency: "yearly" as const,
+      priority: 0.2,
     })),
   ];
 }
