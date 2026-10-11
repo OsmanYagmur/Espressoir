@@ -60,7 +60,7 @@ export async function enterCode(page: Page, code: string) {
 
 export interface Mail {
   subject: string;
-  /** The six-digit sign-in code, when the e-mail carries one. */
+  /** The sign-in code (six digits in the local stack), when the e-mail carries one. */
   code: string | null;
   /** The sign-in or invitation link. */
   link: string | null;
@@ -102,7 +102,7 @@ export async function waitForMail(
   const link = /href="([^"]*token_hash=[^"]*)"/.exec(mail.HTML)?.[1]?.replaceAll("&amp;", "&");
   return {
     subject: mail.Subject,
-    code: /\b(\d{6})\b/.exec(`${mail.Subject}\n${mail.Text}`)?.[1] ?? null,
+    code: /\b(\d{6,10})\b/.exec(`${mail.Subject}\n${mail.Text}`)?.[1] ?? null,
     link: link ?? null,
   };
 }

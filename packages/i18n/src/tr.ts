@@ -296,7 +296,7 @@ export const tr = {
     email: "E-posta",
     password: "Parola",
     code: "Giriş kodu",
-    codeHint: "E-postadaki 6 haneli kod.",
+    codeHint: "E-postadaki kod; yalnızca rakamlardan oluşur.",
     sendCode: "Giriş kodu gönder",
     sendingCode: "Gönderiliyor…",
     codeSent:

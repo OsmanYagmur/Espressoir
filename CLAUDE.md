@@ -154,6 +154,8 @@ Accounts (Phase 2A):
 - **`/auth/callback`** exchanges `?code=` (Google, Supabase's stock e-mail link) and hands
   `?token_hash=` links from our templates to **`/auth/confirm`**, which signs in only after a
   click: mail scanners open links, and a link that signed in on sight would be spent.
+- **The sign-in code's length is the Supabase project's setting** (8 digits on the cloud
+  projects, 6 in the local stack): the form accepts 6–10 and no copy states a number.
 - **CAPTCHA:** when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set every auth call carries a Turnstile
   token (single use: reset after each call). It must be set exactly when Supabase's CAPTCHA
   protection is on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
