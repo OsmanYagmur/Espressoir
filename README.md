@@ -85,4 +85,5 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 - [x] **Faz 0: Kurulum.** Monorepo, tasarım temeli, Supabase altyapısı, CI.
 - [x] **Faz 1: Arşiv + çok kullanıcılı altyapı.** Şema, RLS, Notion import, tadım formu, public sayfalar, istatistik, SEO, yedek. Yayında: <https://espressoir.vercel.app>
-- [ ] Faz 2: Topluluk · Faz 3: Sosyal derinlik · Faz 4+: Mobil (Expo)
+- [ ] **Faz 2: Topluluk.** Plan onaylandı; dört adımda ilerliyor: hazırlık (dev projesi + önizlemeler) → hesaplar ve profil → topluluk tadımları ve akış → yorum, beğeni, moderasyon. Önce davetli beta.
+- [ ] Faz 3: Sosyal derinlik · Faz 4+: Mobil (Expo)
