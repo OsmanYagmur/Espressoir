@@ -244,3 +244,43 @@ test.describe("members and legal texts", () => {
     await expect(page.getByText(/Kayıt şimdilik davetle\./)).toBeVisible();
   });
 });
+
+test.describe("community", () => {
+  test("the feed lists the latest entries with who wrote them", async ({ page }) => {
+    await page.goto("/");
+    await mainNav(page).getByRole("link", { name: "Akış" }).click();
+    await expect(page).toHaveURL(/\/akis$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Akış.");
+
+    // The first ten of the 17 logged tastings come with the page; the rest is on request.
+    const entries = page.getByRole("list", { name: "Herkes" }).getByRole("listitem");
+    await expect(entries).toHaveCount(10);
+    await expect(entries.first().getByRole("link", { name: /^@/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Daha fazla göster" })).toBeVisible();
+  });
+
+  test("the feed of followed people asks visitors to sign in", async ({ page }) => {
+    await page.goto("/akis");
+    await page.getByRole("tab", { name: "Takip ettiklerim" }).click();
+    await expect(page).toHaveURL(/\/akis\?sekme=takip$/);
+    await expect(
+      page.getByText("Takip ettiklerinin tadımlarını görmek için giriş yap."),
+    ).toBeVisible();
+    await page.getByRole("tab", { name: "Herkes" }).click();
+    await expect(page.getByRole("list", { name: "Herkes" })).toBeVisible();
+  });
+
+  test("a tasting names its author, who has a notebook with charts", async ({ page }) => {
+    await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
+    const author = page
+      .getByRole("list", { name: "Tadımlar" })
+      .getByRole("link", { name: /^@/ })
+      .first();
+    await author.click();
+    await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
+    await expect(page.getByRole("list", { name: "Puan dağılımı" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Yönteme göre/ })).toBeVisible();
+    // Visitors are offered the login instead of a follow that cannot work.
+    await expect(page.getByRole("link", { name: "Takip et" })).toHaveAttribute("href", "/giris");
+  });
+});

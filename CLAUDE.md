@@ -61,11 +61,13 @@ apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confir
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*, /giris only
 apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
-                             panel/ (forms), account/ (header link, Turnstile, form message)
-apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches)
+                             panel/ (forms, coffee picker), account/ (header link, Turnstile,
+                             form message), social/ (follow button, feed)
+apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
+                             session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (pure views)
-apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec
-                             (need Supabase + its mail catcher) · helpers.ts
+apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
+                             community.spec (need Supabase + its mail catcher) · helpers.ts
 packages/core                siteConfig, fold/slug, score tiers, catalog enums, stats, list filter,
                              account rules (usernames, TERMS_VERSION)
 packages/db                  generated types, read models (archive, profile; Zod), input schemas
@@ -173,7 +175,34 @@ Accounts (Phase 2A):
   pull in the Supabase client.
 - **Legal texts** are `packages/i18n/src/legal-tr.ts`, shown with a draft banner until the owner
   has had them reviewed. Changing them means bumping `TERMS_VERSION` in `@espressoir/core`.
-- Members are part of the archive read (`archive.profiles`) until 2B splits it.
+- Members are part of the archive read (`archive.profiles`).
+
+Community (Phase 2B):
+
+- **Database first, then code.** Pages read new views and columns while they are built, so a
+  migration goes to prod before its PR is merged (a build against an older database fails and
+  the previous version stays live). New read-model columns are optional in the Zod schemas
+  (`is_reviewed`) so the app also survives the opposite order.
+- **Finding a coffee:** `search_coffees_v1` (trigram similarity over `coffees.search_text`, the
+  folded "brand + name" kept current by triggers). The tasting form uses it both as the search
+  box and as the duplicate check while a new coffee is typed (`panel/coffee-picker.tsx`).
+- **`coffees.reviewed_at` is set by a trigger from who is asking**: admins and scripts add
+  reviewed coffees, members unreviewed ones, whatever they send. Unreviewed coffees are public,
+  labelled, and left out of the sitemap. The review tool itself comes with the admin panel (2C).
+- **Rate limits are triggers:** `enforce_rate_limit('<owner column>', '<max>', '<interval>')`
+  on the table (tastings 30/day, coffees 5/day, brands 3/day, follows 200/day; admins and
+  scripts exempt). It raises `rate_limited`. A new table people write to gets one.
+- **Feeds:** the first page of `/akis` is rendered on the server from the archive and passed to
+  the client component as a node; later pages and the "people I follow" tab (`following_feed`)
+  are read in the browser, keyset-paged on `(created_at, id)` because imported rows share a
+  timestamp. Page size: `FEED_PAGE_SIZE`.
+- **Islands on public pages load the Supabase client on demand** (`await import`) and only for
+  browsers that hold a session (`useHasSession()`); a visitor never downloads it.
+- **Rankings** (`topCoffees`) sort by `shrunkenMean` (prior weight 3); the number shown is the
+  plain average with its `n`.
+- **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
+  (see the decisions below) pays off with many writers, not during an invite-only beta, and is
+  safer as a change of its own: do it before signup opens to everyone.
 
 ## Phase status
 
@@ -188,7 +217,7 @@ Accounts (Phase 2A):
   - [x] 2.0 prep: dev Supabase project (`espressoir-dev`, created 2026-10-11), docs.
   - [x] 2A accounts: e-mail code and Google sign-in, onboarding (username + terms),
         `/u/[username]`, `/hesap` (edit, export, delete), KVKK draft pages, `pnpm user:invite`.
-  - [ ] 2B community tastings: pg_trgm coffee search + duplicate warning, rate limits, community
+  - [x] 2B community tastings: pg_trgm coffee search + duplicate warning, rate limits, community
         numbers, follows, `/akis`, profile stats, the single archive read split up.
   - [ ] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
         admin panel (hide, delete, restrict, review, merge).
