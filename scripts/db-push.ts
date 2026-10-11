@@ -13,13 +13,23 @@ import {
   requireEnv,
 } from "./lib/target-env";
 
-const target = parseTargetEnv();
-loadTargetEnv(target);
-const dbUrl = requireEnv("SUPABASE_DB_URL");
-await assertTarget(target, dbUrl);
+async function main(): Promise<number> {
+  const target = parseTargetEnv();
+  loadTargetEnv(target);
+  const dbUrl = requireEnv("SUPABASE_DB_URL");
+  await assertTarget(target, dbUrl);
 
-const args = ["db", "push", "--db-url", dbUrl];
-if (process.argv.includes("--dry-run")) args.push("--dry-run");
+  const args = ["db", "push", "--db-url", dbUrl];
+  if (process.argv.includes("--dry-run")) args.push("--dry-run");
 
-const result = spawnSync("supabase", args, { cwd: repoRoot, stdio: "inherit" });
-process.exit(result.status ?? 1);
+  const result = spawnSync("supabase", args, { cwd: repoRoot, stdio: "inherit" });
+  return result.status ?? 1;
+}
+
+main().then(
+  (status) => process.exit(status),
+  (error: unknown) => {
+    console.error(`\n✗ ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  },
+);
