@@ -30,3 +30,14 @@ export {
   type TastingInput,
   type TastingInputError,
 } from "./tasting-input";
+
+export {
+  ACCOUNT_INPUT_ERRORS,
+  onboardingInputSchema,
+  profileInputSchema,
+  profileRowSchema,
+  type AccountInputError,
+  type OnboardingInput,
+  type Profile,
+  type ProfileInput,
+} from "./profile";

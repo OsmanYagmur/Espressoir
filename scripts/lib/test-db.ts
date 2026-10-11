@@ -129,10 +129,13 @@ export async function createTestDb(): Promise<TestDb> {
   };
 }
 
-/** Creates an auth user the way Supabase Auth would; the trigger adds the profile. */
+/**
+ * Creates an auth user the way Supabase Auth would; the trigger adds the profile. Users
+ * come out onboarded (able to post) unless `onboarded: false` asks for a fresh signup.
+ */
 export async function createUser(
   db: TestDb,
-  options: { username: string; role?: "user" | "admin" },
+  options: { username: string; role?: "user" | "admin"; onboarded?: boolean },
 ): Promise<string> {
   const id = randomUUID();
   await db.sql("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [
@@ -142,6 +145,9 @@ export async function createUser(
   ]);
   if (options.role === "admin") {
     await db.sql("update public.profiles set role = 'admin' where id = $1", [id]);
+  }
+  if (options.onboarded !== false) {
+    await db.sql("update public.profiles set onboarded_at = now() where id = $1", [id]);
   }
   return id;
 }

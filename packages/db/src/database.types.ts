@@ -48,6 +48,13 @@ export type Database = {
             foreignKeyName: "brands_created_by_fkey";
             columns: ["created_by"];
             isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "brands_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -170,6 +177,13 @@ export type Database = {
             foreignKeyName: "coffees_created_by_fkey";
             columns: ["created_by"];
             isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "coffees_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -229,6 +243,13 @@ export type Database = {
             foreignKeyName: "follows_follower_id_fkey";
             columns: ["follower_id"];
             isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -237,6 +258,13 @@ export type Database = {
             columns: ["follower_id"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
             referencedColumns: ["user_id"];
           },
           {
@@ -255,6 +283,59 @@ export type Database = {
           },
         ];
       };
+      profile_private: {
+        Row: {
+          profile_id: string;
+          restricted_reason: string | null;
+          restricted_until: string | null;
+          terms_accepted_at: string | null;
+          terms_version: string | null;
+          updated_at: string;
+          username_changed_at: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          profile_id: string;
+          restricted_reason?: string | null;
+          restricted_until?: string | null;
+          terms_accepted_at?: string | null;
+          terms_version?: string | null;
+          updated_at?: string;
+          username_changed_at?: string | null;
+        };
+        Update: {
+          profile_id?: string;
+          restricted_reason?: string | null;
+          restricted_until?: string | null;
+          terms_accepted_at?: string | null;
+          terms_version?: string | null;
+          updated_at?: string;
+          username_changed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_private_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "profile_private_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_private_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -262,6 +343,7 @@ export type Database = {
           created_at: string;
           display_name: string | null;
           id: string;
+          onboarded_at: string | null;
           role: Database["public"]["Enums"]["user_role"];
           updated_at: string;
           username: string;
@@ -273,6 +355,7 @@ export type Database = {
           created_at?: string;
           display_name?: string | null;
           id: string;
+          onboarded_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
           updated_at?: string;
           username: string;
@@ -283,6 +366,7 @@ export type Database = {
           created_at?: string;
           display_name?: string | null;
           id?: string;
+          onboarded_at?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
           updated_at?: string;
           username?: string;
@@ -438,6 +522,13 @@ export type Database = {
             foreignKeyName: "tastings_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "tastings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -496,6 +587,26 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      profile_overview: {
+        Row: {
+          avatar_url: string | null;
+          avg_score: number | null;
+          bio: string | null;
+          coffee_count: number | null;
+          display_name: string | null;
+          follower_count: number | null;
+          following_count: number | null;
+          joined_at: string | null;
+          last_tasted_at: string | null;
+          rated_count: number | null;
+          tasting_count: number | null;
+          user_id: string | null;
+          username: string | null;
+          wishlist_count: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       tasting_feed: {
         Row: {
           acidity: number | null;
@@ -533,10 +644,18 @@ export type Database = {
       };
     };
     Functions: {
+      can_post: { Args: Record<PropertyKey, never>; Returns: boolean };
+      complete_onboarding_v1: {
+        Args: { p_display_name?: string; p_terms_version?: string; p_username: string };
+        Returns: string;
+      };
+      delete_my_account_v1: { Args: Record<PropertyKey, never>; Returns: undefined };
+      export_my_data_v1: { Args: Record<PropertyKey, never>; Returns: Json };
       find_brand_id: { Args: { p_name: string }; Returns: string };
       fold_tr: { Args: { input: string }; Returns: string };
       immutable_unaccent: { Args: { input: string }; Returns: string };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_reserved_username: { Args: { p_username: string }; Returns: boolean };
       log_tasting_v1: {
         Args: {
           p_acidity?: number;
@@ -568,6 +687,7 @@ export type Database = {
           tasting_id: string;
         }[];
       };
+      reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
       slugify: { Args: { input: string }; Returns: string };
     };
     Enums: {

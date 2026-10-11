@@ -76,11 +76,20 @@ describe("database ↔ app contract", () => {
         coffees: await json("select * from public.coffee_overview"),
         tastings: await json("select * from public.tasting_feed"),
         brewMethods: await json("select * from public.brew_methods"),
+        profiles: await json("select * from public.profile_overview"),
       });
 
       expect(archive.coffees).toHaveLength(20);
       expect(archive.tastings).toHaveLength(19);
       expect(archive.brewMethods).toHaveLength(10);
+      // One member, counted from public tastings only (one of the imported ones is private).
+      expect(archive.profiles).toHaveLength(1);
+      expect(archive.profiles[0]).toMatchObject({ username: "owner_test" });
+      const logged = archive.tastings.filter((tasting) => tasting.status === "logged");
+      expect(archive.profiles[0]!.stats.tastingCount).toBe(logged.length);
+      expect(archive.profiles[0]!.stats.wishlistCount).toBe(
+        archive.tastings.length - logged.length,
+      );
 
       const ristretto = archive.coffees.find((coffee) => coffee.slug === "ristretto-siyah-kapsul");
       expect(ristretto).toMatchObject({

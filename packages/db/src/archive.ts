@@ -18,6 +18,7 @@ import {
 import { z } from "zod";
 
 import type { TypedSupabaseClient } from "./index";
+import { profileRowSchema, type Profile } from "./profile";
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const taste = z.number().int().min(1).max(5).nullable();
@@ -167,13 +168,17 @@ export interface Archive {
   coffees: Coffee[];
   tastings: Tasting[];
   brewMethods: BrewMethod[];
+  /** Members who have finished onboarding, with their public numbers. */
+  profiles: Profile[];
 }
 
-/** Raw rows of the three relations, exactly as the API (or a snapshot file) returns them. */
+/** Raw rows of the relations, exactly as the API (or a snapshot file) returns them. */
 export interface ArchiveRows {
   coffees: unknown[];
   tastings: unknown[];
   brewMethods: unknown[];
+  /** Absent in snapshot files written before profiles existed. */
+  profiles?: unknown[];
 }
 
 export function parseArchive(rows: ArchiveRows): Archive {
@@ -181,6 +186,7 @@ export function parseArchive(rows: ArchiveRows): Archive {
     coffees: z.array(coffeeRowSchema).parse(rows.coffees),
     tastings: z.array(tastingRowSchema).parse(rows.tastings),
     brewMethods: z.array(brewMethodRowSchema).parse(rows.brewMethods),
+    profiles: z.array(profileRowSchema).parse(rows.profiles ?? []),
   };
 }
 
@@ -207,11 +213,12 @@ async function readAll<Row>(
 }
 
 /**
- * Everything the public archive shows: all coffees, every public tasting, the brew methods.
- * Works with any client; what comes back still depends on that client's rights (RLS).
+ * Everything the public archive shows: all coffees, every public tasting, the brew methods
+ * and the members. Works with any client; what comes back still depends on that client's
+ * rights (RLS).
  */
 export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<ArchiveRows> {
-  const [coffees, tastings, brewMethods] = await Promise.all([
+  const [coffees, tastings, brewMethods, profiles] = await Promise.all([
     readAll("Kahveler", (from, to) =>
       client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
     ),
@@ -226,6 +233,9 @@ export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<Arc
     readAll("Demleme yöntemleri", (from, to) =>
       client.from("brew_methods").select("*").order("sort_order").range(from, to),
     ),
+    readAll("Profiller", (from, to) =>
+      client.from("profile_overview").select("*").order("user_id").range(from, to),
+    ),
   ]);
-  return { coffees, tastings, brewMethods };
+  return { coffees, tastings, brewMethods, profiles };
 }

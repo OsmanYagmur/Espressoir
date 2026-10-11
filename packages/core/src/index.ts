@@ -11,6 +11,20 @@ export {
 } from "./score";
 export * from "./catalog";
 export {
+  BIO_MAX_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  RESERVED_USERNAMES,
+  TERMS_VERSION,
+  USERNAME_CHANGE_DAYS,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_PATTERN,
+  isPlaceholderUsername,
+  normalizeUsername,
+  usernameProblem,
+  type UsernameProblem,
+} from "./account";
+export {
   SMALL_SAMPLE,
   countPoints,
   monthlyCounts,
