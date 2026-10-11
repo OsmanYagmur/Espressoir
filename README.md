@@ -58,6 +58,7 @@ pnpm dev                       # http://localhost:3000
 | `pnpm db:push:dev` / `db:push:prod` | Migration'ları dev/prod'a uygular (prod onay ister)                           |
 | `pnpm types:gen`                    | `packages/db` tiplerini migration'lardan yeniden üretir                       |
 | `pnpm admin:bootstrap`              | Hesabını oluşturur ve admin yapar (`--env prod` ile canlıda)                  |
+| `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (`--env prod` ile canlıda)                    |
 | `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)          |
 | `pnpm seed:dev`                     | Dev'e örnek arşivi yükler (prod'u reddeder)                                   |
 
@@ -65,25 +66,33 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 ## Sayfalar
 
-| Adres                    | İçerik                                                                  |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `/`                      | Sayılar, son tadımlar, en yüksek puanlılar, demleme yöntemleri          |
-| `/kahveler`              | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)     |
-| `/kahve/[marka]/[kahve]` | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD             |
-| `/marka/[slug]`          | Markanın kahveleri ve ortalaması                                        |
-| `/istatistik`            | Dağılım, marka/form/yöntem ortalamaları (n ile), saçılım, zaman çizgisi |
-| `/hakkinda`              | Site ve puanlama hakkında                                               |
-| `/giris`, `/panel`       | Giriş; tadım ekleme, düzenleme, silme                                   |
+| Adres                             | İçerik                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `/`                               | Sayılar, son tadımlar, en yüksek puanlılar, demleme yöntemleri          |
+| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)     |
+| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD             |
+| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                        |
+| `/istatistik`                     | Dağılım, marka/form/yöntem ortalamaları (n ile), saçılım, zaman çizgisi |
+| `/hakkinda`                       | Site ve puanlama hakkında                                               |
+| `/u/[kullanici]`                  | Üyenin defteri: sayılar, herkese açık tadımlar, denenecekler            |
+| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ekleme, düzenleme     |
+| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                 |
+| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                       |
 
 ## Rehberler
 
 - [Supabase kurulumu, hesap oluşturma, Notion import](./docs/setup-supabase.md)
+- [Giriş kurulumu: e-posta kodu, Google, Turnstile, davet](./docs/setup-auth.md)
 - [Vercel yayını ve espressoir.com DNS](./docs/deploy-vercel.md)
 - [Yedek ve uyandırma iş akışları](./docs/backup.md)
 
 ## Durum
 
 - [x] **Faz 0: Kurulum.** Monorepo, tasarım temeli, Supabase altyapısı, CI.
-- [x] **Faz 1: Arşiv + çok kullanıcılı altyapı.** Şema, RLS, Notion import, tadım formu, public sayfalar, istatistik, SEO, yedek. Yayında: <https://espressoir.vercel.app>
-- [ ] **Faz 2: Topluluk.** Plan onaylandı; dört adımda ilerliyor: hazırlık (dev projesi + önizlemeler) → hesaplar ve profil → topluluk tadımları ve akış → yorum, beğeni, moderasyon. Önce davetli beta.
+- [x] **Faz 1: Arşiv + çok kullanıcılı altyapı.** Şema, RLS, Notion import, tadım formu, public sayfalar, istatistik, SEO, yedek. Yayında: <https://espressoir.com>
+- [ ] **Faz 2: Topluluk.** Dört adımda ilerliyor, önce davetli beta:
+  - [x] Hazırlık: dev projesi ve önizlemeler.
+  - [x] 2A Hesaplar: e-posta kodu ve Google ile giriş, davet, kullanıcı adı seçimi, profil sayfası, veri indirme, hesap silme, KVKK taslakları.
+  - [ ] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, takip, akış, profil istatistikleri.
+  - [ ] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
 - [ ] Faz 3: Sosyal derinlik · Faz 4+: Mobil (Expo)

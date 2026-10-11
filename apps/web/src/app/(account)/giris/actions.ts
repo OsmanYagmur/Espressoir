@@ -1,47 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
-import { t } from "@/lib/i18n";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export interface SignInState {
-  error?: string;
-  email?: string;
-}
-
-const credentials = z.object({
-  email: z.email().max(254),
-  password: z.string().min(1).max(200),
-});
-
-export async function signIn(_previous: SignInState, formData: FormData): Promise<SignInState> {
-  const email = String(formData.get("email") ?? "").trim();
-  const parsed = credentials.safeParse({ email, password: formData.get("password") });
-  if (!parsed.success) return { error: t.auth.invalid, email };
-
-  try {
-    const supabase = await createServerSupabase();
-    const { error } = await supabase.auth.signInWithPassword(parsed.data);
-    if (error) {
-      // One message for "no such account" and "wrong password": never reveal which.
-      // (Older auth servers send no code, only a 400.)
-      if (error.code === "invalid_credentials" || (!error.code && error.status === 400)) {
-        return { error: t.auth.invalid, email };
-      }
-      // Anything else is ours to fix (provider switched off, auth server down). The visitor
-      // gets a neutral message; the reason goes to the server log, without the credentials.
-      console.error("[auth] sign-in refused:", error.status, error.code, error.message);
-      return { error: t.auth.failed, email };
-    }
-  } catch (error) {
-    console.error("[auth] sign-in failed:", error instanceof Error ? error.message : error);
-    return { error: t.auth.failed, email };
-  }
-  redirect("/panel");
-}
-
+// Signing in happens in the browser (login-form.tsx); only signing out needs the server,
+// to clear the session cookies it reads.
 export async function signOut(): Promise<void> {
   const supabase = await createServerSupabase();
   await supabase.auth.signOut();

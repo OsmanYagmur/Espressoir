@@ -28,7 +28,8 @@ export function FieldStrip({ fields, className }: { fields: Field[]; className?:
       {fields.map((field) => (
         <div
           key={field.label}
-          className="bg-background px-3.5 pt-3 pb-3.5 max-md:odd:pl-0 md:first:pl-0"
+          // On a phone the fields sit two to a row; an odd one out takes the whole row.
+          className="bg-background px-3.5 pt-3 pb-3.5 max-md:odd:pl-0 max-md:last:odd:col-span-2 md:first:pl-0"
         >
           <dt className="label-caps text-muted-foreground">{field.label}</dt>
           <dd

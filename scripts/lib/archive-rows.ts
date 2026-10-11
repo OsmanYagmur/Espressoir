@@ -25,6 +25,7 @@ export async function readArchiveRowsAsVisitor(db: Queryable): Promise<ArchiveRo
         "select * from public.tasting_feed where visibility = 'public' order by tasting_id",
       ),
       brewMethods: await rows("select * from public.brew_methods order by sort_order"),
+      profiles: await rows("select * from public.profile_overview order by user_id"),
     };
   } finally {
     await db.query("rollback");

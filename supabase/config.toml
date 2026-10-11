@@ -161,7 +161,13 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000", "http://localhost:3100"]
+# The app sends sign-in links and Google back to /auth/callback (3000: dev, 3100: e2e).
+additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3100",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3100/auth/callback",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -214,10 +220,13 @@ token_verifications = 30
 web3 = 30
 
 # Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
-# [auth.captcha]
-# enabled = true
-# provider = "hcaptcha"
-# secret = ""
+# On in the local stack so the tests exercise what production does: every sign-in request
+# must carry a Turnstile token. This is Cloudflare's published test secret ("always
+# passes"); it pairs with the test site key 1x00000000000000000000AA and guards nothing.
+[auth.captcha]
+enabled = true
+provider = "turnstile"
+secret = "1x0000000000000000000000000000000AA"
 
 [auth.email]
 # Despite its name, this switches the whole e-mail provider: `false` also refuses e-mail +
@@ -248,10 +257,20 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# The e-mails the site sends, in Turkish, each with a one-time code and a link to
+# /auth/callback. The cloud projects get the same texts through the dashboard
+# (docs/setup-auth.md).
+[auth.email.template.magic_link]
+subject = "Espressoir giriş kodun: {{ .Token }}"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.confirmation]
+subject = "Espressoir giriş kodun: {{ .Token }}"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.invite]
+subject = "Espressoir'a davetlisin"
+content_path = "./supabase/templates/invite.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

@@ -123,6 +123,14 @@ async function main(): Promise<void> {
     .single();
   if (updated.error) throw new Error(`Profil güncellenemedi: ${updated.error.message}`);
 
+  // The owner's name is chosen here, so there is no onboarding step to send them through.
+  const onboarded = await supabase
+    .from("profiles")
+    .update({ onboarded_at: new Date().toISOString() })
+    .eq("id", userId)
+    .is("onboarded_at", null);
+  if (onboarded.error) throw new Error(`Profil güncellenemedi: ${onboarded.error.message}`);
+
   console.log(`✓ @${updated.data.username} (${updated.data.role}) hazır — hedef: ${target}.`);
 }
 

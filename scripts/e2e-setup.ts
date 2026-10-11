@@ -40,3 +40,11 @@ if (existing.data) {
   if (created.error) throw new Error(created.error.message);
   console.log(`✓ @${GUEST_USERNAME} oluşturuldu.`);
 }
+
+// An ordinary member who has finished onboarding (new accounts start without it).
+const onboarded = await supabase
+  .from("profiles")
+  .update({ onboarded_at: new Date().toISOString() })
+  .eq("username", GUEST_USERNAME)
+  .is("onboarded_at", null);
+if (onboarded.error) throw new Error(onboarded.error.message);

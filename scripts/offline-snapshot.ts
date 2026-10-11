@@ -42,6 +42,9 @@ await db.query("insert into auth.users (id, email, raw_user_meta_data) values ($
   "owner@example.test",
   JSON.stringify({ username: ownerUsername }),
 ]);
+await db.query("update public.profiles set onboarded_at = created_at where username = $1", [
+  ownerUsername,
+]);
 const plan = buildImportPlan(parseCsvRecords(readFileSync(csvFile, "utf8")).records);
 await applyImportPlan(db, plan, { ownerUsername });
 
@@ -54,5 +57,5 @@ const archive = parseArchive(rows);
 mkdirSync(dirname(OUTPUT), { recursive: true });
 writeFileSync(OUTPUT, JSON.stringify(rows, null, 2));
 console.log(
-  `✓ ${relative(repoRoot, OUTPUT)}: ${archive.coffees.length} kahve, ${archive.tastings.length} tadım (kaynak: ${relative(repoRoot, csvFile)})`,
+  `✓ ${relative(repoRoot, OUTPUT)}: ${archive.coffees.length} kahve, ${archive.tastings.length} tadım, ${archive.profiles.length} profil (kaynak: ${relative(repoRoot, csvFile)})`,
 );

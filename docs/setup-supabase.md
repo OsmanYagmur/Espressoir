@@ -101,7 +101,7 @@ pnpm admin:bootstrap --env prod   # prod: aynı adımlar, .env.prod.local ile
 
 Parola doğrudan Supabase Auth'a gider; hiçbir dosyaya yazılmaz. Script hesabı `admin` yapar. Tekrar çalıştırmak zararsızdır: hesap varsa yalnızca kontrol eder, parolayı değiştirmez.
 
-Giriş: `/giris` (sayfanın en altındaki **Panel** bağlantısı da oraya götürür).
+Giriş: `/giris` (her sayfanın sağ üstündeki **Giriş** bağlantısı). Bu hesap parolayla girer: giriş sayfasında "Parolayla giriş yap"ı seç. E-posta kodu, Google ve davetlerin kurulumu: [`setup-auth.md`](./setup-auth.md).
 
 ## 7. Notion arşivini içe aktar
 
