@@ -104,10 +104,13 @@ test("the form explains what is wrong instead of losing what was typed", async (
 });
 
 test("another user cannot open the owner's tasting for editing", async ({ page, request }) => {
-  // Any public tasting of the owner will do; its id is public information.
-  const response = await request.get(`${url}/rest/v1/tasting_feed?select=tasting_id&limit=1`, {
-    headers: apiHeaders,
-  });
+  // Any public tasting that is not the guest's own will do; its id is public information.
+  const response = await request.get(
+    `${url}/rest/v1/tasting_feed?select=tasting_id&username=neq.e2e_guest&limit=1`,
+    {
+      headers: apiHeaders,
+    },
+  );
   const rows = (await response.json()) as { tasting_id: string }[];
   const tastingId = rows[0]?.tasting_id;
   expect(tastingId).toBeTruthy();

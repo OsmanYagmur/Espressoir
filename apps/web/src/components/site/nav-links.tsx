@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
   { href: "/kahveler", label: t.nav.coffees },
+  { href: "/akis", label: t.nav.feed },
   { href: "/istatistik", label: t.nav.stats },
   { href: "/hakkinda", label: t.nav.about },
 ];

@@ -2,20 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useSyncExternalStore } from "react";
+import { Suspense } from "react";
 
 import { t } from "@/lib/i18n";
-
-// Supabase keeps the session in a cookie named "sb-<project>-auth-token" (split into
-// ".0", ".1" when long). Its presence is all the header needs to know.
-const hasSession = () => /(?:^|;\s*)sb-[^=;]*-auth-token/.test(document.cookie);
-
-/** Browsers with the Cookie Store API say when a cookie changes; the rest wait for a navigation. */
-function subscribe(onChange: () => void) {
-  const store = (window as { cookieStore?: EventTarget }).cookieStore;
-  store?.addEventListener("change", onChange);
-  return () => store?.removeEventListener("change", onChange);
-}
+import { useHasSession } from "@/lib/session-cookie";
 
 function Anchor({ signedIn }: { signedIn: boolean }) {
   return (
@@ -33,7 +23,7 @@ function CurrentAccountLink() {
   // The header outlives page changes; reading the path re-renders it after each one, so
   // the cookie is looked at again right after signing in or out.
   usePathname();
-  const signedIn = useSyncExternalStore(subscribe, hasSession, () => false);
+  const signedIn = useHasSession();
   return <Anchor signedIn={signedIn} />;
 }
 

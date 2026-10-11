@@ -25,10 +25,12 @@ export {
   type UsernameProblem,
 } from "./account";
 export {
+  RANKING_PRIOR_WEIGHT,
   SMALL_SAMPLE,
   countPoints,
   monthlyCounts,
   scoreHistogram,
+  shrunkenMean,
   summarize,
   summarizeBy,
   type GroupSummary,

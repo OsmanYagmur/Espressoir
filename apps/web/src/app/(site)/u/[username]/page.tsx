@@ -1,3 +1,4 @@
+import { SMALL_SAMPLE, scoreHistogram, summarizeBy } from "@espressoir/core";
 import type { Profile } from "@espressoir/db";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -9,8 +10,11 @@ import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { SectionHeading } from "@/components/site/section-heading";
+import { FollowButton } from "@/components/social/follow-button";
+import { GroupMeans } from "@/components/stats/group-means";
+import { ScoreColumns } from "@/components/stats/score-columns";
 import { getArchive } from "@/lib/data/archive";
-import { findProfile, tastingsBy } from "@/lib/data/selectors";
+import { findProfile, scoresOf, tastingsBy } from "@/lib/data/selectors";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { profilePath } from "@/lib/routes";
@@ -78,6 +82,14 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
   const tastings = all.filter((tasting) => tasting.status === "logged");
   const wishlist = all.filter((tasting) => tasting.status === "wishlist");
   const { stats } = profile;
+  const scores = scoresOf(tastings);
+  const methodNames = new Map(archive.brewMethods.map((method) => [method.slug, method.name]));
+  const methods = summarizeBy(
+    tastings,
+    (tasting) => tasting.brewMethod?.slug ?? null,
+    (tasting) => tasting.score,
+  ).map((group) => ({ ...group, label: methodNames.get(group.key) ?? group.key }));
+  let section = 0;
 
   return (
     <>
@@ -99,6 +111,9 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
               </p>
             ) : null}
             <p>{format(p.joined, { date: formatLongDay(profile.joinedAt.slice(0, 10)) })}</p>
+            <div className="mt-3">
+              <FollowButton userId={profile.id} />
+            </div>
           </>
         }
       />
@@ -134,7 +149,30 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
         ]}
       />
 
-      <SectionHeading index={1} title={p.tastingsTitle} aside={tastings.length} />
+      {scores.length >= SMALL_SAMPLE ? (
+        // The same charts as the site-wide statistics, drawn from this notebook alone.
+        <div className="grid gap-x-10 md:grid-cols-2">
+          <section aria-labelledby="dagilim">
+            <SectionHeading
+              id="dagilim"
+              index={++section}
+              title={p.distributionTitle}
+              aside={format(p.averageNote, { n: scores.length })}
+            />
+            <ScoreColumns counts={scoreHistogram(scores)} className="mt-4 mb-7" />
+          </section>
+          <section aria-labelledby="yontemler">
+            <SectionHeading id="yontemler" index={++section} title={p.methodsTitle} />
+            <GroupMeans
+              caption={p.methodsTitle}
+              groupLabel={t.stats.columns.method}
+              rows={methods}
+            />
+          </section>
+        </div>
+      ) : null}
+
+      <SectionHeading index={++section} title={p.tastingsTitle} aside={tastings.length} />
       {tastings.length === 0 ? (
         <p className="border-b border-border py-8 text-muted-foreground">{p.empty}</p>
       ) : (
@@ -147,7 +185,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
 
       {wishlist.length > 0 ? (
         <>
-          <SectionHeading index={2} title={p.wishlistTitle} aside={wishlist.length} />
+          <SectionHeading index={++section} title={p.wishlistTitle} aside={wishlist.length} />
           <ul aria-label={p.wishlistTitle}>
             {wishlist.map((tasting) => (
               <TastingItem key={tasting.id} tasting={tasting} showCoffee />

@@ -103,7 +103,7 @@ export default async function HomePage() {
             title={t.home.latestTitle}
             aside={
               empty ? undefined : (
-                <Link href="/kahveler" className={linkFocus}>
+                <Link href="/akis" className={linkFocus}>
                   {t.home.latestAll} →
                 </Link>
               )
@@ -135,7 +135,7 @@ export default async function HomePage() {
           ) : (
             <ol aria-label={t.home.latestTitle}>
               {latest.map((tasting) => (
-                <TastingItem key={tasting.id} tasting={tasting} showCoffee clampNotes />
+                <TastingItem key={tasting.id} tasting={tasting} showCoffee showAuthor clampNotes />
               ))}
             </ol>
           )}

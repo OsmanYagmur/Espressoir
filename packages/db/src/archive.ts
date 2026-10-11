@@ -50,6 +50,8 @@ export const coffeeRowSchema = z
     first_tasted_at: day.nullable(),
     last_tasted_at: day.nullable(),
     brew_method_slugs: z.array(z.string()),
+    // Absent until the community migration is applied; everything older was reviewed.
+    is_reviewed: z.boolean().optional(),
   })
   .transform((row) => ({
     id: row.coffee_id,
@@ -67,6 +69,8 @@ export const coffeeRowSchema = z
     description: row.description,
     imageUrl: row.image_url,
     createdAt: row.created_at,
+    /** False for a coffee a member added that no admin has checked yet. */
+    isReviewed: row.is_reviewed ?? true,
     stats: {
       tastingCount: row.tasting_count,
       ratedCount: row.rated_count,

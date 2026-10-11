@@ -89,6 +89,8 @@ function validationState(error: z.ZodError, values: Record<string, string>): Tas
 
 /** Turns a database refusal into something a person can act on. */
 function databaseMessage(error: { code?: string; message: string }): string {
+  // The database keeps the limits (tastings, new coffees and brands per day).
+  if (error.message.includes("rate_limited")) return t.panel.errors.rateLimited;
   if (error.message.includes("tastings_one_wishlist_per_coffee_key")) {
     return t.panel.errors.wishlistDuplicate;
   }

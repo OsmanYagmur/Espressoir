@@ -2,7 +2,7 @@
  * Pure views over the archive: what each page needs, derived from the one cached read.
  * No I/O here, so these are cheap to call from any page and easy to reason about.
  */
-import { summarize, type CoffeeListItem, type Summary } from "@espressoir/core";
+import { shrunkenMean, summarize, type CoffeeListItem, type Summary } from "@espressoir/core";
 import type { Archive, BrewMethod, Coffee, Profile, Tasting } from "@espressoir/db";
 
 /** Most recent first; undated tastings go last, newest entry first among equals. */
@@ -92,13 +92,22 @@ export function homeSummary(archive: Archive): HomeSummary {
   };
 }
 
-/** Best-rated coffees; ties go to the more recently tasted one. */
+/**
+ * Best-rated coffees. Ranked by a mean shrunk towards the overall mean (see shrunkenMean),
+ * so a single rating does not outrank a well-supported one; ties go to the more recently
+ * tasted coffee. The score shown next to each stays its plain average.
+ */
 export function topCoffees(archive: Archive, limit: number): Coffee[] {
+  const overall = summarize(scoresOf(loggedTastings(archive))).mean;
+  if (overall === null) return [];
+  const rank = (coffee: Coffee) =>
+    shrunkenMean(coffee.stats.avgScore!, coffee.stats.ratedCount, overall);
+
   return archive.coffees
     .filter((coffee) => coffee.stats.avgScore !== null)
     .sort(
       (a, b) =>
-        b.stats.avgScore! - a.stats.avgScore! ||
+        rank(b) - rank(a) ||
         (b.stats.lastTastedAt ?? "").localeCompare(a.stats.lastTastedAt ?? "") ||
         a.name.localeCompare(b.name, "tr"),
     )

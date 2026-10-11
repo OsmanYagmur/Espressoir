@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { countPoints, monthlyCounts, scoreHistogram, summarize, summarizeBy } from "./stats";
+import {
+  countPoints,
+  monthlyCounts,
+  scoreHistogram,
+  shrunkenMean,
+  summarize,
+  summarizeBy,
+} from "./stats";
 
 describe("summarize", () => {
   it("returns nulls for an empty sample", () => {
@@ -106,5 +113,19 @@ describe("countPoints", () => {
       { x: 6, y: 8, count: 2 },
       { x: 10, y: 9, count: 1 },
     ]);
+  });
+});
+
+describe("shrunkenMean", () => {
+  it("pulls a mean towards the prior, less so the more data it has", () => {
+    // One perfect score among coffees that average 7: (10 + 3·7) / 4.
+    expect(shrunkenMean(10, 1, 7)).toBeCloseTo(7.75);
+    // Twenty ratings averaging 9 barely move: (180 + 21) / 23.
+    expect(shrunkenMean(9, 20, 7)).toBeCloseTo(8.739, 3);
+    expect(shrunkenMean(9, 20, 7)).toBeGreaterThan(shrunkenMean(10, 1, 7));
+  });
+
+  it("leaves a mean that equals the prior where it is", () => {
+    expect(shrunkenMean(7, 5, 7)).toBe(7);
   });
 });
