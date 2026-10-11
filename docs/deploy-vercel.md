@@ -23,7 +23,7 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
    ⛔ `SUPABASE_SECRET_KEY` ve `SUPABASE_DB_URL` Vercel'e **girmez**. Uygulama çalışırken bunlara hiç ihtiyaç duymuyor.
 
    - **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
-   - Yalnızca prod projen varsa Preview + Development sütununa da prod değerlerini gir; yoksa PR önizlemeleri derlenmez.
+   - Preview + Development sütunu boş kalırsa PR önizlemeleri derlenmez (PR'daki **Vercel** satırı kırmızı olur; canlı site etkilenmez). Dev projesini sonradan eklemek: [`setup-supabase.md`](./setup-supabase.md), "Dev projesini sonradan eklemek".
    - Vercel'in önerdiği **Supabase entegrasyonunu ekleme** ("Optional Integrations → Add"). Proje zaten var; entegrasyon yeni bir veritabanı kurar ve gizli anahtarları Vercel'e taşır.
 
 5. **Deploy.** İlk yayın `https://<proje-adı>.vercel.app` adresinde açılır.
@@ -64,7 +64,7 @@ Alan adı Squarespace'te kayıtlı. Squarespace'in DNS'ini kullanmaya devam edip
 
 Domain bağlandıktan sonra:
 
-- Kod tarafında ek bir şey gerekmiyor; site adresi Vercel'in production domain değişkeninden otomatik okunuyor.
+- Vercel'de `NEXT_PUBLIC_SITE_URL` değerini `https://espressoir.com` yap ve yeniden yayınla (ayrıntı: aşağıda "Site adresi").
 - Supabase prod → Authentication → URL Configuration → Site URL: `https://espressoir.com`.
 
 ## Hobby notları
@@ -98,4 +98,12 @@ Değişkeni düzelttikten sonra: **Deployments** → **⋯** → **Redeploy**. B
 
 ## Site adresi
 
-Sayfaların kalıcı adresi (canonical), sitemap ve paylaşım görselleri projenin **üretim alan adını** kullanır: `espressoir.com` Vercel'e bağlanana kadar `https://<proje>.vercel.app`, bağlandıktan sonraki ilk derlemeden itibaren `https://espressoir.com`. Kodda değişiklik gerekmez.
+Sayfaların kalıcı adresi (canonical), sitemap ve paylaşım görselleri şu sırayla belirlenir: `NEXT_PUBLIC_SITE_URL` → Vercel'in üretim alan adı değişkeni → `espressoir.com`.
+
+**Alan adı bağlanana kadar adresi elle sabitle.** Otomatik algılama canlı projede çalışmıyor: 11 Ekim 2026'da sayfalar hâlâ bağlı olmayan `https://espressoir.com` adresini gösteriyordu. Aynı değişkenlerle yerel derleme doğru adresi üretiyor, yani neden Vercel proje ayarlarında; dışarıdan görülemiyor. Elle sabitlemek her durumda çalışır:
+
+1. Vercel → proje → **Settings → Environment Variables** → `NEXT_PUBLIC_SITE_URL` (varsa düzenle, yoksa ekle): değer `https://espressoir.vercel.app`, ortam yalnızca **Production**, tür **Config**.
+2. **Deployments** → son yayın → **⋯** → **Redeploy**.
+3. Kontrol: <https://espressoir.vercel.app/robots.txt> dosyasının son satırı `Sitemap: https://espressoir.vercel.app/sitemap.xml` olmalı.
+
+`espressoir.com` bağlandığında aynı değişkeni `https://espressoir.com` yap ve yeniden yayınla. Preview ortamına bu değişkeni ekleme; önizlemeler arama motorlarına kapalıdır.

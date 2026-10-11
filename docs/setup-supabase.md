@@ -2,7 +2,22 @@
 
 Docker gerekmez. Geliştirme doğrudan bulut **dev** projesine karşı yapılır; **prod** yalnızca canlı site içindir.
 
-> **Yalnızca prod ile başlanabilir.** Site şu an tek projeyle (`espressoir-prod`) yayında. Bu durumda aşağıdaki adımları yalnızca prod için yap, `.env.prod.local` dosyasını doldur ve komutların `:prod` / `--env prod` biçimlerini kullan. Dev projesi, canlı veriye dokunmadan deneme yapmak istediğinde eklenir; Vercel'in önizleme (Preview) derlemeleri de o zaman dev'i okuyabilir.
+> **Site tek projeyle (`espressoir-prod`) yayına girdi.** Faz 2'de kayıt, giriş ve topluluk özellikleri canlı veriye dokunmadan denensin diye dev projesi ekleniyor: aşağıdaki "Dev projesini sonradan eklemek" listesi bunun kısa yolu.
+
+## Dev projesini sonradan eklemek
+
+Prod kurulu ve `.env.prod.local` dolu ise sırayla:
+
+1. **Projeyi aç:** 1. adımdaki tablonun `dev` sütunu (`espressoir-dev`, Frankfurt, Free).
+2. **Auth ayarları:** 2. adım. "Allow new users to sign up" **kapalı**, Site URL `http://localhost:3000`.
+3. **Anahtarlar ve env dosyası:** 3. ve 4. adımlar. `cp .env.example .env.local`, dev değerlerini yaz. `SUPABASE_DEV_PROJECT_REF` değerini `.env.prod.local` dosyasına da ekle; `OWNER_USERNAME` ve `OWNER_EMAIL` prod'dakiyle aynı olabilir.
+4. **Şema:** `pnpm db:push:dev --dry-run`, sorun yoksa `pnpm db:push:dev`.
+5. **Hesabın:** `pnpm admin:bootstrap` (prod'dakinden farklı bir parola seç).
+6. **Veri:** `pnpm import:notion` gerçek arşivinin kopyasını dev'e yazar; yalnızca örnek veri istersen `pnpm seed:dev`.
+7. **Vercel önizlemeleri:** Vercel → proje → **Settings → Environment Variables** → `NEXT_PUBLIC_SUPABASE_URL` ve `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` değişkenlerini **Preview** ve **Development** ortamları için dev değerleriyle ekle (tür: Config). Production'daki değerlere dokunma.
+8. **Uyandırma:** GitHub → repo → Settings → Secrets and variables → Actions → **Variables**: `DEV_SUPABASE_URL`, `DEV_SUPABASE_PUBLISHABLE_KEY` ([`backup.md`](./backup.md)). Dev projesi 7 gün dokunulmazsa duraklar.
+
+Kontrol: `pnpm dev` ile `http://localhost:3000` dev verisini gösterir; açık bir PR'da **Vercel** satırı yeşile döner ve önizleme adresi dev verisiyle açılır.
 
 ## 1. İki projeyi aç
 

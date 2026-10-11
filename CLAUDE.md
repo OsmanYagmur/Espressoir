@@ -99,8 +99,13 @@ data/                        owner's Notion export + reports (git-ignored)
 - No secret/service key at app runtime; only in local scripts. Vercel gets URL + publishable key
   (as **Config** variables: a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
-  `turbo.json` (`globalEnv`), Vercel's own `VERCEL_*` included, or the build silently sees it as
-  unset. `getSiteUrl()` depends on `VERCEL_ENV` / `VERCEL_URL` / `VERCEL_PROJECT_PRODUCTION_URL`.
+  `turbo.json` (`globalEnv`) or the build silently sees it as unset.
+- `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
+  On the live project the Vercel step does not take effect (measured 2026-10-11: build-time and
+  request-time pages both fall back to `espressoir.com`, while a local build with the same
+  variables gets it right; the cause sits in the Vercel project settings and is unknown), so the
+  owner pins `NEXT_PUBLIC_SITE_URL` there. Never build sign-in redirects from `getSiteUrl()`:
+  use the origin of the request.
 - Files read at runtime must be real files inside `apps/web`, read by literal path (the share-image
   fonts: `src/assets/fonts`, also listed in `outputFileTracingIncludes`). Never read through
   `node_modules`: under pnpm that is a symlink a Vercel function does not contain. Next loads
@@ -136,17 +141,51 @@ data/                        owner's Notion export + reports (git-ignored)
       real Supabase. **Live since 2026-10-10 at https://espressoir.vercel.app** (prod Supabase
       migrated, owner account created, Notion archive imported, login + adding a tasting used
       on the live site).
-- [ ] Phase 2 community · Phase 3 social depth · Phase 4+ Expo app.
+- [ ] Phase 2 — community. Plan approved 2026-10-11. Four steps, each its own branch + PR; the
+      next one starts only with the owner's go:
+  - [ ] 2.0 prep: dev Supabase project + Vercel Preview (owner's steps), docs.
+  - [ ] 2A accounts: e-mail code and Google sign-in, onboarding (username + terms),
+        `/u/[username]`, `/hesap` (edit, export, delete), KVKK draft pages, `pnpm user:invite`.
+  - [ ] 2B community tastings: pg_trgm coffee search + duplicate warning, rate limits, community
+        numbers, follows, `/akis`, profile stats, the single archive read split up.
+  - [ ] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
+        admin panel (hide, delete, restrict, review, merge).
+- [ ] Phase 3 social depth · Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
 ephemeral Supabase on the GitHub runner instead of the cloud dev project.
 
-Still open after Phase 1, all on the owner's side (remind, don't do for them): point
-`espressoir.com` at Vercel (DNS is still Squarespace parking); give the Vercel Preview environment
-the two public variables; make the repo private, then add the backup secrets and keepalive
-variables (docs/backup.md) — until then prod has no backups. Only the prod Supabase project
-exists; a dev project is optional and was skipped, so `:dev` commands have no target yet.
+Phase 2 decisions (owner-approved; they become conventions as each step lands):
+
+- **Try on dev first:** a dev Supabase project feeds Vercel Preview; prod sees a change after it.
+- **Invite-only beta:** Supabase signup stays closed, invitations go out from a local script.
+  Opening to everyone is one setting, flipped only after the KVKK texts are legally reviewed and
+  backups run.
+- **New coffees appear at once**, flagged unreviewed (`coffees.reviewed_at`), with daily caps and
+  an admin review/merge tool; unreviewed coffees stay out of the sitemap.
+- **Site-wide pages show the community** (`/`, `/kahveler`, `/istatistik`); one person's archive,
+  the owner's included, is their profile `/u/[username]`.
+- **Sign-in:** e-mail one-time code (6 digits, with a link in the same mail) and Google.
+  Password login stays for existing accounts only; nobody signs up with a password.
+- **"May this user post?" is a database rule:** `can_post()` = onboarded and not restricted, used
+  by RLS. Rate limits are triggers, because the browser writes to Supabase directly.
+- **Likes, comments, follows, reports and feed pages are client islands** talking to Supabase;
+  Server Actions only where a cached page must be refreshed (tastings) and for sign-in callbacks.
+- **The single `archive` read is split** into tagged reads (`catalog`, `coffee:<id>`,
+  `user:<id>`, `feed`, `stats`) so one write no longer re-renders the whole site.
+- **Rankings use a shrunken mean** (`m = 3`); what is displayed stays the raw mean with its `n`.
+- **Turnstile only on sign-in requests**, through Supabase Auth's CAPTCHA setting (the secret
+  lives in Supabase). The brief also asked for it on comments; the owner accepted leaving that
+  out: a browser check cannot guard a table the browser writes to.
+- **Account deletion and data export are RPCs**; still no secret at app runtime.
+
+Still open on the owner's side (remind, don't do for them): pin `NEXT_PUBLIC_SITE_URL` on Vercel
+(docs/deploy-vercel.md, "Site adresi"); create the dev project and give Vercel Preview its
+variables (docs/setup-supabase.md); point `espressoir.com` at Vercel (DNS is still Squarespace
+parking); make the repo private, then add the backup secrets and keepalive variables
+(docs/backup.md) — until then prod has no backups, and nobody is invited before that. Until the
+dev project exists, `:dev` commands have no target.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to
