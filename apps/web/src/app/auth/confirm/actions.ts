@@ -26,7 +26,8 @@ export async function confirmLink(
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (error) {
       console.error("[auth] link refused:", error.status, error.code);
-      return { error: t.auth.link.invalid };
+      // Someone who was invited has no account yet, so they cannot ask for a code instead.
+      return { error: type === "invite" ? t.auth.link.inviteInvalid : t.auth.link.invalid };
     }
   } catch (error) {
     console.error("[auth] link failed:", error instanceof Error ? error.message : error);

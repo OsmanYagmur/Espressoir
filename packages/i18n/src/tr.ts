@@ -322,6 +322,8 @@ export const tr = {
       submit: "Girişi tamamla",
       submitting: "Giriş yapılıyor…",
       invalid: "Bu bağlantı geçersiz ya da süresi dolmuş. Giriş sayfasından yeni bir kod iste.",
+      inviteInvalid:
+        "Bu davet bağlantısı geçersiz ya da süresi dolmuş. Seni davet eden kişiden yeni bir davet iste.",
       back: "Giriş sayfasına dön",
     },
     notices: {

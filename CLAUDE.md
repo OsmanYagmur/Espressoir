@@ -163,6 +163,9 @@ Accounts (Phase 2A):
 - **Usernames:** placeholder `u_<16 hex>` until `complete_onboarding_v1`; reserved names live in
   `reserved_usernames()` and `RESERVED_USERNAMES` (a test compares them); a trigger allows one
   change per 30 days. Admins and scripts (no API user) are exempt.
+- **An invited address has no account until the invitation is accepted**, and the auth server
+  treats an unconfirmed user as a signup: while signup is closed it sends them no sign-in code.
+  An invitation that ran out (one hour) is replaced by running `pnpm user:invite` again.
 - `requireUser()` sends signed-out visitors to `/giris` and members without a username to
   `/hesap/kurulum`; `requireSession()` is for the onboarding page only. The test helper
   `createUser()` returns onboarded users unless told `onboarded: false`.
