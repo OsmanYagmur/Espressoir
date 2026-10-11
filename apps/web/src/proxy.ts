@@ -38,7 +38,7 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const target =
-    !signedIn && pathname.startsWith("/panel")
+    !signedIn && (pathname.startsWith("/panel") || pathname.startsWith("/hesap"))
       ? "/giris"
       : signedIn && pathname === "/giris"
         ? "/panel"
@@ -52,5 +52,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/panel/:path*", "/giris"],
+  matcher: ["/panel/:path*", "/hesap/:path*", "/giris"],
 };

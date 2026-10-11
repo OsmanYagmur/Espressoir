@@ -16,7 +16,7 @@ import { requireUser } from "@/lib/auth";
 import { byRecency } from "@/lib/data/selectors";
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { coffeePath } from "@/lib/routes";
+import { coffeePath, profilePath } from "@/lib/routes";
 
 import { signOut } from "../giris/actions";
 
@@ -51,9 +51,17 @@ async function MyTastings() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-4">
-        <p className="font-mono text-xs text-muted-foreground">
-          {format(t.panel.signedInAs, { username: user.username })}
-        </p>
+        <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 font-mono text-xs">
+          <p className="text-muted-foreground">
+            {format(t.panel.signedInAs, { username: user.username })}
+          </p>
+          <Link href={profilePath(user.username)} className={`uppercase ${linkFocus}`}>
+            {t.panel.profile}
+          </Link>
+          <Link href="/hesap" className={`uppercase ${linkFocus}`}>
+            {t.panel.account}
+          </Link>
+        </div>
         <div className="flex gap-3">
           <Button asChild className="h-11 font-mono text-xs uppercase">
             <Link href="/panel/tadim/yeni">{t.panel.newTasting}</Link>
