@@ -96,7 +96,11 @@ pnpm user:invite ada@example.com                 # dev
 pnpm user:invite --env prod ada@example.com      # prod (proje ref'ini sorar)
 ```
 
-Birden fazla adres yazılabilir. Davet edilen kişi bağlantıya tıklar, kullanıcı adını seçer, koşulları kabul eder ve defteri açılır. Bağlantı bir saat geçerlidir; süresi dolarsa aynı kişi giriş sayfasında e-postasını yazıp kod isteyerek de hesabını açabilir.
+Birden fazla adres yazılabilir. Davet edilen kişi bağlantıya tıklar, kullanıcı adını seçer, koşulları kabul eder ve defteri açılır.
+
+**Bağlantı bir saat geçerlidir.** Davet kabul edilene kadar o kişinin hesabı yoktur; bu yüzden süresi dolan biri giriş sayfasından kod **isteyemez** (kayıt kapalı). Çözüm aynı komutu aynı adresle yeniden çalıştırmak: yeni bir bağlantı gider, eskisi geçersiz olur. Davet atmadan önce karşı tarafa haber vermek işi kolaylaştırır.
+
+Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP Expiration", en fazla 86400 saniye = 24 saat), ama bu ayar giriş kodlarını da kapsar: 6 haneli bir kodun 24 saat geçerli kalması tahmin edilmesini kolaylaştırır. Uzatacaksan aynı ekranda kod uzunluğunu 8'e çıkar.
 
 İlk daveti göndermeden önce: repoyu private yap ve yedekleri kur ([`backup.md`](./backup.md)). Başkalarının verisi yedeksiz bir veritabanında durmamalı.
 
@@ -117,6 +121,7 @@ Birden fazla adres yazılabilir. Davet edilen kişi bağlantıya tıklar, kullan
 | E-postada kod yok, yalnızca bağlantı var                      | Şablonlar güncellenmemiş (4. adım).                                                                                                                  |
 | Bağlantı ana sayfaya düşüyor                                  | `/auth/callback` adresi Redirect URLs listesinde yok (2. adım).                                                                                      |
 | "Bu bağlantı geçersiz ya da süresi dolmuş"                    | Bağlantı bir kez kullanılmış ya da bir saati geçmiş. Giriş sayfasından yeni kod iste.                                                                |
+| "Bu davet bağlantısı geçersiz ya da süresi dolmuş"            | Davet bir saati geçmiş ya da yerine yenisi gönderilmiş. `pnpm user:invite` komutunu aynı adresle yeniden çalıştır.                                   |
 | Google: "Kayıt şu an yalnızca davetle"                        | O Google hesabının e-postasıyla açılmış bir hesap yok.                                                                                               |
 | `pnpm user:invite`: "e-posta servisi bu adrese gönderemiyor"  | Özel SMTP kurulmamış (3. adım).                                                                                                                      |
 | Kendi hesabınla giremiyorsun ve Turnstile'dan şüpheleniyorsun | Supabase'te Captcha korumasını geçici olarak kapat, gir, nedenini bul, yeniden aç.                                                                   |

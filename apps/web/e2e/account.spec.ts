@@ -190,7 +190,7 @@ test("an invited person joins, picks a name, gets a profile, takes their data an
   expect(gone?.status()).toBe(404);
 });
 
-test("an invitation that was never opened still works through the login form", async ({
+test("an invitation that ran out is replaced by inviting again", async ({
   page,
   request,
   baseURL,
@@ -198,12 +198,26 @@ test("an invitation that was never opened still works through the login form", a
   const stamp = Date.now().toString(36);
   const email = `gec-${stamp}@example.test`;
   invite(email, baseURL!);
+  const first = await waitForMail(request, email, Date.now() - 5000);
 
-  // The invited address asks for a code instead of using the link.
-  const since = Date.now() + 1;
+  // Until the invitation is accepted there is no account: asking for a sign-in code gets
+  // the usual answer and no e-mail (signup is closed).
   await requestCode(page, email);
-  const { code } = await waitForMail(request, email, since);
-  await enterCode(page, code!);
+  await page.waitForTimeout(2000);
+  expect(await mailCount(request, email)).toBe(1);
+
+  // Inviting the same address again sends a fresh link, and the old one stops working.
+  const since = Date.now();
+  invite(email, baseURL!);
+  const second = await waitForMail(request, email, since);
+  expect(second.link).not.toBe(first.link);
+
+  await page.goto(first.link!);
+  await page.getByRole("button", { name: "Girişi tamamla" }).click();
+  await expect(page.getByText("Bu davet bağlantısı geçersiz ya da süresi dolmuş.")).toBeVisible();
+
+  await page.goto(second.link!);
+  await page.getByRole("button", { name: "Girişi tamamla" }).click();
   await finishOnboarding(page, `gec_${stamp}`);
   await expect(page).toHaveURL(/\/panel$/);
 });
