@@ -284,3 +284,36 @@ test.describe("community", () => {
     await expect(page.getByRole("link", { name: "Takip et" })).toHaveAttribute("href", "/giris");
   });
 });
+
+test.describe("a tasting's own page", () => {
+  test("is reached from the counts under a tasting and invites visitors to sign in", async ({
+    page,
+  }) => {
+    await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
+    await page
+      .getByRole("list", { name: "Tadımlar" })
+      .getByRole("link", { name: "0 beğeni · 0 yorum" })
+      .click();
+    await expect(page).toHaveURL(/\/tadim\/[0-9a-f-]{36}$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ristretto (Siyah Kapsül).");
+    // (The page that was left stays in the document, hidden: ask for what is on screen.)
+    await expect(
+      page.getByRole("list", { name: "Tadım", exact: true }).getByText("Çok yoğun, kısa ve net."),
+    ).toBeVisible();
+
+    // Liking and commenting need an account; reporting is not offered to visitors.
+    await expect(page.getByRole("link", { name: "Beğen", exact: true })).toHaveAttribute(
+      "href",
+      "/giris",
+    );
+    await expect(page.getByRole("heading", { name: /Yorumlar/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Şikâyet et" })).toHaveCount(0);
+    // One person's note is not offered to search engines; the coffee's page is.
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+
+  test("does not exist for an unknown id", async ({ page }) => {
+    const response = await page.goto("/tadim/00000000-0000-4000-8000-000000000000");
+    expect(response?.status()).toBe(404);
+  });
+});

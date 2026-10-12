@@ -54,20 +54,21 @@ Playwright suite, signed-in flows included, against `supabase start` on the runn
 ```
 apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'navigation'
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
-                             /kvkk, /gizlilik, /kosullar)
-apps/web/src/app/(account)/  /giris, /panel, /hesap, /hesap/kurulum (dynamic; session read
-                             behind <Suspense>)
+                             /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
+apps/web/src/app/(account)/  /giris, /panel, /panel/yonetim (admin), /hesap, /hesap/kurulum
+                             (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*, /giris only
 apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
                              panel/ (forms, coffee picker), account/ (header link, Turnstile,
-                             form message), social/ (follow button, feed)
+                             form message), social/ (follow, feed, like, comments, report)
 apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (pure views)
 apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
-                             community.spec (need Supabase + its mail catcher) · helpers.ts
+                             community.spec, moderation.spec (need Supabase + its mail catcher)
+                             · helpers.ts
 packages/core                siteConfig, fold/slug, score tiers, catalog enums, stats, list filter,
                              account rules (usernames, TERMS_VERSION)
 packages/db                  generated types, read models (archive, profile; Zod), input schemas
@@ -202,6 +203,32 @@ Community (Phase 2B):
   browsers that hold a session (`useHasSession()`); a visitor never downloads it.
 - **Rankings** (`topCoffees`) sort by `shrunkenMean` (prior weight 3); the number shown is the
   plain average with its `n`.
+  Interaction and moderation (Phase 2C):
+
+- **A tasting has its own page** (`/tadim/[id]`, static, `noindex`): likes and comments happen
+  there. Lists only show the counts, from the cached archive, as a link to it.
+- **Comments:** one level of replies (a trigger checks the parent). Members insert
+  `tasting_id, user_id, parent_id, body` and update `body`, nothing else (column grants), and
+  have no DELETE: removal is `delete_comment_v1`, which deletes an unanswered comment and blanks
+  an answered one (words and author gone, placeholder kept for the replies). An account that is
+  deleted takes its comments the same way (`profiles_scrub_comments`).
+- **Likes:** other people's logged tastings only, as yourself.
+- **Hidden content** (`hidden_at` on tastings and comments) is invisible to everyone but its
+  author and admins, and left out of every number, whoever asks.
+- **Reports** point at a tasting, comment, profile or coffee (a trigger checks it exists); one
+  per person per thing; read by the reporter and admins.
+- **Admin acts go through `admin_*_v1` functions** (hide, delete, restrict, resolve, review,
+  merge coffees/brands): each checks `is_admin()` and writes `moderation_log` via
+  `log_admin_action()`. The panel (`/panel/yonetim`) is plain forms and Server Actions that
+  call them as the signed-in admin: no service key, and the page works without JavaScript.
+- **Rate-limited rows are stamped with `now()`** for members (`enforce_rate_limit`), so a
+  back-dated `created_at` cannot dodge a limit. Comments 10 / 5 min and 100 / day, likes
+  500 / day, reports 20 / day.
+- **New enums** (`report_target`, `report_reason`, `report_status`) are mirrored in
+  `@espressoir/core` and compared by the contract test.
+- In Playwright, a page left through a link stays in the document, hidden: use role queries
+  or `.filter({ visible: true })`, not bare `getByText`, after a client-side navigation.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -221,7 +248,7 @@ Community (Phase 2B):
         `/u/[username]`, `/hesap` (edit, export, delete), KVKK draft pages, `pnpm user:invite`.
   - [x] 2B community tastings: pg_trgm coffee search + duplicate warning, rate limits, community
         numbers, follows, `/akis`, profile stats, the single archive read split up.
-  - [ ] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
+  - [x] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
         admin panel (hide, delete, restrict, review, merge).
 - [ ] Phase 3 social depth · Phase 4+ Expo app.
 

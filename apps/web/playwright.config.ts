@@ -5,12 +5,15 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 // Lets environments with a preinstalled Chromium (e.g. sandboxes) skip `playwright install`.
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 // Specs that sign in and write to the database.
-const SIGNED_IN = /(panel|account|community)\.spec/;
+const SIGNED_IN = /(panel|account|community|moderation)\.spec/;
 
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
+  // CI runs the signed-in specs against one shared database, where one spec restricts an
+  // account another spec uses: one file at a time there.
+  workers: process.env.CI ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
