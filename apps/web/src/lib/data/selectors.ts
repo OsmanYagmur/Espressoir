@@ -221,3 +221,10 @@ export function findProfile(archive: Archive, username: string): Profile | undef
 export function tastingsBy(archive: Archive, userId: string): Tasting[] {
   return archive.tastings.filter((tasting) => tasting.author.id === userId).sort(byRecency);
 }
+
+/** A public, logged tasting by its id: what a tasting's own page shows. */
+export function findTasting(archive: Archive, tastingId: string): Tasting | undefined {
+  return archive.tastings.find(
+    (tasting) => tasting.id === tastingId && tasting.status === "logged",
+  );
+}

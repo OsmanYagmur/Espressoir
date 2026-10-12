@@ -11,3 +11,7 @@ export function brandPath(brandSlug: string): Route {
 export function profilePath(username: string): Route {
   return `/u/${username}` as Route;
 }
+
+export function tastingPath(tastingId: string): Route {
+  return `/tadim/${tastingId}` as Route;
+}

@@ -11,6 +11,7 @@ import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { SectionHeading } from "@/components/site/section-heading";
+import { ReportButton } from "@/components/social/report-button";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { toCoffeeCards } from "@/lib/coffee-cards";
 import { getArchive } from "@/lib/data/archive";
@@ -240,6 +241,8 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
           {t.coffee.unreviewedNote}
         </p>
       )}
+      {/* Wrong brand, a duplicate, a made-up coffee: members can point it out. */}
+      <ReportButton target="coffee" targetId={coffee.id} className="border-b border-border py-2" />
 
       <div className="grid md:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-labelledby="tadimlar" className="md:border-r md:border-rule md:pr-6">

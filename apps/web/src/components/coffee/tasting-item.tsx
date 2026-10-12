@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { brandPath, coffeePath, profilePath } from "@/lib/routes";
+import { brandPath, coffeePath, profilePath, tastingPath } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { ScoreBadge } from "./score-badge";
@@ -26,18 +26,22 @@ export function brewLabel(tasting: Pick<Tasting, "brewMethod" | "device">): stri
  * One tasting as a form entry: date and method on the label line, the note beneath, the
  * score boxed on the right. With `showCoffee` the coffee is the entry's title (feeds);
  * without it the entry sits on that coffee's own page. With `showAuthor` the label line
- * starts with who wrote it (everywhere but on that person's own page).
+ * starts with who wrote it (everywhere but on that person's own page). A public tasting
+ * ends with its likes and comments, linking to its own page where both happen; `standalone`
+ * leaves that line out (on that page itself).
  */
 export function TastingItem({
   tasting,
   showCoffee = false,
   showAuthor = false,
   clampNotes = false,
+  standalone = false,
 }: {
   tasting: Tasting;
   showCoffee?: boolean;
   showAuthor?: boolean;
   clampNotes?: boolean;
+  standalone?: boolean;
 }) {
   const wishlist = tasting.status === "wishlist";
   const meta = [
@@ -101,6 +105,16 @@ export function TastingItem({
             {wishlist ? t.coffeeDetail.wishlistNote : t.coffee.noNotes}
           </p>
         )}
+        {!standalone && !wishlist && tasting.visibility === "public" ? (
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
+            <Link href={tastingPath(tasting.id)} prefetch={false} className={linkFocus}>
+              {format(t.social.counts, {
+                likes: tasting.likeCount,
+                comments: tasting.commentCount,
+              })}
+            </Link>
+          </p>
+        ) : null}
       </div>
       <ScoreBadge score={tasting.score} />
     </li>

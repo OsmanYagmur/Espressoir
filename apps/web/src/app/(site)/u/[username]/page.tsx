@@ -11,6 +11,7 @@ import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { SectionHeading } from "@/components/site/section-heading";
 import { FollowButton } from "@/components/social/follow-button";
+import { ReportButton } from "@/components/social/report-button";
 import { GroupMeans } from "@/components/stats/group-means";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { getArchive } from "@/lib/data/archive";
@@ -111,8 +112,9 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
               </p>
             ) : null}
             <p>{format(p.joined, { date: formatLongDay(profile.joinedAt.slice(0, 10)) })}</p>
-            <div className="mt-3">
+            <div className="mt-3 grid justify-items-start gap-2 md:justify-items-end">
               <FollowButton userId={profile.id} />
+              <ReportButton target="profile" targetId={profile.id} />
             </div>
           </>
         }

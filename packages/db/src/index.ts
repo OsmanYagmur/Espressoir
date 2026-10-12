@@ -41,3 +41,13 @@ export {
   type Profile,
   type ProfileInput,
 } from "./profile";
+
+export {
+  COMMENT_SELECT,
+  commentRowSchema,
+  parseCommentBody,
+  threadComments,
+  type Comment,
+  type CommentInputError,
+  type CommentThread,
+} from "./comment";

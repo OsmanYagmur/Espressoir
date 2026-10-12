@@ -65,3 +65,10 @@ export async function requireUser(): Promise<Session> {
   if (!session.user.onboarded) redirect("/hesap/kurulum");
   return session;
 }
+
+/** For the admin pages. The database refuses everyone else anyway; this only saves them the view. */
+export async function requireAdmin(): Promise<Session> {
+  const session = await requireUser();
+  if (session.user.role !== "admin") redirect("/panel");
+  return session;
+}
