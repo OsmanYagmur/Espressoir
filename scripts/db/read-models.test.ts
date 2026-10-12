@@ -5,6 +5,9 @@ import {
   CAPSULE_SYSTEMS,
   COFFEE_FORMS,
   COFFEE_PROCESSES,
+  REPORT_REASONS,
+  REPORT_STATUSES,
+  REPORT_TARGETS,
   ROAST_LEVELS,
   TASTING_STATUSES,
   TASTING_VISIBILITIES,
@@ -36,7 +39,10 @@ describe("database ↔ app contract", () => {
              enum_range(null::public.roast_level)::text[] as roast_level,
              enum_range(null::public.brew_category)::text[] as brew_category,
              enum_range(null::public.tasting_status)::text[] as tasting_status,
-             enum_range(null::public.tasting_visibility)::text[] as tasting_visibility
+             enum_range(null::public.tasting_visibility)::text[] as tasting_visibility,
+             enum_range(null::public.report_target)::text[] as report_target,
+             enum_range(null::public.report_reason)::text[] as report_reason,
+             enum_range(null::public.report_status)::text[] as report_status
     `);
     expect(row).toEqual({
       coffee_form: [...COFFEE_FORMS],
@@ -46,6 +52,9 @@ describe("database ↔ app contract", () => {
       brew_category: [...BREW_CATEGORIES],
       tasting_status: [...TASTING_STATUSES],
       tasting_visibility: [...TASTING_VISIBILITIES],
+      report_target: [...REPORT_TARGETS],
+      report_reason: [...REPORT_REASONS],
+      report_status: [...REPORT_STATUSES],
     });
   });
 

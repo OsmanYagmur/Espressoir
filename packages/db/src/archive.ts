@@ -114,6 +114,10 @@ export const tastingRowSchema = z
     brew_method_slug: z.string().nullable(),
     brew_method_name: z.string().nullable(),
     brew_category: z.enum(BREW_CATEGORIES).nullable(),
+    // Absent until the interaction migration is applied.
+    like_count: z.number().int().nonnegative().optional(),
+    comment_count: z.number().int().nonnegative().optional(),
+    is_hidden: z.boolean().optional(),
   })
   .transform((row) => ({
     id: row.tasting_id,
@@ -132,6 +136,11 @@ export const tastingRowSchema = z
     },
     wouldBuyAgain: row.would_buy_again,
     createdAt: row.created_at,
+    likeCount: row.like_count ?? 0,
+    /** Comments that are neither removed nor hidden. */
+    commentCount: row.comment_count ?? 0,
+    /** Hidden by an admin: only the author (and admins) ever receive such a row. */
+    isHidden: row.is_hidden ?? false,
     author: { id: row.user_id, username: row.username, displayName: row.display_name },
     coffee: {
       id: row.coffee_id,

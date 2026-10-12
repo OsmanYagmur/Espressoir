@@ -254,6 +254,134 @@ export type Database = {
           },
         ];
       };
+      comments: {
+        Row: {
+          body: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          edited_at: string | null;
+          hidden_at: string | null;
+          hidden_by: string | null;
+          hidden_reason: string | null;
+          id: string;
+          parent_id: string | null;
+          tasting_id: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          body?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
+          id?: string;
+          parent_id?: string | null;
+          tasting_id: string;
+          user_id?: string | null;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string;
+          deleted_at?: string | null;
+          edited_at?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
+          id?: string;
+          parent_id?: string | null;
+          tasting_id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comments_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "comments_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "comments_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tastings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       flavor_tags: {
         Row: {
           id: string;
@@ -349,6 +477,135 @@ export type Database = {
           {
             foreignKeyName: "follows_following_id_fkey";
             columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      likes: {
+        Row: {
+          created_at: string;
+          tasting_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          tasting_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          tasting_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "likes_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "likes_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "likes_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tastings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      moderation_log: {
+        Row: {
+          action: string;
+          admin_id: string | null;
+          created_at: string;
+          id: string;
+          note: string | null;
+          target_id: string | null;
+          target_type: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          action: string;
+          admin_id?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          target_id?: string | null;
+          target_type: string;
+        };
+        Update: {
+          action?: string;
+          admin_id?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          target_id?: string | null;
+          target_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "moderation_log_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "moderation_log_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "moderation_log_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "moderation_log_admin_id_fkey";
+            columns: ["admin_id"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
             referencedColumns: ["user_id"];
@@ -452,6 +709,106 @@ export type Database = {
         };
         Relationships: [];
       };
+      reports: {
+        Row: {
+          created_at: string;
+          details: string | null;
+          id: string;
+          reason: Database["public"]["Enums"]["report_reason"];
+          reporter_id: string | null;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: Database["public"]["Enums"]["report_status"];
+          target_id: string;
+          target_type: Database["public"]["Enums"]["report_target"];
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason: Database["public"]["Enums"]["report_reason"];
+          reporter_id?: string | null;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          target_id: string;
+          target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Update: {
+          created_at?: string;
+          details?: string | null;
+          id?: string;
+          reason?: Database["public"]["Enums"]["report_reason"];
+          reporter_id?: string | null;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          target_id?: string;
+          target_type?: Database["public"]["Enums"]["report_target"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       tasting_flavor_tags: {
         Row: {
           flavor_tag_id: string;
@@ -507,6 +864,9 @@ export type Database = {
           coffee_id: string;
           created_at: string;
           device: string | null;
+          hidden_at: string | null;
+          hidden_by: string | null;
+          hidden_reason: string | null;
           id: string;
           notes: string | null;
           price_paid: number | null;
@@ -531,6 +891,9 @@ export type Database = {
           coffee_id: string;
           created_at?: string;
           device?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
           id?: string;
           notes?: string | null;
           price_paid?: number | null;
@@ -554,6 +917,9 @@ export type Database = {
           coffee_id?: string;
           created_at?: string;
           device?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
           id?: string;
           notes?: string | null;
           price_paid?: number | null;
@@ -610,6 +976,34 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tasting_feed";
             referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "tastings_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "tastings_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "tastings_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
           },
           {
             foreignKeyName: "tastings_user_id_fkey";
@@ -704,10 +1098,13 @@ export type Database = {
           coffee_id: string | null;
           coffee_name: string | null;
           coffee_slug: string | null;
+          comment_count: number | null;
           created_at: string | null;
           device: string | null;
           display_name: string | null;
           form: Database["public"]["Enums"]["coffee_form"] | null;
+          is_hidden: boolean | null;
+          like_count: number | null;
           notes: string | null;
           origin_country: string | null;
           score: number | null;
@@ -759,10 +1156,13 @@ export type Database = {
           coffee_id: string | null;
           coffee_name: string | null;
           coffee_slug: string | null;
+          comment_count: number | null;
           created_at: string | null;
           device: string | null;
           display_name: string | null;
           form: Database["public"]["Enums"]["coffee_form"] | null;
+          is_hidden: boolean | null;
+          like_count: number | null;
           notes: string | null;
           origin_country: string | null;
           score: number | null;
@@ -780,19 +1180,60 @@ export type Database = {
       };
     };
     Functions: {
+      admin_delete_v1: {
+        Args: {
+          p_note?: string;
+          p_target_id: string;
+          p_target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Returns: undefined;
+      };
+      admin_merge_brands_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
+      admin_merge_coffees_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
+      admin_resolve_report_v1: {
+        Args: {
+          p_note?: string;
+          p_report_id: string;
+          p_status: Database["public"]["Enums"]["report_status"];
+        };
+        Returns: undefined;
+      };
+      admin_restrict_user_v1: {
+        Args: { p_days?: number; p_reason?: string; p_user_id: string };
+        Returns: string;
+      };
+      admin_review_coffee_v1: {
+        Args: { p_coffee_id: string; p_reviewed?: boolean };
+        Returns: undefined;
+      };
+      admin_set_hidden_v1: {
+        Args: {
+          p_hidden: boolean;
+          p_reason?: string;
+          p_target_id: string;
+          p_target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Returns: undefined;
+      };
       can_post: { Args: Record<PropertyKey, never>; Returns: boolean };
       coffee_search_text: { Args: { p_brand_id: string; p_name: string }; Returns: string };
       complete_onboarding_v1: {
         Args: { p_display_name?: string; p_terms_version?: string; p_username: string };
         Returns: string;
       };
+      delete_comment_v1: { Args: { p_comment_id: string }; Returns: string };
       delete_my_account_v1: { Args: Record<PropertyKey, never>; Returns: undefined };
       export_my_data_v1: { Args: Record<PropertyKey, never>; Returns: Json };
+      export_my_data_v2: { Args: Record<PropertyKey, never>; Returns: Json };
       find_brand_id: { Args: { p_name: string }; Returns: string };
       fold_tr: { Args: { input: string }; Returns: string };
       immutable_unaccent: { Args: { input: string }; Returns: string };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_reserved_username: { Args: { p_username: string }; Returns: boolean };
+      log_admin_action: {
+        Args: { p_action: string; p_note?: string; p_target_id: string; p_target_type: string };
+        Returns: undefined;
+      };
       log_tasting_v1: {
         Args: {
           p_acidity?: number;
@@ -824,6 +1265,7 @@ export type Database = {
           tasting_id: string;
         }[];
       };
+      merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
       search_coffees_v1: {
         Args: { p_limit?: number; p_query: string };
@@ -847,6 +1289,9 @@ export type Database = {
       coffee_form: "whole_bean" | "ground" | "capsule";
       coffee_process: "washed" | "natural" | "honey" | "anaerobic" | "wet_hulled" | "other";
       flavor_group: "fruity" | "floral" | "chocolate" | "nutty" | "spice" | "sweet" | "other";
+      report_reason: "spam" | "abuse" | "wrong_info" | "other";
+      report_status: "open" | "resolved" | "dismissed";
+      report_target: "tasting" | "comment" | "profile" | "coffee";
       roast_level: "light" | "medium_light" | "medium" | "medium_dark" | "dark";
       tasting_source: "web" | "notion_import";
       tasting_status: "logged" | "wishlist";
@@ -968,6 +1413,9 @@ export const Constants = {
       coffee_form: ["whole_bean", "ground", "capsule"],
       coffee_process: ["washed", "natural", "honey", "anaerobic", "wet_hulled", "other"],
       flavor_group: ["fruity", "floral", "chocolate", "nutty", "spice", "sweet", "other"],
+      report_reason: ["spam", "abuse", "wrong_info", "other"],
+      report_status: ["open", "resolved", "dismissed"],
+      report_target: ["tasting", "comment", "profile", "coffee"],
       roast_level: ["light", "medium_light", "medium", "medium_dark", "dark"],
       tasting_source: ["web", "notion_import"],
       tasting_status: ["logged", "wishlist"],
