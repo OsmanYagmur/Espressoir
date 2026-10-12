@@ -246,29 +246,28 @@ test("the admin reviews a member's coffee and merges a duplicate into the origin
   const admin = await sessionOf(browser, owner);
   await admin.goto("/panel/yonetim");
   const pending = admin.getByRole("list", { name: "Doğrulanmamış kahveler" });
+  // A coffee's row is the one that links to it: its name also shows up in every other
+  // row, as a choice in the "merge into" list.
+  const rowOf = (name: string) =>
+    pending.getByRole("listitem").filter({ has: admin.getByRole("link", { name }) });
 
   // Reviewed: off the list, and the mark is gone from its page.
-  await pending
-    .getByRole("listitem")
-    .filter({ hasText: fresh })
-    .getByRole("button", { name: "Doğrula" })
-    .click();
+  await rowOf(fresh).getByRole("button", { name: "Doğrula" }).click();
   await expect(seen(admin, "İşlem tamamlandı.")).toBeVisible();
-  await expect(pending.getByText(fresh)).toHaveCount(0);
+  await expect(rowOf(fresh)).toHaveCount(0);
   await admin.goto(freshUrl);
   await expect(admin.getByRole("heading", { level: 1 })).toHaveText(`${fresh}.`);
   await expect(admin.getByRole("note")).toHaveCount(0);
 
   // Merged: the duplicate is gone and its tasting now belongs to the original.
   await admin.goto("/panel/yonetim");
-  const row = pending.getByRole("listitem").filter({ hasText: duplicate });
-  await row
+  await rowOf(duplicate)
     .getByLabel("Şununla birleştir")
     .selectOption({ label: "Nespresso — Ristretto (Siyah Kapsül)" });
-  await row.getByRole("checkbox").check();
-  await row.getByRole("button", { name: "Birleştir" }).click();
+  await rowOf(duplicate).getByRole("checkbox").check();
+  await rowOf(duplicate).getByRole("button", { name: "Birleştir" }).click();
   await expect(seen(admin, "İşlem tamamlandı.")).toBeVisible();
-  await expect(pending.getByText(duplicate)).toHaveCount(0);
+  await expect(rowOf(duplicate)).toHaveCount(0);
 
   await admin.goto(RISTRETTO);
   await expect(admin.getByRole("list", { name: "Tadımlar" })).toContainText(note);

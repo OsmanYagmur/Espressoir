@@ -136,9 +136,9 @@ async function loadTargets(
 function HideForm({ target, hidden }: { target: Pick<Target, "type" | "id">; hidden: boolean }) {
   return (
     <form action={setHidden} className="flex flex-wrap items-center gap-2">
-      <input type="hidden" name="type" value={target.type} />
-      <input type="hidden" name="id" value={target.id} />
-      <input type="hidden" name="hidden" value={hidden ? "0" : "1"} />
+      <input type="hidden" name="targetType" value={target.type} />
+      <input type="hidden" name="targetId" value={target.id} />
+      <input type="hidden" name="hide" value={hidden ? "0" : "1"} />
       {hidden ? null : (
         <Input
           name="reason"
@@ -158,8 +158,8 @@ function HideForm({ target, hidden }: { target: Pick<Target, "type" | "id">; hid
 function RemoveForm({ target }: { target: Pick<Target, "type" | "id"> }) {
   return (
     <form action={removeContent} className="flex flex-wrap items-center gap-2">
-      <input type="hidden" name="type" value={target.type} />
-      <input type="hidden" name="id" value={target.id} />
+      <input type="hidden" name="targetType" value={target.type} />
+      <input type="hidden" name="targetId" value={target.id} />
       <label className="flex items-center gap-1.5 font-mono text-xs">
         <input type="checkbox" name="sure" required className="accent-foreground" />
         {a.sure}
@@ -276,7 +276,7 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
               {target?.userId ? <RestrictForm userId={target.userId} /> : null}
             </div>
             <form action={resolveReport} className="flex flex-wrap items-center gap-2">
-              <input type="hidden" name="id" value={report.id} />
+              <input type="hidden" name="reportId" value={report.id} />
               <Input
                 name="note"
                 aria-label={a.note}
@@ -347,7 +347,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                 <form action={reviewCoffee}>
-                  <input type="hidden" name="id" value={coffee.id} />
+                  <input type="hidden" name="coffeeId" value={coffee.id} />
                   <Button type="submit" className={small}>
                     {a.review}
                   </Button>

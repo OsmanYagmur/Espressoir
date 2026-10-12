@@ -47,11 +47,14 @@ async function run(
 
 const text = (formData: FormData, name: string) => String(formData.get(name) ?? "").trim();
 
+// Field names avoid "id", "hidden" and the like on purpose: a control named after a
+// property of its form replaces that property (form.id would be the input, not a string).
+
 export async function setHidden(formData: FormData): Promise<void> {
   const parsed = z.object({ type: target, id, hidden: z.enum(["0", "1"]) }).safeParse({
-    type: formData.get("type"),
-    id: formData.get("id"),
-    hidden: formData.get("hidden"),
+    type: formData.get("targetType"),
+    id: formData.get("targetId"),
+    hidden: formData.get("hide"),
   });
   if (!parsed.success) back("invalid");
   await run((supabase) =>
@@ -65,9 +68,11 @@ export async function setHidden(formData: FormData): Promise<void> {
 }
 
 export async function removeContent(formData: FormData): Promise<void> {
-  const parsed = z
-    .object({ type: target, id, sure: z.literal("on") })
-    .safeParse({ type: formData.get("type"), id: formData.get("id"), sure: formData.get("sure") });
+  const parsed = z.object({ type: target, id, sure: z.literal("on") }).safeParse({
+    type: formData.get("targetType"),
+    id: formData.get("targetId"),
+    sure: formData.get("sure"),
+  });
   if (!parsed.success) back("invalid");
   await run((supabase) =>
     supabase.rpc("admin_delete_v1", {
@@ -81,7 +86,7 @@ export async function removeContent(formData: FormData): Promise<void> {
 export async function resolveReport(formData: FormData): Promise<void> {
   const parsed = z
     .object({ id, status: z.enum(["resolved", "dismissed"]) })
-    .safeParse({ id: formData.get("id"), status: formData.get("status") });
+    .safeParse({ id: formData.get("reportId"), status: formData.get("status") });
   if (!parsed.success) back("invalid");
   await run((supabase) =>
     supabase.rpc("admin_resolve_report_v1", {
@@ -121,7 +126,7 @@ export async function restrictMember(formData: FormData): Promise<void> {
 }
 
 export async function reviewCoffee(formData: FormData): Promise<void> {
-  const parsed = id.safeParse(formData.get("id"));
+  const parsed = id.safeParse(formData.get("coffeeId"));
   if (!parsed.success) back("invalid");
   await run((supabase) => supabase.rpc("admin_review_coffee_v1", { p_coffee_id: parsed.data }));
 }

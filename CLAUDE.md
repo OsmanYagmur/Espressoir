@@ -226,6 +226,9 @@ Community (Phase 2B):
   500 / day, reports 20 / day.
 - **New enums** (`report_target`, `report_reason`, `report_status`) are mirrored in
   `@espressoir/core` and compared by the contract test.
+- **Never name a form control after a property of its form** (`id`, `hidden`, `action`,
+  `method`, `target`, `name`…): the control replaces that property (`form.id` becomes the
+  input). The admin forms use `targetId`, `hide`, `reportId`.
 - In Playwright, a page left through a link stays in the document, hidden: use role queries
   or `.filter({ visible: true })`, not bare `getByText`, after a client-side navigation.
 
