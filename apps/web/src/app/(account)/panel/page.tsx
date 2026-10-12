@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { byRecency } from "@/lib/data/selectors";
-import { formatDay } from "@/lib/format";
+import { formatDay, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { coffeePath, profilePath } from "@/lib/routes";
 
@@ -48,6 +48,17 @@ async function MyTastings() {
   if (error) throw new Error(error.message);
   const tastings = z.array(tastingRowSchema).parse(data).sort(byRecency);
 
+  // A restriction is the member's to know about: until when, and why.
+  const { data: state } = await supabase
+    .from("profile_private")
+    .select("restricted_until, restricted_reason")
+    .eq("profile_id", user.id)
+    .maybeSingle();
+  const restrictedUntil =
+    state?.restricted_until && new Date(state.restricted_until) > new Date()
+      ? state.restricted_until
+      : null;
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-4">
@@ -61,6 +72,11 @@ async function MyTastings() {
           <Link href="/hesap" className={`uppercase ${linkFocus}`}>
             {t.panel.account}
           </Link>
+          {user.role === "admin" ? (
+            <Link href="/panel/yonetim" className={`uppercase ${linkFocus}`}>
+              {t.panel.admin}
+            </Link>
+          ) : null}
         </div>
         <div className="flex gap-3">
           <Button asChild className="h-11 font-mono text-xs uppercase">
@@ -73,6 +89,20 @@ async function MyTastings() {
           </form>
         </div>
       </div>
+
+      {restrictedUntil ? (
+        <p
+          role="alert"
+          className="mt-4 border-2 border-brand px-4 py-3 font-mono text-sm leading-relaxed"
+        >
+          {format(t.panel.restricted, {
+            date: formatLongDay(restrictedUntil.slice(0, 10)),
+            reason: state?.restricted_reason
+              ? format(t.panel.restrictedReason, { reason: state.restricted_reason })
+              : "",
+          }).trim()}
+        </p>
+      ) : null}
 
       <SectionHeading index={1} title={t.panel.myTastings} aside={tastings.length} />
       {tastings.length === 0 ? (
@@ -94,6 +124,7 @@ async function MyTastings() {
                         : t.coffee.undated,
                     brewLabel(tasting),
                     tasting.visibility === "public" ? null : t.panel.visibility[tasting.visibility],
+                    tasting.isHidden ? t.panel.hidden : null,
                   ]
                     .filter(Boolean)
                     .join(" · ")}

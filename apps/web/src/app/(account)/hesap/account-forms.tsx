@@ -97,7 +97,10 @@ export function ExportDataButton() {
     setPending(true);
     setFailed(false);
     try {
-      const { data, error } = await getBrowserSupabase().rpc("export_my_data_v1");
+      const supabase = getBrowserSupabase();
+      // v2 adds comments, likes and reports; a database that predates it still has v1.
+      let { data, error } = await supabase.rpc("export_my_data_v2");
+      if (error?.code === "PGRST202") ({ data, error } = await supabase.rpc("export_my_data_v1"));
       if (error || !data) throw new Error(error?.message ?? "empty export");
 
       const file = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
