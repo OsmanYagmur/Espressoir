@@ -35,7 +35,7 @@ export default async function FeedPage() {
 
   return (
     <PageShell>
-      <PageHeading title={t.feed.title} aside={<p>{t.feed.intro}</p>} />
+      <PageHeading title={t.feed.title} aside={<p>{t.feed.intro}</p>} lead={t.feed.lead} />
       {/* The open tab is in the URL, which the prerendered page does not know: until the
           browser takes over, everyone sees the public first page. */}
       <Suspense fallback={first}>

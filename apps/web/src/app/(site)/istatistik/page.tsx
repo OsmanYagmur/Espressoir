@@ -94,7 +94,7 @@ export default async function StatsPage() {
 
   return (
     <PageShell>
-      <PageHeading title={t.stats.title} aside={<p>{t.stats.intro}</p>} />
+      <PageHeading title={t.stats.title} aside={<p>{t.stats.intro}</p>} lead={t.stats.intro} />
 
       <FieldStrip
         fields={[

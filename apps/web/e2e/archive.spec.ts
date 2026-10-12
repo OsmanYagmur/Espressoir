@@ -172,6 +172,52 @@ test("theme can be switched to dark and back", async ({ page }) => {
   await expect(html).not.toHaveClass(/dark/);
 });
 
+test("the look can be switched to the tasting form, is remembered, and switches back", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const html = page.locator("html");
+  const lead = page.getByText(/^Espressoir bir kahve tadım defteri\./);
+  const steps = page.getByRole("heading", { name: "Nasıl çalışır" });
+
+  // Sade is what a first visit gets: the page says what it is and where to start.
+  await expect(html).toHaveAttribute("data-look", "sade");
+  await expect(lead).toBeVisible();
+  await expect(steps).toBeAttached();
+  await expect(
+    page.getByRole("main").getByRole("link", { name: /Kahvelere göz at/ }),
+  ).toBeVisible();
+
+  await page.getByTestId("theme-toggle").click();
+  await page.getByRole("menuitemradio", { name: "Tadım formu" }).click();
+  await expect(html).toHaveAttribute("data-look", "form");
+  await expect(lead).toBeHidden();
+  await expect(page.getByText("V60 · filtre · kapsül", { exact: false })).toBeVisible();
+  await expect(page.getByRole("menu")).toBeHidden();
+
+  // The choice belongs to the browser: it is there again after a reload, on any page.
+  await page.goto("/kahveler");
+  await expect(html).toHaveAttribute("data-look", "form");
+  await expect(page.getByText(/^Katalogdaki bütün kahveler\./)).toBeHidden();
+
+  await page.getByTestId("theme-toggle").click();
+  await expect(page.getByRole("menuitemradio", { name: "Tadım formu" })).toBeChecked();
+  await page.getByRole("menuitemradio", { name: "Sade" }).click();
+  await expect(html).toHaveAttribute("data-look", "sade");
+  await expect(page.getByText(/^Katalogdaki bütün kahveler\./)).toBeVisible();
+});
+
+test("no page is wider than a phone's screen", async ({ page }) => {
+  for (const path of ["/", "/kahveler", "/akis", "/istatistik"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow, `${path} scrolls sideways`).toBeLessThanOrEqual(0);
+  }
+});
+
 test("unknown pages show the Turkish 404", async ({ page }) => {
   const response = await page.goto("/boyle-bir-sayfa-yok");
   expect(response?.status()).toBe(404);
@@ -241,7 +287,10 @@ test.describe("members and legal texts", () => {
     await page.getByRole("banner").getByRole("link", { name: "Giriş" }).click();
     await expect(page).toHaveURL(/\/giris$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
-    await expect(page.getByText(/Kayıt şimdilik davetle\./)).toBeVisible();
+    // (Each look prints this sentence in its own place; one of the two is on screen.)
+    await expect(
+      page.getByText(/Kayıt şimdilik davetle\./).filter({ visible: true }),
+    ).toBeVisible();
   });
 });
 

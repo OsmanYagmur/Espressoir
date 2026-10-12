@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { ThemeProvider } from "@/components/site/theme-provider";
 import { t } from "@/lib/i18n";
+import { DEFAULT_LOOK, LOOK_SCRIPT } from "@/lib/look-config";
 import { getSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
@@ -51,8 +52,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="tr" suppressHydrationWarning className={`${archivo.variable} ${plexMono.variable}`}>
+    <html
+      lang="tr"
+      data-look={DEFAULT_LOOK}
+      suppressHydrationWarning
+      className={`${archivo.variable} ${plexMono.variable}`}
+    >
       <body className="flex min-h-dvh flex-col">
+        {/* Runs before the first paint, so a visitor who chose the other look never sees
+            this one flash by. Pages are static: the choice lives in the browser. */}
+        <script dangerouslySetInnerHTML={{ __html: LOOK_SCRIPT }} />
         <ThemeProvider>
           <a
             href="#icerik"

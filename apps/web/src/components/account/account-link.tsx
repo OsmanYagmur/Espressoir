@@ -12,7 +12,7 @@ function Anchor({ signedIn }: { signedIn: boolean }) {
     <Link
       href={signedIn ? "/panel" : "/giris"}
       prefetch={false}
-      className="py-1 font-mono text-xs font-medium tracking-wide uppercase underline-offset-[6px] hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="py-1 font-mono text-xs font-medium tracking-wide uppercase underline-offset-[6px] hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none sade:border sade:border-foreground sade:px-3 sade:py-1.5 sade:hover:bg-foreground sade:hover:text-background sade:hover:no-underline"
     >
       {signedIn ? t.nav.panel : t.nav.signIn}
     </Link>

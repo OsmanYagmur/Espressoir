@@ -26,7 +26,13 @@ export const tr = {
     closeMenu: "Menüyü kapat",
   },
   theme: {
-    toggle: "Temayı değiştir",
+    toggle: "Görünümü değiştir",
+    colors: "Renk",
+    look: "Görünüm",
+    looks: {
+      sade: "Sade",
+      form: "Tadım formu",
+    },
     light: "Açık",
     dark: "Koyu",
     system: "Sistem",
@@ -36,6 +42,33 @@ export const tr = {
     intro:
       "Kahve tadım defterleri: puan, not ve demleme yöntemiyle. Filtreden kapsüle, cezveden espressoya.",
     methodsLine: "V60 · filtre · kapsül · French press · espresso · Türk kahvesi",
+    lead: "Espressoir bir kahve tadım defteri. İçtiğin kahveyi puanla, notunu yaz; başkalarının ne içtiğine ve ne dediğine bak.",
+    cta: {
+      coffees: "Kahvelere göz at",
+      feed: "Akışı gör",
+      signIn: "Giriş yap",
+      addTasting: "Tadım ekle",
+    },
+    howTitle: "Nasıl çalışır",
+    how: [
+      {
+        title: "Kahveni bul",
+        body: "Katalogda marka ya da kahve adıyla ara. Yoksa tadımını eklerken sen eklersin.",
+      },
+      {
+        title: "Puanla, notunu yaz",
+        body: "1 ile 10 arasında bir puan ve birkaç cümle. Sonra dönüp ne içtiğini hatırlarsın.",
+      },
+      {
+        title: "Takip et, konuş",
+        body: "Beğendiğin defterleri takip et; tadımların altına yorum yaz, beğen.",
+      },
+    ],
+    hints: {
+      latest: "Üyelerin en son eklediği tadımlar. Altındaki kutu, o tadımın yorumlarını açar.",
+      top: "Ortalaması en yüksek kahveler. Az tadılmış olanlar sıralamada geride tutulur.",
+      methods: "Espresso da var, cezve de. Sayılar o yöntemle yapılan tadım adedi.",
+    },
     fields: {
       tastings: "Tadım",
       coffees: "Kahve",
@@ -149,6 +182,7 @@ export const tr = {
     methodWithDevice: "{method} · {device}",
   },
   coffees: {
+    lead: "Katalogdaki bütün kahveler. Ara, süz, sırala; bir kahveye tıklayınca puanını ve tadımlarını görürsün.",
     title: "Kahveler",
     description:
       "Arşivdeki tüm kahveler: markaya, forma, demleme yöntemine, puana ve yıla göre süz; ada göre ara.",
@@ -405,6 +439,7 @@ export const tr = {
     },
   },
   feed: {
+    lead: "Üyelerin eklediği son tadımlar, en yenisi üstte. Takip ettiklerinin tadımları ayrı sekmede.",
     title: "Akış",
     description:
       "Espressoir üyelerinin son tadımları: kim, hangi kahveyi, nasıl demledi, kaç puan verdi.",

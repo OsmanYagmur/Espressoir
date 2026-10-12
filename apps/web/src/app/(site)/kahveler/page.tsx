@@ -37,7 +37,11 @@ export default async function CoffeesPage() {
 
   return (
     <PageShell>
-      <PageHeading title={t.coffees.title} aside={<p>{t.coffees.description}</p>} />
+      <PageHeading
+        title={t.coffees.title}
+        aside={<p>{t.coffees.description}</p>}
+        lead={t.coffees.lead}
+      />
       {coffees.length === 0 ? (
         <p className="border-b border-border py-10 text-muted-foreground">
           {t.coffees.emptyArchive}
