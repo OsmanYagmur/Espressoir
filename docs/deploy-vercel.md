@@ -24,9 +24,9 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
    Son iki satır giriş kurulumuyla gelir ([`setup-auth.md`](./setup-auth.md)); o adımlar yapılana kadar boş kalır.
 
-   ⛔ `SUPABASE_SECRET_KEY` ve `SUPABASE_DB_URL` Vercel'e **girmez**. Uygulama çalışırken bunlara hiç ihtiyaç duymuyor.
+   ⛔ `SUPABASE_DB_URL` Vercel'e **girmez**. `SUPABASE_SECRET_KEY` yalnızca yönetimdeki davet ekranı için, **Secret** türünde ve ortam başına kendi projesinin anahtarıyla eklenir ([`setup-auth.md`](./setup-auth.md), "Davet ekranı"); o ekranı kullanmayacaksan hiç ekleme.
 
-   - **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
+   - Tablodakiler için **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
    - Preview + Development sütunu boş kalırsa PR önizlemeleri derlenmez (PR'daki **Vercel** satırı kırmızı olur; canlı site etkilenmez). Dev projesini sonradan eklemek: [`setup-supabase.md`](./setup-supabase.md), "Dev projesini sonradan eklemek".
    - Vercel'in önerdiği **Supabase entegrasyonunu ekleme** ("Optional Integrations → Add"). Proje zaten var; entegrasyon yeni bir veritabanı kurar ve gizli anahtarları Vercel'e taşır.
 

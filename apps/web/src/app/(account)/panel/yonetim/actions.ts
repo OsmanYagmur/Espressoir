@@ -3,11 +3,14 @@
 import { REPORT_TARGETS, RESTRICTION_DAYS, normalizeUsername } from "@espressoir/core";
 import type { TypedSupabaseClient } from "@espressoir/db";
 import { updateTag } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
+import { AUTH_CALLBACK_PATH } from "@/lib/auth-config";
 import { ARCHIVE_TAG } from "@/lib/data/archive";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const PANEL = "/panel/yonetim";
 
@@ -153,4 +156,70 @@ export async function mergeBrand(formData: FormData): Promise<void> {
   await run((supabase) =>
     supabase.rpc("admin_merge_brands_v1", { p_from: parsed.data.from, p_into: parsed.data.into }),
   );
+}
+
+// ── invitations ───────────────────────────────────────────────────────────────────────────
+// These three use the secret key (lib/supabase/admin.ts): inviting, listing and cancelling
+// invitations are Auth admin calls. Each starts with requireAdmin().
+
+const AUTH_ERRORS: Record<string, string> = {
+  email_exists: "invite_exists",
+  email_address_invalid: "invite_email",
+  email_address_not_authorized: "invite_smtp",
+  over_email_send_rate_limit: "invite_rate",
+};
+
+/** Where the link in the e-mail leads: this deployment, whatever its address is. */
+async function callbackUrl(): Promise<string | null> {
+  const request = await headers();
+  const origin =
+    request.get("origin") ??
+    (request.get("x-forwarded-host")
+      ? `${request.get("x-forwarded-proto") ?? "https"}://${request.get("x-forwarded-host")}`
+      : null);
+  return origin ? new URL(AUTH_CALLBACK_PATH, origin).toString() : null;
+}
+
+/** Sends an invitation, or a fresh one to an address whose invitation ran out. */
+export async function inviteMember(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const email = z.email().max(254).safeParse(text(formData, "email").toLowerCase());
+  if (!email.success) back("invite_email");
+
+  const admin = createAdminClient();
+  const redirectTo = await callbackUrl();
+  if (!admin || !redirectTo) back("invite_unavailable");
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(email.data, { redirectTo });
+  if (error) {
+    const known = AUTH_ERRORS[error.code ?? ""];
+    if (!known) console.error("[admin] invitation refused:", error.status, error.code);
+    back(known ?? "unknown");
+  }
+  back();
+}
+
+/**
+ * Withdraws an invitation nobody has accepted. The account is looked up again here and
+ * left alone unless it is exactly that: invited, never confirmed. A member's account is
+ * never deleted from this screen.
+ */
+export async function cancelInvitation(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const parsed = id.safeParse(formData.get("userId"));
+  if (!parsed.success) back("invalid");
+
+  const admin = createAdminClient();
+  if (!admin) back("invite_unavailable");
+
+  const { data, error } = await admin.auth.admin.getUserById(parsed.data);
+  if (error || !data.user) back("target_not_found");
+  if (!data.user.invited_at || data.user.email_confirmed_at) back("invite_accepted");
+
+  const removed = await admin.auth.admin.deleteUser(parsed.data);
+  if (removed.error) {
+    console.error("[admin] invitation not withdrawn:", removed.error.status, removed.error.code);
+    back("unknown");
+  }
+  back();
 }
