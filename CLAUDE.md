@@ -110,8 +110,12 @@ data/                        owner's Notion export + reports (git-ignored)
 - Client components shared with the server must not format with `Intl` (hydration); prepare
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
-- No secret/service key at app runtime; only in local scripts. Vercel gets URL + publishable key
-  (as **Config** variables: a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
+- **One secret at app runtime, for one screen.** `SUPABASE_SECRET_KEY` is read only by
+  `lib/supabase/admin.ts` (`server-only`), only for the invitation screen's Auth admin calls,
+  only after `requireAdmin()` (owner-approved exception, 2D). Never use that client on the app's
+  own tables; everything else still runs with the publishable key and the caller's session.
+  Vercel holds it as a **Secret** (prod key on Production, dev key on Preview); the public
+  values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
@@ -142,6 +146,15 @@ data/                        owner's Notion export + reports (git-ignored)
   `.label-caps`), radius 0, numbered section headings (`SectionHeading`). Tokens only in
   `apps/web/src/app/globals.css` (AA-checked, light + dark). Score colour never carries meaning
   alone — the number is always shown.
+- **Two looks over that design, same markup** (2D; the owner found the form hard to read but
+  wants it kept): `sade` (default) and `form` (the original, untouched), on `<html data-look>`.
+  Style with the `sade:` / `form:` variants; what only one look shows is hidden in the other
+  (`form:hidden`, `sade:hidden`). Sade's three rules: links in the content are underlined in the
+  accent (opt out with `data-plain` or a `Button`), a page says what it is for (the `lead` of
+  `PageHeading`, the `hint` of `SectionHeading`), the main thing outweighs its details. The choice is per browser
+  (`localStorage`, applied before paint by `LOOK_SCRIPT`; `lib/look.ts`), switched from the
+  header menu. **A change to the form look needs the owner's say-so**; new pages must read well
+  in both.
 - CSS `uppercase` follows `lang="tr"` (i → İ). Uppercase only Turkish UI copy; never coffee or
   brand names (render those as written), and give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
@@ -232,6 +245,17 @@ Community (Phase 2B):
 - In Playwright, a page left through a link stays in the document, hidden: use role queries
   or `.filter({ visible: true })`, not bare `getByText`, after a client-side navigation.
 
+Invitations (Phase 2D):
+
+- **Panel → Yönetim → Davetler** sends, re-sends and withdraws invitations with Supabase's Auth
+  admin API (`inviteMember`, `cancelInvitation`). The link leads to the origin of the request,
+  so a preview invites to itself. "Pending" = `invited_at` set and `email_confirmed_at` empty;
+  `cancelInvitation` re-reads the account and deletes it only in that state, so the screen can
+  never delete a member. Without the key the section explains what is missing and
+  `pnpm user:invite` still works.
+- An e2e test keeps every public page from scrolling sideways on a phone; absolutely positioned
+  extras (chart labels) count even while invisible.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -253,6 +277,8 @@ Community (Phase 2B):
         numbers, follows, `/akis`, profile stats, the single archive read split up.
   - [x] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
         admin panel (hide, delete, restrict, review, merge).
+  - [x] 2D (owner's addition): invitation screen in the admin panel; the plainer `sade` look
+        as default with the original `form` look one menu click away.
 - [ ] Phase 3 social depth · Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
@@ -262,7 +288,8 @@ ephemeral Supabase on the GitHub runner instead of the cloud dev project.
 Phase 2 decisions (owner-approved; they become conventions as each step lands):
 
 - **Try on dev first:** a dev Supabase project feeds Vercel Preview; prod sees a change after it.
-- **Invite-only beta:** Supabase signup stays closed, invitations go out from a local script.
+- **Invite-only beta:** Supabase signup stays closed, invitations go out from the admin panel
+  (or the local script).
   Opening to everyone is one setting, flipped only after the KVKK texts are legally reviewed and
   backups run.
 - **New coffees appear at once**, flagged unreviewed (`coffees.reviewed_at`), with daily caps and
@@ -281,13 +308,16 @@ Phase 2 decisions (owner-approved; they become conventions as each step lands):
 - **Turnstile only on sign-in requests**, through Supabase Auth's CAPTCHA setting (the secret
   lives in Supabase). The brief also asked for it on comments; the owner accepted leaving that
   out: a browser check cannot guard a table the browser writes to.
-- **Account deletion and data export are RPCs**; still no secret at app runtime.
+- **Account deletion and data export are RPCs**, so they need no secret key.
 
 Still open on the owner's side (remind, don't do for them):
 
-- Apply the 2A migrations (`pnpm db:push:dev`, then prod) and do the sign-in setup in
-  docs/setup-auth.md: redirect URLs, Resend SMTP + DNS records, e-mail templates, Turnstile,
-  optionally Google. Until then only the password login works on the cloud projects.
+- Apply the 2C migration (`pnpm db:push:dev`, then prod); as of 2026-10-12 both projects are
+  one behind, so comments, likes, reports and the moderation half of the panel fail there.
+- Add `SUPABASE_SECRET_KEY` to Vercel as a Secret (prod key → Production, dev key → Preview)
+  and redeploy, or the invitation screen only says the key is missing (docs/setup-auth.md §7).
+- Sign-in setup is done on both projects (2026-10-11: redirect URLs, Resend SMTP, templates,
+  Turnstile). Google sign-in is optional and not set up.
 - Make the repo private, then add the backup secrets and keepalive variables (docs/backup.md).
   Prod has no backups yet: **nobody is invited before that.**
 - Have the KVKK texts reviewed and fill in the contact address (`CONTACT` in `legal-tr.ts`);
