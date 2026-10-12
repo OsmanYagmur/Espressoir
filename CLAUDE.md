@@ -255,6 +255,11 @@ Invitations (Phase 2D):
   `pnpm user:invite` still works.
 - An e2e test keeps every public page from scrolling sideways on a phone; absolutely positioned
   extras (chart labels) count even while invisible.
+- **A screen that changes a public page must not prefetch that page** (`prefetch={false}` on
+  the admin panel's links to coffees, tastings and profiles). A render that starts before
+  `updateTag` and ends after it is stored as fresh, so the page keeps its old state until the
+  cache runs out; a link scrolled into view by the click on the button next to it does exactly
+  that (CI caught it once the invitation section pushed the catalog below the fold).
 
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is

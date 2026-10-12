@@ -346,7 +346,11 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
                   ) : null}
                   {target.summary}{" "}
                   {target.href ? (
-                    <Link href={target.href} className={`font-mono text-xs ${linkFocus}`}>
+                    <Link
+                      href={target.href}
+                      prefetch={false}
+                      className={`font-mono text-xs ${linkFocus}`}
+                    >
                       {a.open}
                     </Link>
                   ) : null}
@@ -431,6 +435,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
               <p className="[overflow-wrap:anywhere]">
                 <Link
                   href={coffeePath(coffee.brand_slug!, coffee.coffee_slug!)}
+                  prefetch={false}
                   className={`font-semiwide font-bold ${linkFocus}`}
                 >
                   {coffee.label}
@@ -641,6 +646,11 @@ async function Log({ supabase }: { supabase: TypedSupabaseClient }) {
 
 // Everything here is the admin's own view of the database, read on each request. The
 // database checks the role again for every row and every action.
+//
+// Links from here to public pages carry prefetch={false}. A link scrolled into view is
+// fetched ahead, and the button beside it changes that very page: a fetch that starts just
+// before the change and finishes just after it is cached as if it were current, and the
+// page then shows the old state (a reviewed coffee still "not reviewed") for up to an hour.
 async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
   const { supabase } = await requireAdmin();
   const { hata, tamam } = await searchParams;
