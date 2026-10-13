@@ -317,20 +317,19 @@ Phase 2 decisions (owner-approved; they become conventions as each step lands):
 
 Still open on the owner's side (remind, don't do for them):
 
-- Apply the 2C migration (`pnpm db:push:dev`, then prod); as of 2026-10-12 both projects are
-  one behind, so comments, likes, reports and the moderation half of the panel fail there.
-- Add `SUPABASE_SECRET_KEY` to Vercel as a Secret (prod key → Production, dev key → Preview)
-  and redeploy, or the invitation screen only says the key is missing (docs/setup-auth.md §7).
-- Sign-in setup is done on both projects (2026-10-11: redirect URLs, Resend SMTP, templates,
-  Turnstile). Google sign-in is optional and not set up.
-- Make the repo private, then add the backup secrets and keepalive variables (docs/backup.md).
-  Prod has no backups yet: **nobody is invited before that.**
+- Done, for the record (2026-10-13): every migration is on dev and prod; sign-in setup on both
+  projects (redirect URLs, Resend SMTP, templates, Turnstile); `SUPABASE_SECRET_KEY` is on
+  Vercel **Production** and the invitation screen is in use on the live site; Preview builds
+  have the dev project's public variables.
+- Optional: the dev secret key on Vercel **Preview** (until then previews say the invitation
+  key is missing, which is harmless); Google sign-in.
+- Make the repo private, then add the backup secrets (docs/backup.md). The scheduled backup
+  runs and fails without `PROD_DB_URL` and `BACKUP_PASSPHRASE`; the keepalive workflow works.
+  Prod has no backups yet: **nobody outside the owner's own addresses is invited before that.**
 - Have the KVKK texts reviewed and fill in the contact address (`CONTACT` in `legal-tr.ts`);
   signup stays closed to the public until then.
-- `espressoir.com` is connected (2026-10-11), but `www.espressoir.com` serves the site instead
-  of redirecting to the apex: set it to redirect in Vercel → Domains.
-- Vercel Preview needs the dev project's two public variables; whether they are set shows in
-  the Vercel check of the next PR.
+- `www.espressoir.com` serves the site instead of redirecting to the apex: set it to redirect
+  in Vercel → Domains.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to
