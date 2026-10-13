@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import type { TastingFormState } from "@/app/(account)/panel/actions";
 
 import { CoffeePicker, SimilarCoffees, type CoffeeOption } from "./coffee-picker";
+import { PhotoField } from "./photo-field";
 
 const f = t.panel.form;
 const SCORES = Array.from({ length: SCORE_MAX - SCORE_MIN + 1 }, (_, i) => SCORE_MIN + i);
@@ -206,7 +207,7 @@ export function TastingForm({
   const logged = status === "logged";
   // Open the optional section when it already holds something.
   const hasDetails =
-    [...TASTE_DIMENSIONS, "flavorTagSlugs", "wouldBuyAgain", "pricePaid"].some(
+    [...TASTE_DIMENSIONS, "flavorTagSlugs", "photoPath", "wouldBuyAgain", "pricePaid"].some(
       (name) => value(name) !== "",
     ) || (value("visibility") || "public") !== "public";
 
@@ -478,6 +479,21 @@ export function TastingForm({
             <FlavorTagPicker
               tags={options.flavorTags}
               initial={value("flavorTagSlugs").split(",").filter(Boolean)}
+            />
+          ) : null}
+          {/* Like the tags: a picture belongs to a tasting that has happened. */}
+          {logged ? (
+            <PhotoField
+              initial={
+                value("photoPath")
+                  ? {
+                      path: value("photoPath"),
+                      width: Number(value("photoWidth")),
+                      height: Number(value("photoHeight")),
+                    }
+                  : null
+              }
+              initialAlt={value("photoAlt")}
             />
           ) : null}
           <div className="grid gap-5 sm:grid-cols-3">

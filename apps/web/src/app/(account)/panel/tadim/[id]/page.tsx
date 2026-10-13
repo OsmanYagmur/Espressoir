@@ -20,10 +20,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const text = (value: string | number | null) => (value === null ? "" : String(value));
+// (`undefined` too: a column the database does not have yet reads as "not given".)
+const text = (value: string | number | null | undefined) => (value == null ? "" : String(value));
 
-async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "params">) {
+async function EditTasting({ params, searchParams }: PageProps<"/panel/tadim/[id]">) {
   const { id } = await params;
+  const { foto } = await searchParams;
   const { user, supabase } = await requireUser();
 
   // Row level security already hides other people's private tastings; the user filter
@@ -57,6 +59,15 @@ async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "par
 
   return (
     <>
+      {foto === "hata" ? (
+        // The tasting was saved a moment ago, its picture was not.
+        <p
+          role="alert"
+          className="mt-4 max-w-2xl border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
+        >
+          {t.photo.savedWithoutPhoto}
+        </p>
+      ) : null}
       <TastingForm
         action={updateTasting.bind(null, tasting.id)}
         options={options}
@@ -79,6 +90,10 @@ async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "par
             tasting.would_buy_again === null ? "" : tasting.would_buy_again ? "yes" : "no",
           pricePaid: text(tasting.price_paid),
           flavorTagSlugs: tasting.tags.map(({ tag }) => tag.slug).join(","),
+          photoPath: text(tasting.photo_path),
+          photoWidth: text(tasting.photo_width),
+          photoHeight: text(tasting.photo_height),
+          photoAlt: text(tasting.photo_alt),
         }}
       />
       <div className="max-w-2xl border-t border-rule pt-5 pb-10">
@@ -88,12 +103,12 @@ async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "par
   );
 }
 
-export default function EditTastingPage({ params }: PageProps<"/panel/tadim/[id]">) {
+export default function EditTastingPage(props: PageProps<"/panel/tadim/[id]">) {
   return (
     <PageShell>
       <PageHeading title={t.panel.editTitle} />
       <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
-        <EditTasting params={params} />
+        <EditTasting {...props} />
       </Suspense>
     </PageShell>
   );

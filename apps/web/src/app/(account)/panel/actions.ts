@@ -1,6 +1,14 @@
 "use server";
 
-import { FLAVOR_TAGS_MAX, siteConfig } from "@espressoir/core";
+import {
+  FLAVOR_TAGS_MAX,
+  MEDIA_PATH_PATTERN,
+  PHOTO_ALT_MAX_LENGTH,
+  PHOTO_MAX_EDGE,
+  siteConfig,
+} from "@espressoir/core";
+import type { TypedSupabaseClient } from "@espressoir/db";
+import type { Route } from "next";
 import {
   TASTING_INPUT_ERRORS,
   tastingInputSchema,
@@ -15,6 +23,7 @@ import { requireUser } from "@/lib/auth";
 import { getArchive } from "@/lib/data/archive";
 import { refreshArchive } from "@/lib/data/refresh-archive";
 import { format, t } from "@/lib/i18n";
+import { removeMedia } from "@/lib/media-server";
 import { coffeePath } from "@/lib/routes";
 
 export interface TastingFormState {
@@ -78,6 +87,54 @@ function readForm(formData: FormData) {
 
 const tooManyTags = format(t.panel.errors.tooManyTags, { max: FLAVOR_TAGS_MAX });
 
+const edge = z.coerce.number().int().min(1).max(PHOTO_MAX_EDGE);
+const photoFields = z.object({
+  path: z.string().regex(MEDIA_PATH_PATTERN),
+  width: edge,
+  height: edge,
+  alt: z
+    .string()
+    .trim()
+    .max(PHOTO_ALT_MAX_LENGTH)
+    .transform((value) => value || null),
+});
+
+/**
+ * The picture the form carries, if any: it was uploaded by the browser already, and the
+ * form only says where it went. Which file that may be is the database's call.
+ */
+function readPhoto(values: Record<string, string>) {
+  const parsed = photoFields.safeParse({
+    path: values.photoPath ?? "",
+    width: values.photoWidth ?? "",
+    height: values.photoHeight ?? "",
+    alt: values.photoAlt ?? "",
+  });
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Makes the tasting's picture what the form says (or none), and removes the file of the
+ * picture it replaces. Returns the database's refusal, if any.
+ */
+async function savePhoto(
+  supabase: TypedSupabaseClient,
+  tastingId: string,
+  photo: ReturnType<typeof readPhoto>,
+) {
+  const { data: previous, error } = await supabase.rpc("set_tasting_photo_v1", {
+    p_tasting_id: tastingId,
+    // The function takes null as "no picture"; the generated types do not know that.
+    p_path: (photo?.path ?? null) as string,
+    p_width: photo?.width,
+    p_height: photo?.height,
+    p_alt: photo?.alt ?? undefined,
+  });
+  if (error) return error;
+  if (previous && previous !== photo?.path) await removeMedia(supabase, [previous]);
+  return null;
+}
+
 function errorText(code: string): string {
   const known = TASTING_INPUT_ERRORS.find((error) => error === code) as
     TastingInputError | undefined;
@@ -127,8 +184,17 @@ export async function createTasting(
     return { message: error ? databaseMessage(error) : t.panel.errors.failed, values };
   }
 
+  // The picture was uploaded while the form was filled in; now it has a tasting to belong to.
+  const photo = parsed.data.status === "logged" ? readPhoto(values) : null;
+  const refused = photo ? await savePhoto(supabase, created.tasting_id, photo) : null;
+
   // The public pages are cached; this makes the new tasting show up right away.
   refreshArchive();
+  if (refused) {
+    console.error("[tasting] photo not attached:", refused.code, refused.message);
+    // The tasting is saved; its form says what was not, and offers to try again.
+    redirect(`/panel/tadim/${created.tasting_id}?foto=hata` as Route);
+  }
   redirect(coffeePath(created.brand_slug, created.coffee_slug));
 }
 
@@ -167,6 +233,17 @@ export async function updateTasting(
     return { message: databaseMessage(tags.error), values };
   }
 
+  const refused = await savePhoto(
+    supabase,
+    tastingId,
+    parsed.data.status === "logged" ? readPhoto(values) : null,
+  );
+  if (refused) {
+    refreshArchive();
+    console.error("[tasting] photo not saved:", refused.code, refused.message);
+    return { message: t.photo.errors.failed, values };
+  }
+
   refreshArchive();
   redirect("/panel");
 }
@@ -174,7 +251,16 @@ export async function updateTasting(
 export async function deleteTasting(tastingId: string): Promise<void> {
   const { supabase } = await requireUser();
   if (z.uuid().safeParse(tastingId).success) {
-    await supabase.from("tastings").delete().eq("id", tastingId);
+    // The row says where its picture is; once the row is gone, so is the file.
+    const { data } = await supabase
+      .from("tastings")
+      .delete()
+      .eq("id", tastingId)
+      .select("photo_path");
+    await removeMedia(
+      supabase,
+      (data ?? []).map((row) => row.photo_path),
+    );
     refreshArchive();
   }
   redirect("/panel");

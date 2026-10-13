@@ -1066,6 +1066,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          avatar_path: string | null;
           avatar_url: string | null;
           bio: string | null;
           created_at: string;
@@ -1078,6 +1079,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          avatar_path?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
           created_at?: string;
@@ -1089,6 +1091,7 @@ export type Database = {
           username: string;
         };
         Update: {
+          avatar_path?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
           created_at?: string;
@@ -1275,6 +1278,10 @@ export type Database = {
           hidden_reason: string | null;
           id: string;
           notes: string | null;
+          photo_alt: string | null;
+          photo_height: number | null;
+          photo_path: string | null;
+          photo_width: number | null;
           price_paid: number | null;
           score: number | null;
           source: Database["public"]["Enums"]["tasting_source"];
@@ -1302,6 +1309,10 @@ export type Database = {
           hidden_reason?: string | null;
           id?: string;
           notes?: string | null;
+          photo_alt?: string | null;
+          photo_height?: number | null;
+          photo_path?: string | null;
+          photo_width?: number | null;
           price_paid?: number | null;
           score?: number | null;
           source?: Database["public"]["Enums"]["tasting_source"];
@@ -1328,6 +1339,10 @@ export type Database = {
           hidden_reason?: string | null;
           id?: string;
           notes?: string | null;
+          photo_alt?: string | null;
+          photo_height?: number | null;
+          photo_path?: string | null;
+          photo_width?: number | null;
           price_paid?: number | null;
           score?: number | null;
           source?: Database["public"]["Enums"]["tasting_source"];
@@ -1529,6 +1544,10 @@ export type Database = {
           like_count: number | null;
           notes: string | null;
           origin_country: string | null;
+          photo_alt: string | null;
+          photo_height: number | null;
+          photo_path: string | null;
+          photo_width: number | null;
           score: number | null;
           status: Database["public"]["Enums"]["tasting_status"] | null;
           sweetness: number | null;
@@ -1608,6 +1627,7 @@ export type Database = {
       };
       profile_overview: {
         Row: {
+          avatar_path: string | null;
           avatar_url: string | null;
           avg_score: number | null;
           bio: string | null;
@@ -1653,6 +1673,10 @@ export type Database = {
           like_count: number | null;
           notes: string | null;
           origin_country: string | null;
+          photo_alt: string | null;
+          photo_height: number | null;
+          photo_path: string | null;
+          photo_width: number | null;
           score: number | null;
           status: Database["public"]["Enums"]["tasting_status"] | null;
           sweetness: number | null;
@@ -1678,6 +1702,14 @@ export type Database = {
       };
       admin_merge_brands_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
       admin_merge_coffees_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
+      admin_remove_photo_v1: {
+        Args: {
+          p_note?: string;
+          p_target_id: string;
+          p_target_type: Database["public"]["Enums"]["report_target"];
+        };
+        Returns: string;
+      };
       admin_resolve_report_v1: {
         Args: {
           p_note?: string;
@@ -1786,6 +1818,13 @@ export type Database = {
         }[];
       };
       mark_notifications_read_v1: { Args: { p_before?: string }; Returns: number };
+      media_usage_v1: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          bytes: number;
+          files: number;
+        }[];
+      };
       merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
       reorder_list_v1: { Args: { p_coffee_ids: string[]; p_list_id: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
@@ -1802,6 +1841,17 @@ export type Database = {
           is_reviewed: boolean;
           similarity: number;
         }[];
+      };
+      set_avatar_v1: { Args: { p_path: string }; Returns: string };
+      set_tasting_photo_v1: {
+        Args: {
+          p_alt?: string;
+          p_height?: number;
+          p_path: string;
+          p_tasting_id: string;
+          p_width?: number;
+        };
+        Returns: string;
       };
       set_tasting_tags_v1: {
         Args: { p_slugs: string[]; p_tasting_id: string };

@@ -30,13 +30,16 @@ export const profileRowSchema = z
     last_tasted_at: day.nullable(),
     follower_count: count,
     following_count: count,
+    // Absent until the media migration is applied.
+    avatar_path: z.string().nullable().optional(),
   })
   .transform((row) => ({
     id: row.user_id,
     username: row.username,
     displayName: row.display_name,
     bio: row.bio,
-    avatarUrl: row.avatar_url,
+    /** Where the profile picture is in the "media" bucket; null without one. */
+    avatarPath: row.avatar_path ?? null,
     joinedAt: row.joined_at,
     stats: {
       tastingCount: row.tasting_count,

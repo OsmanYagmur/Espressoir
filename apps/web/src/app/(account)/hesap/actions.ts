@@ -1,6 +1,11 @@
 "use server";
 
-import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, TERMS_VERSION } from "@espressoir/core";
+import {
+  BIO_MAX_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  MEDIA_PATH_PATTERN,
+  TERMS_VERSION,
+} from "@espressoir/core";
 import {
   ACCOUNT_INPUT_ERRORS,
   onboardingInputSchema,
@@ -14,6 +19,7 @@ import { requireSession, requireUser } from "@/lib/auth";
 import { refreshArchive } from "@/lib/data/refresh-archive";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
+import { removeAllMediaOf, removeMedia } from "@/lib/media-server";
 
 export interface AccountFormState {
   /** Field name → message, for the fields that need fixing. */
@@ -160,6 +166,11 @@ export async function deleteAccount(
     return { errors: { confirm: e.deleteMismatch }, values };
   }
 
+  // The pictures are files, not rows: nothing in the database takes them along. They go
+  // first, while there is still a session to remove them with. (An admin's account is
+  // refused below, so theirs are left alone.)
+  if (user.role !== "admin") await removeAllMediaOf(supabase, user.id);
+
   const { error } = await supabase.rpc("delete_my_account_v1");
   if (error) {
     if (error.message.includes("admin_cannot_delete_self")) return { message: e.deleteAdmin };
@@ -171,4 +182,33 @@ export async function deleteAccount(
   await supabase.auth.signOut({ scope: "local" });
   refreshArchive();
   redirect("/");
+}
+
+/**
+ * Makes an uploaded picture the member's profile picture, or removes the one they have
+ * (null). The file of the picture it replaces is removed too.
+ */
+export async function setAvatar(
+  path: string | null,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const { supabase } = await requireUser();
+  if (path !== null && !MEDIA_PATH_PATTERN.test(path)) {
+    return { ok: false, message: t.photo.errors.failed };
+  }
+
+  const { data: previous, error } = await supabase.rpc("set_avatar_v1", {
+    // The function takes null as "no picture"; the generated types do not know that.
+    p_path: path as string,
+  });
+  if (error) {
+    const restricted = error.code === "42501" || error.message.includes("not_allowed");
+    if (!restricted) console.error("[account] avatar refused:", error.code, error.message);
+    return {
+      ok: false,
+      message: restricted ? t.photo.errors.restricted : t.photo.errors.failed,
+    };
+  }
+  if (previous && previous !== path) await removeMedia(supabase, [previous]);
+  refreshArchive();
+  return { ok: true };
 }

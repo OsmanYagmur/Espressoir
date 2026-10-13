@@ -46,6 +46,7 @@ export {
   type TasteMean,
   type TasteProfile,
 } from "./taste";
+export * from "./media";
 export {
   COFFEE_SORTS,
   DEFAULT_COFFEE_FILTER,
