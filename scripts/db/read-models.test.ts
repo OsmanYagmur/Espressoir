@@ -5,6 +5,7 @@ import {
   CAPSULE_SYSTEMS,
   COFFEE_FORMS,
   COFFEE_PROCESSES,
+  FLAVOR_GROUPS,
   REPORT_REASONS,
   REPORT_STATUSES,
   REPORT_TARGETS,
@@ -12,7 +13,7 @@ import {
   TASTING_STATUSES,
   TASTING_VISIBILITIES,
 } from "@espressoir/core";
-import { parseArchive } from "@espressoir/db";
+import { archiveSize, parseArchive } from "@espressoir/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { readArchiveRowsAsVisitor } from "../lib/archive-rows";
@@ -22,6 +23,7 @@ import { parseCsvRecords } from "../notion/csv";
 import { buildImportPlan } from "../notion/plan";
 
 let db: TestDb;
+const EMPTY = { coffees: [], tastings: [], brewMethods: [] };
 
 beforeAll(async () => {
   db = await createTestDb();
@@ -42,7 +44,8 @@ describe("database ↔ app contract", () => {
              enum_range(null::public.tasting_visibility)::text[] as tasting_visibility,
              enum_range(null::public.report_target)::text[] as report_target,
              enum_range(null::public.report_reason)::text[] as report_reason,
-             enum_range(null::public.report_status)::text[] as report_status
+             enum_range(null::public.report_status)::text[] as report_status,
+             enum_range(null::public.flavor_group)::text[] as flavor_group
     `);
     expect(row).toEqual({
       coffee_form: [...COFFEE_FORMS],
@@ -55,6 +58,7 @@ describe("database ↔ app contract", () => {
       report_target: [...REPORT_TARGETS],
       report_reason: [...REPORT_REASONS],
       report_status: [...REPORT_STATUSES],
+      flavor_group: [...FLAVOR_GROUPS],
     });
   });
 
@@ -81,13 +85,22 @@ describe("database ↔ app contract", () => {
             `select coalesce(json_agg(r), '[]'::json) as rows from (${query}) as r`,
           )
         )[0]!.rows;
-      const archive = parseArchive({
+      const rows = {
         coffees: await json("select * from public.coffee_overview"),
         tastings: await json("select * from public.tasting_feed"),
         brewMethods: await json("select * from public.brew_methods"),
         profiles: await json("select * from public.profile_overview"),
-      });
+        flavorTags: await json("select * from public.flavor_tags"),
+      };
+      const archive = parseArchive(rows);
 
+      // Every public page is fed by this one read, so what a row weighs matters: a column
+      // that makes tastings or coffees much heavier should be noticed here, not in prod.
+      const perRow = (list: unknown[]) => archiveSize({ ...EMPTY, tastings: list }) / list.length;
+      expect(perRow(rows.tastings)).toBeLessThan(1500);
+      expect(perRow(rows.coffees)).toBeLessThan(1500);
+
+      expect(archive.flavorTags).toHaveLength(20);
       expect(archive.coffees).toHaveLength(20);
       expect(archive.tastings).toHaveLength(19);
       expect(archive.brewMethods).toHaveLength(10);
