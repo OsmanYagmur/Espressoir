@@ -31,7 +31,9 @@ async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "par
   const { data: tasting } = z.uuid().safeParse(id).success
     ? await supabase
         .from("tastings")
-        .select("*, coffee:coffees(name, brand:brands(name)), method:brew_methods(slug)")
+        .select(
+          "*, coffee:coffees(name, brand:brands(name)), method:brew_methods(slug), tags:tasting_flavor_tags(tag:flavor_tags(slug))",
+        )
         .eq("id", id)
         .eq("user_id", user.id)
         .maybeSingle()
@@ -76,6 +78,7 @@ async function EditTasting({ params }: Pick<PageProps<"/panel/tadim/[id]">, "par
           wouldBuyAgain:
             tasting.would_buy_again === null ? "" : tasting.would_buy_again ? "yes" : "no",
           pricePaid: text(tasting.price_paid),
+          flavorTagSlugs: tasting.tags.map(({ tag }) => tag.slug).join(","),
         }}
       />
       <div className="max-w-2xl border-t border-rule pt-5 pb-10">

@@ -1,4 +1,3 @@
-import { TASTE_DIMENSIONS } from "@espressoir/core";
 import type { Tasting } from "@espressoir/db";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -9,6 +8,7 @@ import { TastingItem } from "@/components/coffee/tasting-item";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
+import { Radar } from "@/components/stats/radar";
 import { SectionHeading } from "@/components/site/section-heading";
 import { CommentThread } from "@/components/social/comment-thread";
 import { LikeButton } from "@/components/social/like-button";
@@ -17,6 +17,7 @@ import { getArchive } from "@/lib/data/archive";
 import { findTasting } from "@/lib/data/selectors";
 import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath, profilePath, tastingPath } from "@/lib/routes";
+import { profileAxes } from "@/lib/taste-axes";
 
 type Props = PageProps<"/tadim/[id]">;
 
@@ -75,11 +76,8 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
   const tasting = findTasting(await getArchive(), id);
   if (!tasting) notFound();
 
-  const profile = TASTE_DIMENSIONS.flatMap((dimension) => {
-    const level = tasting.profile[dimension];
-    return level === null ? [] : [{ label: t.panel.form.taste[dimension], level }];
-  });
-  const hasDetails = profile.length > 0 || tasting.wouldBuyAgain !== null;
+  const axes = profileAxes(tasting.profile);
+  const hasProfile = axes.some((axis) => axis.value !== null);
 
   return (
     <>
@@ -117,21 +115,24 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
         <TastingItem tasting={tasting} showAuthor standalone />
       </ol>
 
-      {hasDetails ? (
-        <dl className="flex flex-wrap gap-x-8 gap-y-2 border-b border-border py-4 font-mono text-xs">
-          {profile.map(({ label, level }) => (
-            <div key={label} className="flex gap-2">
-              <dt className="text-muted-foreground">{label}</dt>
-              <dd>{level}/5</dd>
-            </div>
-          ))}
+      {hasProfile || tasting.wouldBuyAgain !== null ? (
+        <section
+          aria-label={t.taste.profileTitle}
+          className="grid gap-4 border-b border-border py-4"
+        >
+          {hasProfile ? (
+            <Radar
+              axes={axes}
+              caption={format(p.profileCaption, { coffee: tasting.coffee.name })}
+            />
+          ) : null}
           {tasting.wouldBuyAgain !== null ? (
-            <div className="flex gap-2">
+            <dl className="flex gap-2 font-mono text-xs">
               <dt className="text-muted-foreground">{p.buyAgain}</dt>
               <dd>{tasting.wouldBuyAgain ? p.yes : p.no}</dd>
-            </div>
+            </dl>
           ) : null}
-        </dl>
+        </section>
       ) : null}
 
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-rule py-4">

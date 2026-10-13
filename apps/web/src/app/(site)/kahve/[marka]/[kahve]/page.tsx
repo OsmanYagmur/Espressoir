@@ -12,10 +12,13 @@ import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { SectionHeading } from "@/components/site/section-heading";
 import { ReportButton } from "@/components/social/report-button";
+import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
+import { TagCounts } from "@/components/stats/tag-counts";
 import { toCoffeeCards } from "@/lib/coffee-cards";
 import { getArchive } from "@/lib/data/archive";
 import { findCoffee, similarCoffees, tastingsOf, toListItems } from "@/lib/data/selectors";
+import { tasteSummary } from "@/lib/data/taste-summary";
 import { countryName, formatAverage, formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath } from "@/lib/routes";
@@ -184,6 +187,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
   );
   const rows = details(coffee);
   const { stats } = coffee;
+  const taste = tasteSummary(archive, logged);
   let section = 0;
 
   return (
@@ -290,6 +294,41 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
                 className={rows.length > 0 ? "mt-6" : undefined}
               />
               <ScoreColumns counts={stats.distribution} className="mt-2 mb-7 h-32" />
+            </>
+          ) : null}
+
+          {taste.axes ? (
+            <>
+              <SectionHeading
+                index={++section}
+                title={t.taste.community.title}
+                hint={t.taste.community.hint}
+                className="mt-6"
+              />
+              <Radar
+                axes={taste.axes}
+                caption={format(t.taste.community.caption, { coffee: coffee.name })}
+                className="pt-3 pb-5"
+              />
+            </>
+          ) : null}
+
+          {taste.tags.length > 0 ? (
+            <>
+              <SectionHeading
+                index={++section}
+                title={t.taste.community.tagsTitle}
+                aside={format(t.taste.community.tagsAside, { n: taste.taggedCount })}
+                hint={t.taste.community.tagsHint}
+                className="mt-6"
+              />
+              <div className="pb-5">
+                <TagCounts
+                  tags={taste.tags}
+                  names={taste.names}
+                  caption={t.taste.community.tagsCaption}
+                />
+              </div>
             </>
           ) : null}
         </aside>
