@@ -6,6 +6,7 @@ import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath, profilePath, tastingPath } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
+import { FlavorTags } from "./flavor-tags";
 import { ScoreBadge } from "./score-badge";
 
 const linkFocus =
@@ -105,6 +106,7 @@ export function TastingItem({
             {wishlist ? t.coffeeDetail.wishlistNote : t.coffee.noNotes}
           </p>
         )}
+        <FlavorTags tags={tasting.tags} className="mt-2" />
         {!standalone && !wishlist && tasting.visibility === "public" ? (
           <p className="mt-2 font-mono text-xs text-muted-foreground sade:mt-3">
             {/* Sade: boxed, with an arrow, because it is the way to the conversation. */}

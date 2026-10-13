@@ -133,3 +133,73 @@ test("following someone fills the feed of followed people", async ({ page }) => 
   await page.getByRole("button", { name: "Takibi bırak" }).click();
   await expect(page.getByRole("button", { name: "Takip et" })).toBeVisible();
 });
+
+test("a member gives a tasting a taste profile and tags, and changes them later", async ({
+  page,
+}) => {
+  const note = `Etiketli tadım ${Date.now().toString(36)}`;
+  const tag = (group: string, name: string) =>
+    page.getByRole("group", { name: group, exact: true }).getByText(name, { exact: true });
+  await signIn(page, guest);
+  await newTasting(page);
+
+  await page.getByLabel("Kahve ara", { exact: true }).fill("nespresso colombia");
+  await page
+    .getByRole("list", { name: "Bulunan kahveler" })
+    .getByText("Nespresso — Colombia")
+    .click();
+  await page.getByRole("group", { name: "Puan" }).getByText("8", { exact: true }).click();
+  await page.getByLabel("Not", { exact: true }).fill(note);
+
+  await page.getByText("Ayrıntılar (isteğe bağlı)").click();
+  await page.getByLabel("Gövde", { exact: true }).selectOption("4");
+  await page.getByLabel("Asidite", { exact: true }).selectOption("3");
+  await page.getByLabel("Bitiş", { exact: true }).selectOption("5");
+  await tag("Çikolata ve kakao", "Kakao").click();
+  await tag("Kuruyemiş", "Fındık").click();
+  await expect(page.getByText("2 / 5 seçili")).toBeVisible();
+
+  // Five is the limit: the boxes that are left go quiet until one is given back.
+  for (const name of ["Karamel", "Vanilya", "Bal"]) await tag("Tatlı", name).click();
+  await expect(page.getByText("5 / 5 seçili")).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "Tarçın" })).toBeDisabled();
+  for (const name of ["Karamel", "Vanilya", "Bal"]) await tag("Tatlı", name).click();
+  await expect(page.getByRole("checkbox", { name: "Tarçın" })).toBeEnabled();
+  await page.getByRole("button", { name: "Kaydet" }).click();
+
+  // On the coffee's page the tasting carries its tags, in the order of the tag list.
+  await expect(page).toHaveURL(/\/kahve\/nespresso\/colombia$/);
+  const mine = page
+    .getByRole("list", { name: "Tadımlar" })
+    .getByRole("listitem")
+    .filter({ hasText: note });
+  await expect(mine.getByText("Tat etiketleri: Kakao, Fındık")).toBeVisible();
+
+  // Its own page draws the profile; the corners left empty say so.
+  await mine.getByRole("link", { name: /beğeni · \d+ yorum/ }).click();
+  await expect(
+    page.getByRole("img", {
+      name: "Tat profili grafiği: Gövde 4/5, Asidite 3/5, Acılık —, Tatlılık —, Bitiş 5/5",
+    }),
+  ).toBeVisible();
+
+  // Editing shows what was chosen and saves the new set.
+  await page.goto("/panel");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: "Colombia" })
+    .first()
+    .getByRole("link", { name: "Düzenle" })
+    .click();
+  await expect(page.getByLabel("Not", { exact: true })).toHaveValue(note);
+  await expect(page.getByRole("checkbox", { name: "Kakao", exact: true })).toBeChecked();
+  await expect(page.getByText("2 / 5 seçili")).toBeVisible();
+  await tag("Çikolata ve kakao", "Kakao").click();
+  await tag("Tatlı", "Bal").click();
+  await page.getByLabel("Tatlılık", { exact: true }).selectOption("2");
+  await page.getByRole("button", { name: "Kaydet" }).click();
+  await expect(page).toHaveURL(/\/panel$/);
+
+  await page.goto("/kahve/nespresso/colombia");
+  await expect(mine.getByText("Tat etiketleri: Fındık, Bal")).toBeVisible();
+});

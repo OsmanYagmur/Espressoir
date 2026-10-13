@@ -14,6 +14,7 @@ import { parseArchive } from "@espressoir/db";
 
 import { readArchiveRowsAsVisitor } from "./lib/archive-rows";
 import { applyMigrations, createEmbeddedPostgres } from "./lib/postgres";
+import { applySampleTaste } from "./lib/sample-taste";
 import { ENV_FILES, repoRoot } from "./lib/target-env";
 import { applyImportPlan } from "./notion/apply";
 import { parseCsvRecords } from "./notion/csv";
@@ -47,6 +48,8 @@ await db.query("update public.profiles set onboarded_at = created_at where usern
 ]);
 const plan = buildImportPlan(parseCsvRecords(readFileSync(csvFile, "utf8")).records);
 await applyImportPlan(db, plan, { ownerUsername });
+// The sample archive also gets taste profiles and tags, so the charts have something to show.
+if (csvFile === SAMPLE) await applySampleTaste(db);
 
 const rows = await readArchiveRowsAsVisitor(db);
 await db.close();

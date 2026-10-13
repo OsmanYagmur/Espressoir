@@ -21,6 +21,7 @@ export async function getTastingFormOptions(): Promise<TastingFormOptions> {
     devices: [
       ...new Set(archive.tastings.flatMap((tasting) => (tasting.device ? [tasting.device] : []))),
     ].sort(collator.compare),
+    flavorTags: archive.flavorTags.map(({ slug, name, group }) => ({ slug, name, group })),
     origins: COFFEE_ORIGIN_COUNTRIES.map((code) => ({ code, name: countryName(code) })).sort(
       (a, b) => collator.compare(a.name, b.name),
     ),

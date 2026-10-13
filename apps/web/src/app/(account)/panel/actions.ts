@@ -1,6 +1,6 @@
 "use server";
 
-import { siteConfig } from "@espressoir/core";
+import { FLAVOR_TAGS_MAX, siteConfig } from "@espressoir/core";
 import {
   TASTING_INPUT_ERRORS,
   tastingInputSchema,
@@ -37,6 +37,11 @@ function readForm(formData: FormData) {
   for (const [name, value] of formData.entries()) {
     if (typeof value === "string" && !name.startsWith("$")) values[name] = value;
   }
+  // The one field with several values: kept as a list, and shown again from one string.
+  const flavorTagSlugs = formData
+    .getAll("flavorTagSlugs")
+    .filter((value): value is string => typeof value === "string" && value !== "");
+  values.flavorTagSlugs = flavorTagSlugs.join(",");
   const text = (name: string) => (values[name] ?? "").trim();
   const orNull = (name: string) => text(name) || null;
   const number = (name: string) =>
@@ -66,14 +71,18 @@ function readForm(formData: FormData) {
     ...Object.fromEntries(TASTE_FIELDS.map((field) => [field, number(field)])),
     wouldBuyAgain: buyAgain === "yes" ? true : buyAgain === "no" ? false : null,
     pricePaid: number("pricePaid"),
+    flavorTagSlugs,
   };
   return { values, parsed: tastingInputSchema(today()).safeParse(input) };
 }
+
+const tooManyTags = format(t.panel.errors.tooManyTags, { max: FLAVOR_TAGS_MAX });
 
 function errorText(code: string): string {
   const known = TASTING_INPUT_ERRORS.find((error) => error === code) as
     TastingInputError | undefined;
   if (known === "notesTooLong") return format(t.panel.errors.notesTooLong, { max: 4000 });
+  if (known === "tooManyTags") return tooManyTags;
   return t.panel.errors[known ?? "invalid"];
 }
 
@@ -91,6 +100,7 @@ function validationState(error: z.ZodError, values: Record<string, string>): Tas
 function databaseMessage(error: { code?: string; message: string }): string {
   // The database keeps the limits (tastings, new coffees and brands per day).
   if (error.message.includes("rate_limited")) return t.panel.errors.rateLimited;
+  if (error.message.includes("too_many_flavor_tags")) return tooManyTags;
   if (error.message.includes("tastings_one_wishlist_per_coffee_key")) {
     return t.panel.errors.wishlistDuplicate;
   }
@@ -111,7 +121,7 @@ export async function createTasting(
   if (!parsed.success) return validationState(parsed.error, values);
 
   // One call, one transaction: brand and coffee are created only if they are new.
-  const { data, error } = await supabase.rpc("log_tasting_v1", toLogTastingArgs(parsed.data));
+  const { data, error } = await supabase.rpc("log_tasting_v2", toLogTastingArgs(parsed.data));
   const created = data?.[0];
   if (error || !created) {
     return { message: error ? databaseMessage(error) : t.panel.errors.failed, values };
@@ -145,6 +155,17 @@ export async function updateTasting(
     .select("id");
   if (error) return { message: databaseMessage(error), values };
   if (!data || data.length === 0) return { message: t.panel.notFound, values };
+
+  // After the row, so a tasting that just stopped being a wishlist entry can take tags.
+  const tags = await supabase.rpc("set_tasting_tags_v1", {
+    p_tasting_id: tastingId,
+    p_slugs: parsed.data.flavorTagSlugs,
+  });
+  // The rest of the edit is saved; say what was not, and show the page as it now is.
+  if (tags.error) {
+    updateTag(ARCHIVE_TAG);
+    return { message: databaseMessage(tags.error), values };
+  }
 
   updateTag(ARCHIVE_TAG);
   redirect("/panel");

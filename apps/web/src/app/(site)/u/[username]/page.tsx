@@ -13,9 +13,12 @@ import { SectionHeading } from "@/components/site/section-heading";
 import { FollowButton } from "@/components/social/follow-button";
 import { ReportButton } from "@/components/social/report-button";
 import { GroupMeans } from "@/components/stats/group-means";
+import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
+import { TagCounts } from "@/components/stats/tag-counts";
 import { getArchive } from "@/lib/data/archive";
 import { findProfile, scoresOf, tastingsBy } from "@/lib/data/selectors";
+import { tasteSummary } from "@/lib/data/taste-summary";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { profilePath } from "@/lib/routes";
@@ -90,6 +93,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
     (tasting) => tasting.brewMethod?.slug ?? null,
     (tasting) => tasting.score,
   ).map((group) => ({ ...group, label: methodNames.get(group.key) ?? group.key }));
+  const taste = tasteSummary(archive, tastings);
   let section = 0;
 
   return (
@@ -172,6 +176,40 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
             />
           </section>
         </div>
+      ) : null}
+
+      {taste.axes || taste.tags.length > 0 ? (
+        <section aria-labelledby="damak">
+          <SectionHeading
+            id="damak"
+            index={++section}
+            title={t.taste.member.title}
+            hint={t.taste.member.hint}
+          />
+          <div className="grid gap-x-10 gap-y-4 pt-3 pb-6 md:grid-cols-2">
+            {taste.axes ? (
+              <Radar
+                axes={taste.axes}
+                caption={format(t.taste.member.caption, { username: profile.username })}
+              />
+            ) : null}
+            {taste.tags.length > 0 ? (
+              <div>
+                <p className="label-caps pb-1 text-muted-foreground">
+                  {t.taste.community.tagsTitle}
+                  <span className="ml-2 tracking-normal normal-case">
+                    {format(t.taste.community.tagsAside, { n: taste.taggedCount })}
+                  </span>
+                </p>
+                <TagCounts
+                  tags={taste.tags}
+                  names={taste.names}
+                  caption={format(t.taste.member.tagsCaption, { username: profile.username })}
+                />
+              </div>
+            ) : null}
+          </div>
+        </section>
       ) : null}
 
       <SectionHeading index={++section} title={p.tastingsTitle} aside={tastings.length} />

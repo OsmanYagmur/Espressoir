@@ -37,6 +37,16 @@ export {
   type Summary,
 } from "./stats";
 export {
+  RADAR_MIN_CORNERS,
+  countTags,
+  hasRadarShape,
+  radarPoint,
+  tasteMeans,
+  type TagCount,
+  type TasteMean,
+  type TasteProfile,
+} from "./taste";
+export {
   COFFEE_SORTS,
   DEFAULT_COFFEE_FILTER,
   activeFilterCount,

@@ -334,6 +334,102 @@ test.describe("community", () => {
   });
 });
 
+test.describe("taste profile and flavour tags", () => {
+  const RISTRETTO = "/kahve/nespresso/ristretto-siyah-kapsul";
+  /** Follows the counts under the first tasting of a coffee to that tasting's own page. */
+  async function openTastingOf(page: Page, coffeePage: string) {
+    await page.goto(coffeePage);
+    await page
+      .getByRole("list", { name: "Tadımlar" })
+      .getByRole("link", { name: /beğeni · \d+ yorum/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/tadim\/[0-9a-f-]{36}$/);
+  }
+
+  test("a tasting carries its tags, and its own page draws its profile", async ({ page }) => {
+    await page.goto(RISTRETTO);
+    await expect(
+      page
+        .getByRole("list", { name: "Tadımlar" })
+        .getByText("Tat etiketleri: Bitter Çikolata, Kakao, Tütsülü"),
+    ).toBeVisible();
+
+    await openTastingOf(page, RISTRETTO);
+    // Every corner is named and valued in words: the chart is never the only carrier.
+    await expect(
+      page.getByRole("img", {
+        name: "Tat profili grafiği: Gövde 5/5, Asidite 2/5, Acılık 4/5, Tatlılık 2/5, Bitiş 4/5",
+      }),
+    ).toBeVisible();
+    await page.getByText("Tablo olarak göster").filter({ visible: true }).click();
+    const twin = page.getByRole("table", {
+      name: "Ristretto (Siyah Kapsül) tadımının tat puanları",
+    });
+    await expect(twin.getByRole("row").nth(1)).toContainText("Gövde");
+    await expect(twin.getByRole("row").nth(1)).toContainText("5/5");
+  });
+
+  test("a corner nobody rated stays empty, and too few corners make a list instead", async ({
+    page,
+  }) => {
+    await openTastingOf(page, "/kahve/kronotrop/wilder-jungle");
+    await expect(
+      page.getByRole("img", {
+        name: "Tat profili grafiği: Gövde 2/5, Asidite 4/5, Acılık —, Tatlılık —, Bitiş 3/5",
+      }),
+    ).toBeVisible();
+
+    await openTastingOf(page, "/kahve/kronotrop/original-taste");
+    const profile = page.getByRole("region", { name: "Tat profili" });
+    await expect(profile.getByRole("definition")).toHaveText("3/5");
+    await expect(page.getByRole("img", { name: /Tat profili grafiği/ })).toHaveCount(0);
+  });
+
+  test("a coffee's page averages the profiles and counts the tags, each with its n", async ({
+    page,
+  }) => {
+    await page.goto(RISTRETTO);
+    await expect(page.getByRole("heading", { name: /Tat profili/ })).toBeVisible();
+    await expect(
+      page.getByRole("img", {
+        name: /^Tat profili grafiği: Gövde 5,0 \(n = 1\), Asidite 2,0 \(n = 1\)/,
+      }),
+    ).toBeVisible();
+    // One tasting is not much to go on, and the page says so in words.
+    await expect(page.getByText(/üçten az tadıma dayanıyor/)).toBeVisible();
+
+    const tags = page.getByRole("table", { name: "Tat etiketleri ve kaç tadımda geçtikleri" });
+    await expect(tags.getByRole("row")).toHaveCount(3);
+    await expect(tags.getByRole("row").first()).toContainText("Bitter Çikolata");
+    await expect(tags.getByRole("row").first()).toContainText("1 tadım");
+
+    // A coffee nobody has profiled or tagged shows neither section.
+    await page.goto("/kahve/jacobs/classico-lungo");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Classico Lungo.");
+    await expect(page.getByRole("heading", { name: /Tat profili/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /Öne çıkan tatlar/ })).toHaveCount(0);
+  });
+
+  test("a member's page sums up their palate", async ({ page }) => {
+    await page.goto(RISTRETTO);
+    await page
+      .getByRole("list", { name: "Tadımlar" })
+      .getByRole("link", { name: /^@/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
+    await expect(page.getByRole("heading", { name: /Damak/ })).toBeVisible();
+    // Seven sample tastings rate the body; fewer rate the other corners.
+    await expect(
+      page.getByRole("img", { name: /Gövde 3,3 \(n = 7\), Asidite 3,0 \(n = 6\)/ }),
+    ).toBeVisible();
+    const tags = page.getByRole("table", { name: /tat etiketleri ve kaç tadımda geçtikleri/ });
+    await expect(tags.getByRole("row").first()).toContainText("Meyvemsi");
+    await expect(tags.getByRole("row").first()).toContainText("2 tadım");
+  });
+});
+
 test.describe("a tasting's own page", () => {
   test("is reached from the counts under a tasting and invites visitors to sign in", async ({
     page,

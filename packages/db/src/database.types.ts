@@ -1102,6 +1102,8 @@ export type Database = {
           created_at: string | null;
           device: string | null;
           display_name: string | null;
+          flavor_tag_names: string[] | null;
+          flavor_tag_slugs: string[] | null;
           form: Database["public"]["Enums"]["coffee_form"] | null;
           is_hidden: boolean | null;
           like_count: number | null;
@@ -1160,6 +1162,8 @@ export type Database = {
           created_at: string | null;
           device: string | null;
           display_name: string | null;
+          flavor_tag_names: string[] | null;
+          flavor_tag_slugs: string[] | null;
           form: Database["public"]["Enums"]["coffee_form"] | null;
           is_hidden: boolean | null;
           like_count: number | null;
@@ -1265,6 +1269,38 @@ export type Database = {
           tasting_id: string;
         }[];
       };
+      log_tasting_v2: {
+        Args: {
+          p_acidity?: number;
+          p_aftertaste?: number;
+          p_bitterness?: number;
+          p_body?: number;
+          p_brand_intensity?: number;
+          p_brand_name?: string;
+          p_brew_method_slug?: string;
+          p_capsule_system?: Database["public"]["Enums"]["capsule_system"];
+          p_coffee_id?: string;
+          p_coffee_name?: string;
+          p_device?: string;
+          p_flavor_tag_slugs?: string[];
+          p_form?: Database["public"]["Enums"]["coffee_form"];
+          p_notes?: string;
+          p_origin_country?: string;
+          p_price_paid?: number;
+          p_score?: number;
+          p_status?: Database["public"]["Enums"]["tasting_status"];
+          p_sweetness?: number;
+          p_tasted_at?: string;
+          p_visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          p_would_buy_again?: boolean;
+        };
+        Returns: {
+          brand_slug: string;
+          coffee_id: string;
+          coffee_slug: string;
+          tasting_id: string;
+        }[];
+      };
       merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
       search_coffees_v1: {
@@ -1280,6 +1316,10 @@ export type Database = {
           is_reviewed: boolean;
           similarity: number;
         }[];
+      };
+      set_tasting_tags_v1: {
+        Args: { p_slugs: string[]; p_tasting_id: string };
+        Returns: undefined;
       };
       slugify: { Args: { input: string }; Returns: string };
     };

@@ -7,6 +7,8 @@ import {
   COFFEE_FORMS,
   COFFEE_NAME_MAX_LENGTH,
   DEVICE_MAX_LENGTH,
+  FLAVOR_GROUPS,
+  FLAVOR_TAGS_MAX,
   NOTES_MAX_LENGTH,
   SCORE_MAX,
   SCORE_MIN,
@@ -14,6 +16,7 @@ import {
   TASTE_MAX,
   TASTE_MIN,
   TASTING_VISIBILITIES,
+  type FlavorGroup,
 } from "@espressoir/core";
 import Link from "next/link";
 import { useActionState, useState } from "react";
@@ -37,7 +40,88 @@ export interface TastingFormOptions {
   brands: string[];
   brewMethods: { slug: string; name: string }[];
   devices: string[];
+  flavorTags: FlavorTagOption[];
   origins: { code: string; name: string }[];
+}
+
+interface FlavorTagOption {
+  slug: string;
+  name: string;
+  group: FlavorGroup;
+}
+
+/**
+ * The flavour tags as boxes to tick, family by family. Plain checkboxes, so the form
+ * also submits without JavaScript; with it, the boxes that are left go quiet once the
+ * limit is reached (the server and the database enforce the same limit).
+ */
+function FlavorTagPicker({
+  tags,
+  initial,
+}: {
+  tags: readonly FlavorTagOption[];
+  initial: readonly string[];
+}) {
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set(initial));
+  const full = selected.size >= FLAVOR_TAGS_MAX;
+  const toggle = (slug: string, on: boolean) =>
+    setSelected((current) => {
+      const next = new Set(current);
+      if (on) next.add(slug);
+      else next.delete(slug);
+      return next;
+    });
+
+  return (
+    <fieldset>
+      <legend className="label-caps text-muted-foreground">{f.flavorTags}</legend>
+      <p className="mt-1 font-mono text-xs text-muted-foreground">
+        {format(f.flavorTagsHint, { max: FLAVOR_TAGS_MAX })}{" "}
+        <span aria-live="polite" className={cn(full && "text-foreground")}>
+          {format(f.flavorTagsCount, { count: selected.size, max: FLAVOR_TAGS_MAX })}
+        </span>
+      </p>
+      <div className="mt-3 grid gap-3">
+        {FLAVOR_GROUPS.map((group) => {
+          const inGroup = tags.filter((tag) => tag.group === group);
+          if (inGroup.length === 0) return null;
+          return (
+            <div
+              key={group}
+              role="group"
+              aria-label={t.taste.groups[group]}
+              className="grid gap-1.5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-start"
+            >
+              <p className="font-mono text-xs text-muted-foreground sm:pt-2.5">
+                {t.taste.groups[group]}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {inGroup.map((tag) => {
+                  const checked = selected.has(tag.slug);
+                  return (
+                    <label key={tag.slug} className="relative">
+                      <input
+                        type="checkbox"
+                        name="flavorTagSlugs"
+                        value={tag.slug}
+                        checked={checked}
+                        disabled={full && !checked}
+                        onChange={(event) => toggle(tag.slug, event.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <span className="grid h-10 cursor-pointer place-items-center border border-input px-3 font-mono text-sm peer-checked:border-foreground peer-checked:bg-foreground peer-checked:text-background peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-40">
+                        {tag.name}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
 }
 
 /** A row of mutually exclusive choices drawn as boxes (large enough to tap with a thumb). */
@@ -122,8 +206,9 @@ export function TastingForm({
   const logged = status === "logged";
   // Open the optional section when it already holds something.
   const hasDetails =
-    [...TASTE_DIMENSIONS, "wouldBuyAgain", "pricePaid"].some((name) => value(name) !== "") ||
-    (value("visibility") || "public") !== "public";
+    [...TASTE_DIMENSIONS, "flavorTagSlugs", "wouldBuyAgain", "pricePaid"].some(
+      (name) => value(name) !== "",
+    ) || (value("visibility") || "public") !== "public";
 
   return (
     <form action={formAction} className="max-w-2xl pb-10">
@@ -388,6 +473,13 @@ export function TastingForm({
               ))}
             </div>
           </fieldset>
+          {/* A coffee on the wishlist has not been tasted: nothing to tag yet. */}
+          {logged && options.flavorTags.length > 0 ? (
+            <FlavorTagPicker
+              tags={options.flavorTags}
+              initial={value("flavorTagSlugs").split(",").filter(Boolean)}
+            />
+          ) : null}
           <div className="grid gap-5 sm:grid-cols-3">
             <Field label={f.wouldBuyAgain} htmlFor="wouldBuyAgain">
               <Select id="wouldBuyAgain" name="wouldBuyAgain" defaultValue={value("wouldBuyAgain")}>

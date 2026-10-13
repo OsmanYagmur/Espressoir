@@ -42,6 +42,20 @@ export type TasteDimension = (typeof TASTE_DIMENSIONS)[number];
 export const TASTE_MIN = 1;
 export const TASTE_MAX = 5;
 
+/** The families the flavour tags are sorted into (the flavor_group enum). */
+export const FLAVOR_GROUPS = [
+  "fruity",
+  "floral",
+  "chocolate",
+  "nutty",
+  "spice",
+  "sweet",
+  "other",
+] as const;
+export type FlavorGroup = (typeof FLAVOR_GROUPS)[number];
+/** Tags per tasting: enough for a profile, too few for a word cloud. The database enforces it. */
+export const FLAVOR_TAGS_MAX = 5;
+
 export const NOTES_MAX_LENGTH = 4000;
 export const DEVICE_MAX_LENGTH = 60;
 export const BRAND_NAME_MAX_LENGTH = 80;

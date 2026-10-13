@@ -10,6 +10,7 @@ import {
   COFFEE_FORMS,
   COFFEE_NAME_MAX_LENGTH,
   DEVICE_MAX_LENGTH,
+  FLAVOR_TAGS_MAX,
   NOTES_MAX_LENGTH,
   SCORE_MAX,
   SCORE_MIN,
@@ -31,6 +32,7 @@ export const TASTING_INPUT_ERRORS = [
   "dateFuture",
   "notesTooLong",
   "priceInvalid",
+  "tooManyTags",
 ] as const;
 export type TastingInputError = (typeof TASTING_INPUT_ERRORS)[number];
 
@@ -89,6 +91,12 @@ const tastingFields = z.object({
     .min(0, code("priceInvalid"))
     .max(99_999_999, code("priceInvalid"))
     .nullable(),
+  /** Slugs from the flavour tag list; which ones exist is the database's call. */
+  flavorTagSlugs: z
+    .array(z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/))
+    .transform((slugs) => [...new Set(slugs)])
+    .pipe(z.array(z.string()).max(FLAVOR_TAGS_MAX, code("tooManyTags")))
+    .default([]),
 });
 
 /** Empty strings from text inputs mean "not given". */
@@ -105,8 +113,10 @@ export function tastingInputSchema(today: string) {
     .extend({ coffee: z.discriminatedUnion("mode", [existingCoffee, newCoffee]) })
     .transform((input) => {
       const cleaned = blankToNull(input);
-      // A wishlist entry has not been tasted: it carries no score and no date.
-      if (cleaned.status === "wishlist") return { ...cleaned, score: null, tastedAt: null };
+      // A wishlist entry has not been tasted: it carries no score, no date and no tags.
+      if (cleaned.status === "wishlist") {
+        return { ...cleaned, score: null, tastedAt: null, flavorTagSlugs: [] };
+      }
       return cleaned;
     })
     .superRefine((input, context) => {
@@ -127,12 +137,12 @@ export function tastingInputSchema(today: string) {
 
 export type TastingInput = z.infer<ReturnType<typeof tastingInputSchema>>;
 
-type LogTastingArgs = Database["public"]["Functions"]["log_tasting_v1"]["Args"];
+type LogTastingArgs = Database["public"]["Functions"]["log_tasting_v2"]["Args"];
 type TastingUpdate = Database["public"]["Tables"]["tastings"]["Update"];
 
 const orUndefined = <T>(value: T | null): T | undefined => value ?? undefined;
 
-/** Arguments for the `log_tasting_v1` RPC. Omitted arguments fall back to SQL defaults (null). */
+/** Arguments for the `log_tasting_v2` RPC. Omitted arguments fall back to SQL defaults (null). */
 export function toLogTastingArgs(input: TastingInput): LogTastingArgs {
   const coffee =
     input.coffee.mode === "existing"
@@ -161,6 +171,7 @@ export function toLogTastingArgs(input: TastingInput): LogTastingArgs {
     p_aftertaste: orUndefined(input.aftertaste),
     p_would_buy_again: orUndefined(input.wouldBuyAgain),
     p_price_paid: orUndefined(input.pricePaid),
+    p_flavor_tag_slugs: input.flavorTagSlugs,
   };
 }
 

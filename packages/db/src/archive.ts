@@ -11,6 +11,7 @@ import {
   CAPSULE_SYSTEMS,
   COFFEE_FORMS,
   COFFEE_PROCESSES,
+  FLAVOR_GROUPS,
   ROAST_LEVELS,
   TASTING_STATUSES,
   TASTING_VISIBILITIES,
@@ -118,6 +119,9 @@ export const tastingRowSchema = z
     like_count: z.number().int().nonnegative().optional(),
     comment_count: z.number().int().nonnegative().optional(),
     is_hidden: z.boolean().optional(),
+    // Absent until the flavour tag migration is applied.
+    flavor_tag_slugs: z.array(z.string().min(1)).optional(),
+    flavor_tag_names: z.array(z.string().min(1)).optional(),
   })
   .transform((row) => ({
     id: row.tasting_id,
@@ -135,6 +139,11 @@ export const tastingRowSchema = z
       aftertaste: row.aftertaste,
     },
     wouldBuyAgain: row.would_buy_again,
+    /** Flavour tags, in the order of the reference list (`archive.flavorTags`). */
+    tags: (row.flavor_tag_slugs ?? []).map((slug, index) => ({
+      slug,
+      name: row.flavor_tag_names?.[index] ?? slug,
+    })),
     createdAt: row.created_at,
     likeCount: row.like_count ?? 0,
     /** Comments that are neither removed nor hidden. */
@@ -173,14 +182,32 @@ export const brewMethodRowSchema = z
     sortOrder: row.sort_order,
   }));
 
+export const flavorTagRowSchema = z
+  .object({
+    id: z.uuid(),
+    slug: z.string().min(1),
+    name: z.string().min(1),
+    tag_group: z.enum(FLAVOR_GROUPS),
+    sort_order: z.number().int(),
+  })
+  .transform((row) => ({
+    slug: row.slug,
+    name: row.name,
+    group: row.tag_group,
+    sortOrder: row.sort_order,
+  }));
+
 export type Coffee = z.infer<typeof coffeeRowSchema>;
 export type Tasting = z.infer<typeof tastingRowSchema>;
 export type BrewMethod = z.infer<typeof brewMethodRowSchema>;
+export type FlavorTag = z.infer<typeof flavorTagRowSchema>;
 
 export interface Archive {
   coffees: Coffee[];
   tastings: Tasting[];
   brewMethods: BrewMethod[];
+  /** The fixed list of flavour tags, in display order. */
+  flavorTags: FlavorTag[];
   /** Members who have finished onboarding, with their public numbers. */
   profiles: Profile[];
 }
@@ -192,6 +219,8 @@ export interface ArchiveRows {
   brewMethods: unknown[];
   /** Absent in snapshot files written before profiles existed. */
   profiles?: unknown[];
+  /** Absent in snapshot files written before tags were read. */
+  flavorTags?: unknown[];
 }
 
 export function parseArchive(rows: ArchiveRows): Archive {
@@ -199,8 +228,20 @@ export function parseArchive(rows: ArchiveRows): Archive {
     coffees: z.array(coffeeRowSchema).parse(rows.coffees),
     tastings: z.array(tastingRowSchema).parse(rows.tastings),
     brewMethods: z.array(brewMethodRowSchema).parse(rows.brewMethods),
+    flavorTags: z.array(flavorTagRowSchema).parse(rows.flavorTags ?? []),
     profiles: z.array(profileRowSchema).parse(rows.profiles ?? []),
   };
+}
+
+/**
+ * The whole archive is one cached read (see the web app's `getArchive`). That stays a good
+ * trade while it is small; past this size the read should be split into tagged reads.
+ */
+export const ARCHIVE_SPLIT_BYTES = 1_000_000;
+
+/** Roughly what the archive weighs on the wire: its JSON, in characters. */
+export function archiveSize(rows: ArchiveRows): number {
+  return JSON.stringify(rows).length;
 }
 
 /** The API caps a response at 1000 rows (supabase/config.toml: max_rows), so read in pages. */
@@ -226,12 +267,12 @@ async function readAll<Row>(
 }
 
 /**
- * Everything the public archive shows: all coffees, every public tasting, the brew methods
- * and the members. Works with any client; what comes back still depends on that client's
+ * Everything the public archive shows: all coffees, every public tasting, the brew methods,
+ * the flavour tags and the members. Works with any client; what comes back still depends on that client's
  * rights (RLS).
  */
 export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<ArchiveRows> {
-  const [coffees, tastings, brewMethods, profiles] = await Promise.all([
+  const [coffees, tastings, brewMethods, profiles, flavorTags] = await Promise.all([
     readAll("Kahveler", (from, to) =>
       client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
     ),
@@ -249,6 +290,9 @@ export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<Arc
     readAll("Profiller", (from, to) =>
       client.from("profile_overview").select("*").order("user_id").range(from, to),
     ),
+    readAll("Tat etiketleri", (from, to) =>
+      client.from("flavor_tags").select("*").order("sort_order").range(from, to),
+    ),
   ]);
-  return { coffees, tastings, brewMethods, profiles };
+  return { coffees, tastings, brewMethods, profiles, flavorTags };
 }

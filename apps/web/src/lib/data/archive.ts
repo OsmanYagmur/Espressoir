@@ -3,7 +3,14 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { fetchArchiveRows, parseArchive, type Archive, type ArchiveRows } from "@espressoir/db";
+import {
+  ARCHIVE_SPLIT_BYTES,
+  archiveSize,
+  fetchArchiveRows,
+  parseArchive,
+  type Archive,
+  type ArchiveRows,
+} from "@espressoir/db";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { createPublicClient } from "@/lib/supabase/public";
@@ -36,5 +43,12 @@ export async function getArchive(): Promise<Archive> {
     process.env.ARCHIVE_SNAPSHOT === "1"
       ? await readSnapshot()
       : await fetchArchiveRows(createPublicClient());
+  // Measured once per refresh (hourly at most), so the day to split the read is not missed.
+  const size = archiveSize(rows);
+  if (size > ARCHIVE_SPLIT_BYTES) {
+    console.warn(
+      `[archive] the single read is ${Math.round(size / 1024)} kB: time to split it (CLAUDE.md).`,
+    );
+  }
   return parseArchive(rows);
 }
