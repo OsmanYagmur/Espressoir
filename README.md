@@ -99,4 +99,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, hız sınırları, takip, akış, profil grafikleri.
   - [x] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
   - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
-- [ ] Faz 3: Sosyal derinlik · Faz 4+: Mobil (Expo)
+- [ ] **Faz 3: Sosyal derinlik.** Beş adımda:
+  - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
+  - [ ] 3B Listeler · 3C Bildirimler · 3D Fotoğraf · 3E PWA ve hızlı form
+- [ ] Faz 4+: Mobil (Expo)

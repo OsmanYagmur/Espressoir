@@ -261,6 +261,31 @@ Invitations (Phase 2D):
   cache runs out; a link scrolled into view by the click on the button next to it does exactly
   that (CI caught it once the invitation section pushed the catalog below the fold).
 
+Taste (Phase 3A):
+
+- **Flavour tags are a fixed list** (`flavor_tags`, admin-written; 20 tags in 7 `flavor_group`s,
+  mirrored as `FLAVOR_GROUPS`). Members pick from it, at most `FLAVOR_TAGS_MAX` (5) per tasting;
+  a trigger enforces the cap and keeps tags off wishlist entries. Tag names come from the
+  database (like brew method names), not from `packages/i18n`.
+- **Writing:** new tastings go through `log_tasting_v2` (v1 plus `p_flavor_tag_slugs`; v1 stays);
+  an edit updates the row, then calls `set_tasting_tags_v1`, which replaces the whole set.
+- **Reading:** `tasting_feed` ends with `flavor_tag_slugs` and `flavor_tag_names` (same order);
+  the read model turns them into `tasting.tags`. The tag list itself is `archive.flavorTags`.
+- **Taste numbers are derived, not stored:** `tasteMeans` and `countTags` (`@espressoir/core`)
+  over the archive's tastings, via `lib/data/taste-summary.ts`. Each taste dimension has its own
+  `n`, because people only fill in what they noticed.
+- **`Radar` (`components/stats/radar.tsx`)** is server-rendered SVG under the chart rules: every
+  corner prints its value (and `n` for a mean), small samples are hollow and faded, a table twin
+  sits underneath, and the SVG's label spells the numbers out. Fewer than three corners
+  (`hasRadarShape`) render as a list instead.
+- **Tags inside a tasting are a sentence, not a list** (`FlavorTags`): a tasting is already a
+  list item, and nested items would be counted with it (tests, screen readers).
+- **Sample data** gets taste profiles and tags from `scripts/lib/sample-taste.ts`, applied only
+  when the imported file is the fixture; a Notion export has no such columns.
+- **The archive read is measured:** `getArchive()` warns past `ARCHIVE_SPLIT_BYTES` (1 MB), and
+  a database test caps what one tasting or coffee row may weigh. That warning is the cue to
+  split the read.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -284,7 +309,14 @@ Invitations (Phase 2D):
         admin panel (hide, delete, restrict, review, merge).
   - [x] 2D (owner's addition): invitation screen in the admin panel; the plainer `sade` look
         as default with the original `form` look one menu click away.
-- [ ] Phase 3 social depth · Phase 4+ Expo app.
+- [ ] Phase 3 — social depth. Plan approved 2026-10-13 (`~/.claude/plans/soft-hatching-comet.md`
+      on the owner's machine; decisions below). Five steps, each its own branch + PR; the next
+      one starts only with the owner's go:
+  - [x] 3A taste: tag picker in the form, radar chart on a tasting, community profile and most
+        used tags on a coffee, a member's palate on their profile.
+  - [ ] 3B lists (public/private) and one-click "want to try" · 3C in-app notifications ·
+        3D photos (one per tasting + avatar) · 3E PWA and the quick form.
+- [ ] Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
@@ -315,7 +347,19 @@ Phase 2 decisions (owner-approved; they become conventions as each step lands):
   out: a browser check cannot guard a table the browser writes to.
 - **Account deletion and data export are RPCs**, so they need no secret key.
 
+Phase 3 decisions (owner-approved 2026-10-13):
+
+- **Order:** 3A → 3E as listed. **Photos:** one per tasting plus an avatar, resized and
+  re-encoded in the browser (which drops EXIF), storage rules as RLS, no secret key.
+  **PWA:** home screen + quick form, no service worker, no offline. **No Notion sync.**
+- **"Want to try" stays the `wishlist` tasting status**; lists are a separate feature.
+- **Notifications are made by database triggers**, read on page change; no realtime, no e-mail.
+- **The single archive read is still not split** in Phase 3; see the size warning above.
+
 Still open on the owner's side (remind, don't do for them):
+
+- **Apply the 3A migration before merging its PR** (`pnpm db:push:dev`, then `db:push:prod`):
+  without it saving a tasting fails (the form calls `log_tasting_v2`).
 
 - Done, for the record (2026-10-13): every migration is on dev and prod; sign-in setup on both
   projects (redirect URLs, Resend SMTP, templates, Turnstile); `SUPABASE_SECRET_KEY` is on
