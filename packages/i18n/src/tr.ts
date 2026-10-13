@@ -614,6 +614,25 @@ export const tr = {
       unknown: "beklenmedik bir hata",
     },
   },
+  notifications: {
+    title: "Bildirimler",
+    description: "Tadımlarına gelen beğeniler, yorumlar ve yeni takipçilerin.",
+    lead: "Tadımını beğenen, altına yazan, yorumuna yanıt veren ya da seni takip etmeye başlayan olduğunda burada görürsün.",
+    /** The link in the header, read aloud. */
+    link: "Bildirimler",
+    linkUnread: "Bildirimler: {count} yeni",
+    listLabel: "Bildirimlerin",
+    empty: "Henüz bildirimin yok.",
+    unread: "Yeni",
+    summary: "{count} yeni bildirim",
+    kinds: {
+      like: "tadımını beğendi",
+      comment: "tadımına yorum yazdı",
+      reply: "yorumuna yanıt verdi",
+      follow: "seni takip etmeye başladı",
+    },
+    back: "Panele dön",
+  },
   follow: {
     follow: "Takip et",
     unfollow: "Takibi bırak",

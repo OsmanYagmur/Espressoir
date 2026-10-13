@@ -56,6 +56,8 @@ export {
   type MemberList,
 } from "./list";
 
+export { notificationRowSchema, type Notification } from "./notification";
+
 export {
   COMMENT_SELECT,
   commentRowSchema,
