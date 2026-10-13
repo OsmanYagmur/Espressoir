@@ -16,7 +16,7 @@ const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
 ];
 
 /** Where members change things. */
-const SIGNED_IN_AREA = /^\/(panel|hesap)(\/|$)/;
+const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
 
 function NavLinkList({ pathname, className }: { pathname: string | null; className?: string }) {
   // Every change made in the signed-in area refreshes the public pages, and the router
