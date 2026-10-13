@@ -19,6 +19,7 @@ import {
 import { z } from "zod";
 
 import type { TypedSupabaseClient } from "./index";
+import { listRowSchema, type MemberList } from "./list";
 import { profileRowSchema, type Profile } from "./profile";
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -210,6 +211,8 @@ export interface Archive {
   flavorTags: FlavorTag[];
   /** Members who have finished onboarding, with their public numbers. */
   profiles: Profile[];
+  /** Public lists, with their entries. */
+  lists: MemberList[];
 }
 
 /** Raw rows of the relations, exactly as the API (or a snapshot file) returns them. */
@@ -221,6 +224,8 @@ export interface ArchiveRows {
   profiles?: unknown[];
   /** Absent in snapshot files written before tags were read. */
   flavorTags?: unknown[];
+  /** Absent in snapshot files written before lists existed. */
+  lists?: unknown[];
 }
 
 export function parseArchive(rows: ArchiveRows): Archive {
@@ -230,6 +235,7 @@ export function parseArchive(rows: ArchiveRows): Archive {
     brewMethods: z.array(brewMethodRowSchema).parse(rows.brewMethods),
     flavorTags: z.array(flavorTagRowSchema).parse(rows.flavorTags ?? []),
     profiles: z.array(profileRowSchema).parse(rows.profiles ?? []),
+    lists: z.array(listRowSchema).parse(rows.lists ?? []),
   };
 }
 
@@ -244,6 +250,9 @@ export function archiveSize(rows: ArchiveRows): number {
   return JSON.stringify(rows).length;
 }
 
+/** "No such relation", as Postgres and as the API's schema cache say it. */
+const MISSING_RELATION = new Set(["42P01", "PGRST205"]);
+
 /** The API caps a response at 1000 rows (supabase/config.toml: max_rows), so read in pages. */
 const PAGE_SIZE = 1000;
 
@@ -254,12 +263,16 @@ async function readAll<Row>(
     to: number,
   ) => PromiseLike<{
     data: Row[] | null;
-    error: { message: string } | null;
+    error: { message: string; code?: string } | null;
   }>,
+  { optional = false }: { optional?: boolean } = {},
 ): Promise<Row[]> {
   const rows: Row[] = [];
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await page(from, from + PAGE_SIZE - 1);
+    // A relation the database does not have yet (code deployed before its migration):
+    // an optional read is then empty rather than the end of the whole archive.
+    if (error && optional && MISSING_RELATION.has(error.code ?? "")) return [];
     if (error) throw new Error(`${what} okunamadı: ${error.message}`);
     rows.push(...(data ?? []));
     if (!data || data.length < PAGE_SIZE) return rows;
@@ -268,11 +281,11 @@ async function readAll<Row>(
 
 /**
  * Everything the public archive shows: all coffees, every public tasting, the brew methods,
- * the flavour tags and the members. Works with any client; what comes back still depends on that client's
+ * the flavour tags, the members and their public lists. Works with any client; what comes back still depends on that client's
  * rights (RLS).
  */
 export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<ArchiveRows> {
-  const [coffees, tastings, brewMethods, profiles, flavorTags] = await Promise.all([
+  const [coffees, tastings, brewMethods, profiles, flavorTags, lists] = await Promise.all([
     readAll("Kahveler", (from, to) =>
       client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
     ),
@@ -293,6 +306,12 @@ export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<Arc
     readAll("Tat etiketleri", (from, to) =>
       client.from("flavor_tags").select("*").order("sort_order").range(from, to),
     ),
+    readAll(
+      "Listeler",
+      (from, to) =>
+        client.from("list_feed").select("*").eq("is_public", true).order("list_id").range(from, to),
+      { optional: true },
+    ),
   ]);
-  return { coffees, tastings, brewMethods, profiles, flavorTags };
+  return { coffees, tastings, brewMethods, profiles, flavorTags, lists };
 }
