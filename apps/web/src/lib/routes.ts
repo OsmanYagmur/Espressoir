@@ -12,6 +12,10 @@ export function profilePath(username: string): Route {
   return `/u/${username}` as Route;
 }
 
+export function listPath(username: string, listSlug: string): Route {
+  return `/u/${username}/liste/${listSlug}` as Route;
+}
+
 export function tastingPath(tastingId: string): Route {
   return `/tadim/${tastingId}` as Route;
 }

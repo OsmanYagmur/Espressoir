@@ -1,6 +1,7 @@
 import { SMALL_SAMPLE, scoreHistogram, summarizeBy } from "@espressoir/core";
 import type { Profile } from "@espressoir/db";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -17,11 +18,11 @@ import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { TagCounts } from "@/components/stats/tag-counts";
 import { getArchive } from "@/lib/data/archive";
-import { findProfile, scoresOf, tastingsBy } from "@/lib/data/selectors";
+import { findProfile, listsBy, scoresOf, tastingsBy } from "@/lib/data/selectors";
 import { tasteSummary } from "@/lib/data/taste-summary";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { profilePath } from "@/lib/routes";
+import { listPath, profilePath } from "@/lib/routes";
 
 type Props = PageProps<"/u/[username]">;
 
@@ -94,6 +95,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
     (tasting) => tasting.score,
   ).map((group) => ({ ...group, label: methodNames.get(group.key) ?? group.key }));
   const taste = tasteSummary(archive, tastings);
+  const lists = listsBy(archive, profile.id);
   let section = 0;
 
   return (
@@ -222,6 +224,30 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
           ))}
         </ul>
       )}
+
+      {lists.length > 0 ? (
+        <>
+          <SectionHeading index={++section} title={p.listsTitle} aside={lists.length} />
+          <ul aria-label={p.listsTitle}>
+            {lists.map((list) => (
+              <li
+                key={list.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border py-3"
+              >
+                <Link
+                  href={listPath(profile.username, list.slug)}
+                  className="font-semiwide text-lg font-bold [overflow-wrap:anywhere] underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                >
+                  {list.title}
+                </Link>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {format(t.lists.itemCount, { count: list.items.length })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
 
       {wishlist.length > 0 ? (
         <>

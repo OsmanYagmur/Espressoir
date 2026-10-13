@@ -91,6 +91,7 @@ describe("database ↔ app contract", () => {
         brewMethods: await json("select * from public.brew_methods"),
         profiles: await json("select * from public.profile_overview"),
         flavorTags: await json("select * from public.flavor_tags"),
+        lists: await json("select * from public.list_feed"),
       };
       const archive = parseArchive(rows);
 

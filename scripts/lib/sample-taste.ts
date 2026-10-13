@@ -1,6 +1,8 @@
 import type { Queryable } from "./postgres";
 
 /**
+ * Extras for the sample archive, beyond what a Notion export holds.
+ *
  * Taste profiles and flavour tags for some tastings of the sample export, so previews and
  * tests have something to draw. A Notion export has no such columns. This is sample data:
  * callers apply it only when the file being imported is the fixture, never to anyone's
@@ -60,6 +62,39 @@ export async function applySampleTaste(db: Queryable): Promise<void> {
         where c.name = $1 and t.source = 'notion_import' and t.status = 'logged'
            on conflict do nothing`,
       [coffee, tags],
+    );
+  }
+}
+
+/** A public list for the sample archive's owner, so the list pages have something to show. */
+const SAMPLE_LIST = {
+  title: "Sabah için kapsüller",
+  description: "Güne başlarken elimin gittiği kapsüller, en sevdiğimden başlayarak.",
+  items: [
+    { coffee: "Ristretto (Siyah Kapsül)", note: "Kısa ve net; uyandırır." },
+    { coffee: "Explore Colombia", note: null },
+    { coffee: "Colombia", note: "Sütle de iyi." },
+  ],
+} as const;
+
+/** Idempotent: a member who already has the list keeps it as it is. */
+export async function applySampleLists(db: Queryable, ownerUsername: string): Promise<void> {
+  const made = await db.query(
+    `insert into public.lists (user_id, title, description)
+     select p.id, $2, $3 from public.profiles p
+      where p.username = $1
+        and not exists (select 1 from public.lists l where l.user_id = p.id and l.title = $2)
+     returning id`,
+    [ownerUsername, SAMPLE_LIST.title, SAMPLE_LIST.description],
+  );
+  const listId = (made.rows[0] as { id: string } | undefined)?.id;
+  if (!listId) return;
+  // One at a time: each entry takes the next position.
+  for (const { coffee, note } of SAMPLE_LIST.items) {
+    await db.query(
+      `insert into public.list_items (list_id, coffee_id, note)
+       select $1, c.id, $3 from public.coffees c where c.name = $2 limit 1`,
+      [listId, coffee, note],
     );
   }
 }

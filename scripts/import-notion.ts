@@ -25,7 +25,7 @@ import {
   createEmbeddedPostgres,
   type Queryable,
 } from "./lib/postgres";
-import { applySampleTaste } from "./lib/sample-taste";
+import { applySampleLists, applySampleTaste } from "./lib/sample-taste";
 import {
   assertTarget,
   ENV_FILES,
@@ -89,7 +89,10 @@ async function main(): Promise<void> {
       JSON.stringify({ username: ownerUsername }),
     ]);
     result = await applyImportPlan(db as Queryable, plan, { ownerUsername });
-    if (sample) await applySampleTaste(db as Queryable);
+    if (sample) {
+      await applySampleTaste(db as Queryable);
+      await applySampleLists(db as Queryable, ownerUsername);
+    }
     await db.close();
     context = { target: "yok (geçici, boş veritabanı)", mode: "offline", ownerUsername };
   } else {
@@ -108,7 +111,10 @@ async function main(): Promise<void> {
       await client.query("begin");
       result = await applyImportPlan(client, plan, { ownerUsername });
       // The sample archive also gets taste profiles and tags (the export has no such columns).
-      if (sample) await applySampleTaste(client);
+      if (sample) {
+        await applySampleTaste(client);
+        await applySampleLists(client, ownerUsername);
+      }
       await client.query(dryRun ? "rollback" : "commit");
     } catch (error) {
       await client.query("rollback").catch(() => undefined);

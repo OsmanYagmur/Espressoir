@@ -69,6 +69,9 @@ async function MyTastings() {
           <Link href={profilePath(user.username)} className={`uppercase ${linkFocus}`}>
             {t.panel.profile}
           </Link>
+          <Link href="/panel/listeler" className={`uppercase ${linkFocus}`}>
+            {t.lists.panel.title}
+          </Link>
           <Link href="/hesap" className={`uppercase ${linkFocus}`}>
             {t.panel.account}
           </Link>

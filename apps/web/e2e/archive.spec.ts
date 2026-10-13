@@ -119,7 +119,9 @@ test.describe("coffee page", () => {
     await page.goto("/kahve/jacobs/intenso-lungo");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("İntenso Lungo.");
     await expect(page.getByRole("img", { name: "Puansız" }).first()).toBeVisible();
-    await expect(page.getByRole("list", { name: "Tadımlar" })).toContainText("Denenecek");
+    // Nobody has tasted it; someone has it on their "want to try" list, which is counted.
+    await expect(page.getByText("Bu kahveyi henüz kimse tatmadı.")).toBeVisible();
+    await expect(page.getByText("1 kişi denemek istiyor")).toBeVisible();
   });
 
   test("answers 404 for a coffee that does not exist", async ({ page }) => {
@@ -208,7 +210,13 @@ test("the look can be switched to the tasting form, is remembered, and switches 
 });
 
 test("no page is wider than a phone's screen", async ({ page }) => {
-  for (const path of ["/", "/kahveler", "/akis", "/istatistik"]) {
+  for (const path of [
+    "/",
+    "/kahveler",
+    "/akis",
+    "/istatistik",
+    "/kahve/nespresso/ristretto-siyah-kapsul",
+  ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     const overflow = await page.evaluate(
@@ -427,6 +435,63 @@ test.describe("taste profile and flavour tags", () => {
     const tags = page.getByRole("table", { name: /tat etiketleri ve kaç tadımda geçtikleri/ });
     await expect(tags.getByRole("row").first()).toContainText("Meyvemsi");
     await expect(tags.getByRole("row").first()).toContainText("2 tadım");
+  });
+});
+
+test.describe("lists", () => {
+  test("a member's public list is linked from their page and shows its coffees in order", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
+    await page
+      .getByRole("list", { name: "Tadımlar" })
+      .getByRole("link", { name: /^@/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
+    const lists = page.getByRole("list", { name: "Listeler" });
+    await expect(lists.getByRole("listitem")).toHaveCount(1);
+    await expect(lists).toContainText("3 kahve");
+    await lists.getByRole("link", { name: "Sabah için kapsüller" }).click();
+
+    await expect(page).toHaveURL(/\/u\/[a-z0-9_]+\/liste\/sabah-icin-kapsuller$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sabah için kapsüller.");
+    await expect(page.getByText("Güne başlarken elimin gittiği kapsüller")).toBeVisible();
+    const coffees = page.getByRole("list", { name: "Listedeki kahveler" }).getByRole("listitem");
+    await expect(coffees).toHaveCount(3);
+    await expect(coffees.nth(0)).toContainText("Ristretto (Siyah Kapsül)");
+    await expect(coffees.nth(0)).toContainText("Kısa ve net; uyandırır.");
+    await expect(coffees.nth(1)).toContainText("Explore Colombia");
+    await expect(coffees.nth(2)).toContainText("Colombia");
+    // Each entry leads to the coffee, with the community's score beside it.
+    await expect(coffees.nth(0).getByRole("img", { name: "10 üzerinden 9 puan" })).toBeVisible();
+    await expect(
+      coffees.nth(0).getByRole("link", { name: "Ristretto (Siyah Kapsül)" }),
+    ).toHaveAttribute("href", "/kahve/nespresso/ristretto-siyah-kapsul");
+    // Reporting needs an account.
+    await expect(page.getByRole("button", { name: "Şikâyet et" })).toHaveCount(0);
+
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect(sitemap).toMatch(/\/u\/[a-z0-9_]+\/liste\/sabah-icin-kapsuller<\/loc>/);
+  });
+
+  test("a list that does not exist is a 404", async ({ page }) => {
+    const response = await page.goto("/u/owner/liste/boyle-bir-liste-yok");
+    expect(response?.status()).toBe(404);
+  });
+
+  test("a coffee's page offers visitors the login for its two buttons", async ({ page }) => {
+    await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: "Denemek istiyorum" })).toHaveAttribute(
+      "href",
+      "/giris",
+    );
+    await expect(main.getByRole("link", { name: "Listeye ekle" })).toHaveAttribute(
+      "href",
+      "/giris",
+    );
   });
 });
 

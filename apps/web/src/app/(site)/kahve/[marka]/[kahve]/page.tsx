@@ -11,6 +11,7 @@ import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { SectionHeading } from "@/components/site/section-heading";
+import { CoffeeActions } from "@/components/social/coffee-actions";
 import { ReportButton } from "@/components/social/report-button";
 import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
@@ -181,6 +182,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
 
   const tastings = tastingsOf(archive, coffee.id);
   const logged = tastings.filter((tasting) => tasting.status === "logged");
+  const wanting = tastings.length - logged.length;
   const similar = toCoffeeCards(
     toListItems({ ...archive, coffees: similarCoffees(archive, coffee, SIMILAR_COUNT) }),
     archive.brewMethods,
@@ -247,21 +249,28 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
       )}
       {/* Wrong brand, a duplicate, a made-up coffee: members can point it out. */}
       <ReportButton target="coffee" targetId={coffee.id} className="border-b border-border py-2" />
+      <CoffeeActions coffeeId={coffee.id} />
 
       <div className="grid md:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-labelledby="tadimlar" className="md:border-r md:border-rule md:pr-6">
           <SectionHeading id="tadimlar" index={++section} title={t.coffeeDetail.tastingsTitle} />
-          {tastings.length === 0 ? (
+          {logged.length === 0 ? (
             <p className="border-b border-border py-6 text-muted-foreground">
-              {t.coffeeDetail.wishlistBody}
+              {t.coffeeDetail.notTastedYet}
             </p>
           ) : (
             <ol aria-label={t.coffeeDetail.tastingsTitle}>
-              {tastings.map((tasting) => (
+              {logged.map((tasting) => (
                 <TastingItem key={tasting.id} tasting={tasting} showAuthor />
               ))}
             </ol>
           )}
+          {/* Wishlist entries are not tastings: they are counted, not listed. */}
+          {wanting > 0 ? (
+            <p className="border-b border-border py-3 font-mono text-xs text-muted-foreground">
+              {format(t.coffeeDetail.wantCount, { count: wanting })}
+            </p>
+          ) : null}
         </section>
 
         <aside className="md:pl-6">

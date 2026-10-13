@@ -3,7 +3,7 @@
  * No I/O here, so these are cheap to call from any page and easy to reason about.
  */
 import { shrunkenMean, summarize, type CoffeeListItem, type Summary } from "@espressoir/core";
-import type { Archive, BrewMethod, Coffee, Profile, Tasting } from "@espressoir/db";
+import type { Archive, BrewMethod, Coffee, MemberList, Profile, Tasting } from "@espressoir/db";
 
 /** Most recent first; undated tastings go last, newest entry first among equals. */
 export function byRecency(a: Tasting, b: Tasting): number {
@@ -220,6 +220,19 @@ export function findProfile(archive: Archive, username: string): Profile | undef
 /** One member's public tastings and wishlist entries, most recent first. */
 export function tastingsBy(archive: Archive, userId: string): Tasting[] {
   return archive.tastings.filter((tasting) => tasting.author.id === userId).sort(byRecency);
+}
+
+/** One member's public lists, most recently changed first. */
+export function listsBy(archive: Archive, userId: string): MemberList[] {
+  return archive.lists
+    .filter((list) => list.owner.id === userId)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** A public list by its owner's name and its own slug. */
+export function findList(archive: Archive, username: string, slug: string): MemberList | undefined {
+  const wanted = username.toLowerCase();
+  return archive.lists.find((list) => list.owner.username === wanted && list.slug === slug);
 }
 
 /** A public, logged tasting by its id: what a tasting's own page shows. */
