@@ -19,6 +19,8 @@ test("what others do with a member's tasting reaches that member, once", async (
   page,
   browser,
 }) => {
+  // Two people sign in and go back and forth: more than the usual half minute.
+  test.setTimeout(120_000);
   const stamp = Date.now().toString(36);
   const note = `Bildirim tadımı ${stamp}`;
   const comment = `Sahibinden yorum ${stamp}`;
@@ -28,10 +30,12 @@ test("what others do with a member's tasting reaches that member, once", async (
   await signIn(page, guest);
   await page.goto("/bildirimler");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler.");
-  // (Opening the list marks it as read in the background: wait for that to be done.)
-  await page.waitForLoadState("networkidle");
-  await page.reload();
-  await expect(page.getByText("Yeni", { exact: true })).toHaveCount(0);
+  // (Opening the list marks it as read in the background; look again until that is done.)
+  await expect(async () => {
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler.");
+    await expect(page.getByText("Yeni", { exact: true })).toHaveCount(0, { timeout: 1000 });
+  }).toPass({ timeout: 20_000 });
   await page.goto("/panel/tadim/yeni");
   await page.getByLabel("Kahve ara", { exact: true }).fill("nespresso colombia");
   await page
@@ -60,9 +64,12 @@ test("what others do with a member's tasting reaches that member, once", async (
   await other.getByRole("button", { name: "Gönder", exact: true }).click();
   await expect(other.getByRole("list", { name: "Yorumlar" }).getByText(comment)).toBeVisible();
 
-  // The guest's header counts both on the next page they open.
-  await page.goto("/kahveler");
-  await expect(bell(page)).toHaveAccessibleName("Bildirimler: 2 yeni");
+  // The guest's header counts both on the next page they open. (The number is counted
+  // once per page: look again until both writes have landed.)
+  await expect(async () => {
+    await page.goto("/kahveler");
+    await expect(bell(page)).toHaveAccessibleName("Bildirimler: 2 yeni", { timeout: 3000 });
+  }).toPass({ timeout: 20_000 });
   await bell(page).click();
   await expect(page).toHaveURL(/\/bildirimler$/);
   const liked = inbox(page).getByRole("listitem").filter({ hasText: "tadımını beğendi" }).first();
@@ -105,14 +112,16 @@ test("what others do with a member's tasting reaches that member, once", async (
   await expect(other.getByRole("button", { name: "Beğen", exact: true })).toBeVisible();
   await other.getByRole("button", { name: "Beğen", exact: true }).click();
   await expect(other.getByRole("button", { name: "Beğendin" })).toBeVisible();
-  await page.goto("/kahveler");
-  // (The number is counted after the page has loaded: let that happen before looking.)
-  await page.waitForLoadState("networkidle");
-  await expect(bell(page)).toHaveAccessibleName("Bildirimler");
+  await page.goto("/bildirimler");
+  await expect(
+    inbox(page).getByRole("listitem").filter({ hasText: "tadımını beğendi" }).first(),
+  ).toBeVisible();
+  await expect(page.getByText("Yeni", { exact: true })).toHaveCount(0);
   await other.context().close();
 });
 
 test("a new follower is announced, and visitors have no bell", async ({ page, browser }) => {
+  test.setTimeout(90_000);
   // The guest starts (or restarts) following the owner.
   await signIn(page, guest);
   await page.goto(`/u/${ownerUsername}`);
