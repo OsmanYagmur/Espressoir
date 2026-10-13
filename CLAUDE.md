@@ -95,7 +95,13 @@ data/                        owner's Notion export + reports (git-ignored)
 - **One read feeds every public page:** `getArchive()` (`'use cache'`, tag `archive`, `cacheLife
 ('hours')`) loads `coffee_overview`, public `tasting_feed` rows and `brew_methods`; pages derive
   what they need with the pure functions in `lib/data/selectors.ts`. Writes call
-  `updateTag(ARCHIVE_TAG)`. Data changed outside the site (import, SQL) shows up within the hour.
+  `refreshArchive()` (`lib/data/refresh-archive.ts`), never `updateTag` directly: it expires the
+  tag at once and again two seconds later. A read of the archive that was already running when
+  a write landed finishes afterwards and would be kept as current although it lacks the write
+  (two quick saves in a row, or a save while a page is being fetched ahead); the second expiry
+  clears it. For the same reason links to archive-built pages are not prefetched from the
+  signed-in area (`NavLinks`, the header logo, the admin panel's links). Data changed outside
+  the site (import, SQL) shows up within the hour.
 - **Reads go through flat views** (`coffee_overview`, `tasting_feed`, `coffee_stats`; all
   `security_invoker`) and are validated by the Zod schemas in `packages/db/src/archive.ts`; a
   database test fails if views, enums and schemas drift apart. Community numbers count only

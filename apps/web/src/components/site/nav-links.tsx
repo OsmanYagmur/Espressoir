@@ -15,7 +15,15 @@ const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
   { href: "/hakkinda", label: t.nav.about },
 ];
 
+/** Where members change things. */
+const SIGNED_IN_AREA = /^\/(panel|hesap)(\/|$)/;
+
 function NavLinkList({ pathname, className }: { pathname: string | null; className?: string }) {
+  // Every change made in the signed-in area refreshes the public pages, and the router
+  // answers a refresh by fetching the links on screen again. Here that would start a read
+  // of the archive right after each save, and the next quick save would land in the middle
+  // of it (see lib/data/refresh-archive.ts). So these links wait to be clicked there.
+  const prefetch = pathname !== null && SIGNED_IN_AREA.test(pathname) ? false : undefined;
   return (
     <ul className={cn("flex items-center gap-5", className)}>
       {NAV_ITEMS.map(({ href, label }) => {
@@ -24,6 +32,7 @@ function NavLinkList({ pathname, className }: { pathname: string | null; classNa
           <li key={href}>
             <Link
               href={href}
+              prefetch={prefetch}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "font-mono text-xs font-medium tracking-wide uppercase underline-offset-[6px] hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",

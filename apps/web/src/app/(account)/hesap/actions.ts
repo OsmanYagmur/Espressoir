@@ -7,12 +7,11 @@ import {
   profileInputSchema,
   type AccountInputError,
 } from "@espressoir/db";
-import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
 
 import { requireSession, requireUser } from "@/lib/auth";
-import { ARCHIVE_TAG } from "@/lib/data/archive";
+import { refreshArchive } from "@/lib/data/refresh-archive";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 
@@ -115,7 +114,7 @@ export async function completeOnboarding(
   }
 
   // The member list is part of the cached archive; this makes the new profile page exist.
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect("/panel");
 }
 
@@ -147,7 +146,7 @@ export async function updateProfile(
   if (!data || data.length === 0) return { message: e.failed, values };
 
   // Names appear next to tastings on public pages.
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   return { saved: true, values: { ...values, username: parsed.data.username } };
 }
 
@@ -170,6 +169,6 @@ export async function deleteAccount(
 
   // The account is gone; this only clears the cookies of a session that no longer exists.
   await supabase.auth.signOut({ scope: "local" });
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect("/");
 }

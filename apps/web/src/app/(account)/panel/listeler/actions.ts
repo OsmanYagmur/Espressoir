@@ -9,12 +9,11 @@ import {
 } from "@espressoir/core";
 import { LIST_INPUT_ERRORS, listInputSchema, listNoteSchema } from "@espressoir/db";
 import type { Route } from "next";
-import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
-import { ARCHIVE_TAG } from "@/lib/data/archive";
+import { refreshArchive } from "@/lib/data/refresh-archive";
 import { format, t } from "@/lib/i18n";
 
 const l = t.lists;
@@ -103,7 +102,7 @@ export async function createList(
     .single();
   if (error) return { message: databaseMessage(error), values };
 
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect(editor(data.id));
 }
 
@@ -130,7 +129,7 @@ export async function updateList(
   if (error) return { message: databaseMessage(error), values };
   if (!data || data.length === 0) return { message: l.panel.notFound, values };
 
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   return { saved: true, values };
 }
 
@@ -138,7 +137,7 @@ export async function deleteList(listId: string): Promise<void> {
   const { supabase } = await requireUser();
   if (id.safeParse(listId).success) {
     await supabase.from("lists").delete().eq("id", listId);
-    updateTag(ARCHIVE_TAG);
+    refreshArchive();
   }
   redirect(LISTS);
 }
@@ -153,7 +152,7 @@ export async function addListItem(listId: string, formData: FormData): Promise<v
     .from("list_items")
     .insert({ list_id: listId, coffee_id: coffeeId.data });
   if (error) redirect(editor(listId, errorCode(error)));
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect(editor(listId));
 }
 
@@ -162,7 +161,7 @@ export async function removeListItem(listId: string, coffeeId: string): Promise<
   if (!id.safeParse(listId).success) redirect(LISTS);
   if (id.safeParse(coffeeId).success) {
     await supabase.from("list_items").delete().eq("list_id", listId).eq("coffee_id", coffeeId);
-    updateTag(ARCHIVE_TAG);
+    refreshArchive();
   }
   redirect(editor(listId));
 }
@@ -183,7 +182,7 @@ export async function setListItemNote(
     .eq("list_id", listId)
     .eq("coffee_id", coffeeId);
   if (error) redirect(editor(listId, errorCode(error)));
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect(editor(listId));
 }
 
@@ -213,7 +212,7 @@ export async function moveListItem(
     p_coffee_ids: order,
   });
   if (error) redirect(editor(listId, errorCode(error)));
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect(editor(listId));
 }
 
@@ -244,7 +243,7 @@ export async function toggleListItem(
   if (error && !(on && error.code === "23505")) {
     return { ok: false, message: databaseMessage(error) };
   }
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   return { ok: true };
 }
 
@@ -267,7 +266,7 @@ export async function createListWith(
   if (error) return { ok: false, message: databaseMessage(error) };
 
   const added = await supabase.from("list_items").insert({ list_id: list.id, coffee_id: coffeeId });
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   if (added.error) return { ok: false, message: databaseMessage(added.error) };
   return { ok: true, list };
 }
@@ -303,6 +302,6 @@ export async function setWantToTry(coffeeId: string, on: boolean): Promise<ListA
       .eq("status", "wishlist");
     if (error) return { ok: false, message: l.want.failed };
   }
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   return { ok: true };
 }

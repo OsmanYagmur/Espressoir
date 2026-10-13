@@ -110,11 +110,15 @@ test("one click puts a coffee on the member's want-to-try list, another takes it
   if ((await want.getAttribute("aria-pressed")) === "true") {
     await want.click();
     await expect(want).toHaveAttribute("aria-pressed", "false");
+    await expect(want).toBeEnabled();
   }
 
+  // The button answers at once and is busy until the change is saved: wait for that
+  // before looking at pages that are built from what was saved.
   await want.click();
   await expect(want).toHaveAttribute("aria-pressed", "true");
   await expect(want).toHaveText("Denenecekler listemde");
+  await expect(want).toBeEnabled();
   // The public pages know at once: the coffee counts it, the profile lists it.
   await page.reload();
   await expect(page.getByText("1 kişi denemek istiyor")).toBeVisible();
@@ -125,6 +129,7 @@ test("one click puts a coffee on the member's want-to-try list, another takes it
   await page.goto(coffee);
   await want.click();
   await expect(want).toHaveAttribute("aria-pressed", "false");
+  await expect(want).toBeEnabled();
   await page.reload();
   await expect(page.getByText(/kişi denemek istiyor/)).toHaveCount(0);
 });
