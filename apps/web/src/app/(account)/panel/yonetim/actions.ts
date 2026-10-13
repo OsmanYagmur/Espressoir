@@ -2,14 +2,13 @@
 
 import { REPORT_TARGETS, RESTRICTION_DAYS, normalizeUsername } from "@espressoir/core";
 import type { TypedSupabaseClient } from "@espressoir/db";
-import { updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
 import { AUTH_CALLBACK_PATH } from "@/lib/auth-config";
-import { ARCHIVE_TAG } from "@/lib/data/archive";
+import { refreshArchive } from "@/lib/data/refresh-archive";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const PANEL = "/panel/yonetim";
@@ -44,7 +43,7 @@ async function run(
     if (!known) console.error("[admin] action refused:", error.message);
     back(known ?? "unknown");
   }
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   back();
 }
 

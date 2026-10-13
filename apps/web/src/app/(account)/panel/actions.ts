@@ -8,12 +8,12 @@ import {
   toTastingUpdate,
   type TastingInputError,
 } from "@espressoir/db";
-import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
-import { ARCHIVE_TAG, getArchive } from "@/lib/data/archive";
+import { getArchive } from "@/lib/data/archive";
+import { refreshArchive } from "@/lib/data/refresh-archive";
 import { format, t } from "@/lib/i18n";
 import { coffeePath } from "@/lib/routes";
 
@@ -128,7 +128,7 @@ export async function createTasting(
   }
 
   // The public pages are cached; this makes the new tasting show up right away.
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect(coffeePath(created.brand_slug, created.coffee_slug));
 }
 
@@ -163,11 +163,11 @@ export async function updateTasting(
   });
   // The rest of the edit is saved; say what was not, and show the page as it now is.
   if (tags.error) {
-    updateTag(ARCHIVE_TAG);
+    refreshArchive();
     return { message: databaseMessage(tags.error), values };
   }
 
-  updateTag(ARCHIVE_TAG);
+  refreshArchive();
   redirect("/panel");
 }
 
@@ -175,7 +175,7 @@ export async function deleteTasting(tastingId: string): Promise<void> {
   const { supabase } = await requireUser();
   if (z.uuid().safeParse(tastingId).success) {
     await supabase.from("tastings").delete().eq("id", tastingId);
-    updateTag(ARCHIVE_TAG);
+    refreshArchive();
   }
   redirect("/panel");
 }

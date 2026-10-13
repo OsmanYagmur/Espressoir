@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
-import { getTastingFormOptions } from "@/lib/data/tasting-form-options";
 import { format, t } from "@/lib/i18n";
 import { coffeePath, listPath } from "@/lib/routes";
 
@@ -85,7 +84,16 @@ async function ListEditor({ params, searchParams }: Props) {
     (a, b) => a.position - b.position || a.created_at.localeCompare(b.created_at),
   );
   const onList = new Set(items.map((item) => item.coffee_id));
-  const { coffees } = await getTastingFormOptions();
+  // The catalog for the search box, straight from the database: the cached archive is
+  // left alone here, so that saving twice in a row does not race its own refresh.
+  const { data: catalog } = await supabase
+    .from("coffee_overview")
+    .select("coffee_id, coffee_name, brand_name")
+    .order("brand_name")
+    .order("coffee_name");
+  const coffees = (catalog ?? []).flatMap((row) =>
+    row.coffee_id ? [{ id: row.coffee_id, label: `${row.brand_name} — ${row.coffee_name}` }] : [],
+  );
   const error = editorError(hata);
 
   return (

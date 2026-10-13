@@ -12,8 +12,12 @@ export function SiteHeader() {
   return (
     <header className="mx-auto w-full max-w-[1240px] px-5">
       <div className="flex flex-wrap items-center justify-between gap-y-1 border-b-2 border-rule py-2.5">
+        {/* Not fetched ahead: the home page is built from the archive, and a fetch that
+            starts while a member is saving something keeps the old state (see
+            lib/data/refresh-archive.ts). It is static, so a click is fast anyway. */}
         <Link
           href="/"
+          prefetch={false}
           aria-label={`${siteConfig.name} — ${t.nav.home}`}
           className="py-1 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
