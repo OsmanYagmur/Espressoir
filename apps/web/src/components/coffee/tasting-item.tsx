@@ -54,7 +54,7 @@ export function TastingItem({
   ].filter((part): part is string => Boolean(part));
 
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_54px] gap-4 border-b border-border py-4">
+    <li className="grid grid-cols-[minmax(0,1fr)_54px] gap-4 border-b border-border py-4 sade:py-5">
       <div className="min-w-0">
         <p className="font-mono text-xs text-muted-foreground">
           {showAuthor ? (
@@ -78,7 +78,7 @@ export function TastingItem({
           )}
         </p>
         {showCoffee ? (
-          <h3 className="font-semiwide mt-1 text-xl leading-tight font-bold [overflow-wrap:anywhere]">
+          <h3 className="font-semiwide mt-1 text-xl leading-tight font-bold [overflow-wrap:anywhere] sade:mt-1.5 sade:text-[1.4rem]">
             <Link href={coffeePath(tasting.brand.slug, tasting.coffee.slug)} className={linkFocus}>
               {tasting.coffee.name}
             </Link>{" "}
@@ -106,12 +106,24 @@ export function TastingItem({
           </p>
         )}
         {!standalone && !wishlist && tasting.visibility === "public" ? (
-          <p className="mt-2 font-mono text-xs text-muted-foreground">
-            <Link href={tastingPath(tasting.id)} prefetch={false} className={linkFocus}>
+          <p className="mt-2 font-mono text-xs text-muted-foreground sade:mt-3">
+            {/* Sade: boxed, with an arrow, because it is the way to the conversation. */}
+            <Link
+              href={tastingPath(tasting.id)}
+              prefetch={false}
+              data-plain
+              className={cn(
+                linkFocus,
+                "sade:inline-flex sade:items-center sade:gap-2 sade:border sade:border-input sade:px-2.5 sade:py-1.5 sade:text-foreground sade:hover:border-foreground sade:hover:no-underline",
+              )}
+            >
               {format(t.social.counts, {
                 likes: tasting.likeCount,
                 comments: tasting.commentCount,
               })}
+              <span aria-hidden className="form:hidden">
+                →
+              </span>
             </Link>
           </p>
         ) : null}

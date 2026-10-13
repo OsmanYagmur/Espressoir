@@ -74,7 +74,7 @@ cp .env.example .env.prod.local   # prod projesinin değerleri
 
 Dosyalar nokta ile başladığı için Finder'da görünmez; düzenlemek için `open -e .env.prod.local` yaz. Değerleri `=` işaretinin hemen sağına, boşluksuz ve tırnaksız yapıştır.
 
-⚠️ `SUPABASE_SECRET_KEY` RLS'i atlar. Yalnızca yerel script'lerde kullanılır; **Vercel'e veya başka bir yere koyma.**
+⚠️ `SUPABASE_SECRET_KEY` RLS'i atlar. Yerel script'lerde kullanılır; sitede tek istisnası yönetimdeki davet ekranıdır ve Vercel'e yalnızca **Secret** türünde girer ([`setup-auth.md`](./setup-auth.md), "Davet ekranı"). Başka hiçbir yere koyma.
 
 ## 5. Migration'ları uygula
 

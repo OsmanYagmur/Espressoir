@@ -1,11 +1,13 @@
 import { SCORE_MAX, SCORE_MIN } from "@espressoir/core";
 import Link from "next/link";
 
+import { HomeCta } from "@/components/account/home-cta";
 import { ScoreBadge } from "@/components/coffee/score-badge";
 import { TastingItem } from "@/components/coffee/tasting-item";
 import { FieldStrip, type Field } from "@/components/site/field-strip";
 import { PageShell } from "@/components/site/page-shell";
 import { SectionHeading } from "@/components/site/section-heading";
+import { Button } from "@/components/ui/button";
 import { getArchive } from "@/lib/data/archive";
 import { homeSummary, loggedTastings, methodCounts, topCoffees } from "@/lib/data/selectors";
 import { formatAverage, formatMonth } from "@/lib/format";
@@ -19,6 +21,7 @@ const TOP_COUNT = 5;
 
 const linkFocus =
   "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const ctaClass = "h-11 px-5 font-mono text-xs uppercase";
 
 export default async function HomePage() {
   const archive = await getArchive();
@@ -83,14 +86,48 @@ export default async function HomePage() {
   return (
     <PageShell>
       <section className="grid gap-5 border-b border-rule pt-9 pb-6 md:grid-cols-[1fr_auto] md:items-end">
-        <h1 className="font-wide text-[clamp(3.25rem,10.5vw,8.9rem)] leading-[0.84] font-extrabold tracking-[-0.035em] uppercase">
-          {t.home.title}
-          <span className="text-brand">.</span>
-        </h1>
-        <div className="max-w-sm font-mono text-xs leading-relaxed text-muted-foreground md:text-right">
+        <div>
+          <h1 className="font-wide text-[clamp(3.25rem,10.5vw,8.9rem)] leading-[0.84] font-extrabold tracking-[-0.035em] uppercase sade:text-[clamp(2.75rem,7.5vw,5.5rem)] sade:leading-[0.88]">
+            {t.home.title}
+            <span className="text-brand">.</span>
+          </h1>
+          {/* Sade: say what this is and offer the first steps. */}
+          <div className="form:hidden">
+            <p className="mt-5 max-w-[58ch] text-[1.1rem] leading-relaxed">{t.home.lead}</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button asChild className={ctaClass}>
+                <Link href="/kahveler">{t.home.cta.coffees} →</Link>
+              </Button>
+              <Button asChild variant="outline" className={ctaClass}>
+                <Link href="/akis">{t.home.cta.feed}</Link>
+              </Button>
+              <HomeCta className={ctaClass} />
+            </div>
+          </div>
+        </div>
+        <div className="max-w-sm font-mono text-xs leading-relaxed text-muted-foreground md:text-right sade:hidden">
           <p className="text-foreground">{t.home.intro}</p>
           <p className="mt-2">{t.home.methodsLine}</p>
         </div>
+      </section>
+
+      <section aria-labelledby="nasil-calisir" className="form:hidden">
+        <h2 id="nasil-calisir" className="sr-only">
+          {t.home.howTitle}
+        </h2>
+        <ol className="grid gap-px border-b border-rule bg-border md:grid-cols-3">
+          {t.home.how.map((step, index) => (
+            <li key={step.title} className="bg-background py-4 md:px-4 md:first:pl-0">
+              <p className="font-semiwide text-lg font-bold">
+                <span className="mr-2 font-mono text-xs font-medium text-brand">{index + 1}</span>
+                {step.title}
+              </p>
+              <p className="mt-1 max-w-[42ch] text-sm leading-relaxed text-muted-foreground">
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <FieldStrip fields={fields} />
@@ -101,6 +138,7 @@ export default async function HomePage() {
             id="son-tadimlar"
             index={1}
             title={t.home.latestTitle}
+            hint={t.home.hints.latest}
             aside={
               empty ? undefined : (
                 <Link href="/akis" className={linkFocus}>
@@ -144,7 +182,7 @@ export default async function HomePage() {
         <aside className="md:pl-6">
           {top.length > 0 ? (
             <>
-              <SectionHeading index={2} title={t.home.topTitle} />
+              <SectionHeading index={2} title={t.home.topTitle} hint={t.home.hints.top} />
               <ol aria-label={t.home.topTitle}>
                 {top.map((coffee) => (
                   <li

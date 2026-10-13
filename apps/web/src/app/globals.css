@@ -4,6 +4,17 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+ * Two looks over the same markup, chosen on <html data-look> (see lib/look.ts):
+ *   form  the original tasting form, exactly as designed;
+ *   sade  the same form read aloud: what can be clicked looks clickable, pages say what
+ *         they are for, and the main thing on screen outweighs its details.
+ * Use `sade:` / `form:` like any variant. Whatever only one look shows is hidden in the
+ * other (`form:hidden`, `sade:hidden`), so both stay complete.
+ */
+@custom-variant sade (&:where([data-look="sade"] *));
+@custom-variant form (&:where([data-look="form"] *));
+
+/*
  * Espressoir — "tasting form" design: a cupping sheet / lab notebook.
  * Off-white paper, black ink, hard rules instead of cards, one accent (signal red).
  * Wide grotesk (Archivo) for headings, IBM Plex Mono for labels and data.
@@ -118,6 +129,19 @@
   ::selection {
     background: var(--brand);
     color: var(--brand-foreground);
+  }
+
+  /* Sade: every link in the content is underlined in the accent colour, so nobody has to
+     hover to find out what leads somewhere. Buttons and chips (`data-plain`) opt out. */
+  [data-look="sade"] main a:not([data-slot="button"], [data-plain]) {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in oklch, var(--brand) 80%, transparent);
+  }
+  [data-look="sade"] main a:not([data-slot="button"], [data-plain]):hover {
+    color: var(--brand);
+    text-decoration-thickness: 2px;
   }
 }
 

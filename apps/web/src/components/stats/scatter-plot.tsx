@@ -1,6 +1,7 @@
 import { SCORE_MAX, SCORE_MIN } from "@espressoir/core";
 
 import { format, t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 const Y_SPAN = SCORE_MAX - SCORE_MIN;
 const yTicks = Array.from({ length: Y_SPAN + 1 }, (_, i) => SCORE_MIN + i);
@@ -57,6 +58,16 @@ export function ScatterPlot({
               count: point.count,
             });
             const size = Math.min(10 + (point.count - 1) * 4, 22);
+            // The label opens towards the middle of the chart, so one near an edge never
+            // reaches past the frame. That matters even while it is invisible: on a phone
+            // it would make the whole page scroll sideways.
+            const position = (point.x - xMin) / xSpan;
+            const anchor =
+              position < 1 / 3
+                ? "left-0"
+                : position > 2 / 3
+                  ? "right-0"
+                  : "left-1/2 -translate-x-1/2";
             return (
               <li
                 key={`${point.x}:${point.y}`}
@@ -69,7 +80,12 @@ export function ScatterPlot({
                   className="bg-foreground ring-2 ring-background group-hover:bg-brand group-focus-visible:bg-brand"
                   style={{ width: size, height: size }}
                 />
-                <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 border border-rule bg-popover px-2 py-1 whitespace-nowrap text-popover-foreground opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span
+                  className={cn(
+                    "pointer-events-none absolute bottom-full mb-1 w-max max-w-40 border border-rule bg-popover px-2 py-1 text-popover-foreground opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 sm:max-w-none sm:whitespace-nowrap",
+                    anchor,
+                  )}
+                >
                   {label}
                 </span>
               </li>

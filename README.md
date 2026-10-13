@@ -58,7 +58,7 @@ pnpm dev                       # http://localhost:3000
 | `pnpm db:push:dev` / `db:push:prod` | Migration'ları dev/prod'a uygular (prod onay ister)                           |
 | `pnpm types:gen`                    | `packages/db` tiplerini migration'lardan yeniden üretir                       |
 | `pnpm admin:bootstrap`              | Hesabını oluşturur ve admin yapar (`--env prod` ile canlıda)                  |
-| `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (`--env prod` ile canlıda)                    |
+| `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (sitede: Panel → Yönetim → Davetler)          |
 | `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)          |
 | `pnpm seed:dev`                     | Dev'e örnek arşivi yükler (prod'u reddeder)                                   |
 
@@ -98,4 +98,5 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 2A Hesaplar: e-posta kodu ve Google ile giriş, davet, kullanıcı adı seçimi, profil sayfası, veri indirme, hesap silme, KVKK taslakları.
   - [x] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, hız sınırları, takip, akış, profil grafikleri.
   - [x] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
+  - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
 - [ ] Faz 3: Sosyal derinlik · Faz 4+: Mobil (Expo)

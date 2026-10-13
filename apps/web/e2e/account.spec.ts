@@ -15,6 +15,7 @@ import {
   enterCode,
   guest,
   mailCount,
+  owner,
   requestCode,
   signIn,
   waitForMail,
@@ -220,6 +221,58 @@ test("an invitation that ran out is replaced by inviting again", async ({
   await page.getByRole("button", { name: "Girişi tamamla" }).click();
   await finishOnboarding(page, `gec_${stamp}`);
   await expect(page).toHaveURL(/\/panel$/);
+});
+
+test("the admin invites from the panel, sends it again and withdraws it", async ({
+  page,
+  browser,
+  request,
+  baseURL,
+}) => {
+  const email = `panel-${Date.now().toString(36)}@example.test`;
+  await signIn(page, owner);
+  await page.goto("/panel/yonetim");
+  const pending = page
+    .getByRole("list", { name: "Bekleyen davetler" })
+    .getByRole("listitem")
+    .filter({ hasText: email });
+
+  const address = page.getByRole("textbox", { name: "E-posta", exact: true });
+
+  const since = Date.now();
+  await address.fill(email);
+  await page.getByRole("button", { name: "Davet gönder" }).click();
+  await expect(page.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
+  await expect(pending).toHaveCount(1);
+  const first = await waitForMail(request, email, since);
+  expect(first.subject).toBe("Espressoir'a davetlisin");
+  // The link leads back to the site the admin is on.
+  expect(first.link).toContain(`${baseURL}/auth/callback?token_hash=`);
+
+  // Sending again replaces the link. (The local auth server sends one e-mail a second.)
+  await page.waitForTimeout(1500);
+  await pending.getByRole("button", { name: "Yeniden gönder" }).click();
+  await expect.poll(() => mailCount(request, email), { timeout: 20_000 }).toBe(2);
+  const second = await waitForMail(request, email, since);
+  expect(second.link).not.toBe(first.link);
+
+  // Withdrawn: gone from the list, and the link in the e-mail opens nothing.
+  await pending.getByRole("button", { name: "Geri çek" }).click();
+  await expect(pending).toHaveCount(0);
+  const invited = await (await browser.newContext()).newPage();
+  await invited.goto(second.link!);
+  await invited.getByRole("button", { name: "Girişi tamamla" }).click();
+  await expect(
+    invited.getByText("Bu davet bağlantısı geçersiz ya da süresi dolmuş."),
+  ).toBeVisible();
+  await invited.context().close();
+
+  // A member's address is never invited over, and the account is left alone.
+  await address.fill(guest.email!);
+  await page.getByRole("button", { name: "Davet gönder" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "bu adresle zaten bir hesap var" }),
+  ).toBeVisible();
 });
 
 test("an admin cannot delete their own account from the site", async ({ page }) => {

@@ -1,4 +1,9 @@
-import { MODERATION_NOTE_MAX_LENGTH, RESTRICTION_DAYS, type ReportTarget } from "@espressoir/core";
+import {
+  MODERATION_NOTE_MAX_LENGTH,
+  RESTRICTION_DAYS,
+  siteConfig,
+  type ReportTarget,
+} from "@espressoir/core";
 import type { TypedSupabaseClient } from "@espressoir/db";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -14,8 +19,11 @@ import { requireAdmin } from "@/lib/auth";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { coffeePath, profilePath, tastingPath } from "@/lib/routes";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
+  cancelInvitation,
+  inviteMember,
   mergeBrand,
   mergeCoffee,
   removeContent,
@@ -214,6 +222,92 @@ function Empty({ children }: { children: string }) {
   return <p className="border-b border-border py-5 text-muted-foreground">{children}</p>;
 }
 
+// An invitation's link runs out within the hour, so the time it was sent matters.
+const sentFormat = new Intl.DateTimeFormat(siteConfig.locale, {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: siteConfig.timeZone,
+});
+
+/**
+ * Invitations: the way in while signup is closed. Uses the secret key (see
+ * lib/supabase/admin.ts), and is rendered only after requireAdmin() in AdminPanel.
+ */
+async function Invitations() {
+  const admin = createAdminClient();
+  if (!admin) return <Empty>{a.invites.unavailable}</Empty>;
+
+  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const pending = (data?.users ?? [])
+    .filter((user) => user.invited_at && !user.email_confirmed_at && user.email)
+    .sort((x, y) => (y.invited_at ?? "").localeCompare(x.invited_at ?? ""));
+
+  return (
+    <>
+      <form action={inviteMember} className="grid gap-3 border-b border-border py-4">
+        <p className="max-w-[62ch] text-sm text-muted-foreground">{a.invites.hint}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            type="email"
+            name="email"
+            aria-label={a.invites.email}
+            placeholder={a.invites.email}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            className={`${field} w-72 max-w-full`}
+          />
+          <Button type="submit" className={small}>
+            {a.invites.send}
+          </Button>
+        </div>
+      </form>
+
+      <p className="label-caps pt-4 text-muted-foreground">{a.invites.pendingTitle}</p>
+      {error ? (
+        <Empty>{a.invites.listFailed}</Empty>
+      ) : pending.length === 0 ? (
+        <Empty>{a.invites.pendingEmpty}</Empty>
+      ) : (
+        <ul aria-label={a.invites.pendingTitle}>
+          {pending.map((user) => (
+            <li
+              key={user.id}
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+            >
+              <p className="min-w-0 [overflow-wrap:anywhere]">
+                <span className="font-mono text-sm">{user.email}</span>{" "}
+                <span className="font-mono text-xs text-muted-foreground">
+                  {format(a.invites.sentAt, {
+                    date: sentFormat.format(new Date(user.invited_at!)),
+                  })}
+                </span>
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <form action={inviteMember}>
+                  <input type="hidden" name="email" value={user.email} />
+                  <Button type="submit" variant="outline" className={small}>
+                    {a.invites.resend}
+                  </Button>
+                </form>
+                <form action={cancelInvitation}>
+                  <input type="hidden" name="userId" value={user.id} />
+                  <Button type="submit" variant="outline" className={small}>
+                    {a.invites.cancel}
+                  </Button>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
 async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
   const { data, error } = await supabase
     .from("reports")
@@ -252,7 +346,11 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
                   ) : null}
                   {target.summary}{" "}
                   {target.href ? (
-                    <Link href={target.href} className={`font-mono text-xs ${linkFocus}`}>
+                    <Link
+                      href={target.href}
+                      prefetch={false}
+                      className={`font-mono text-xs ${linkFocus}`}
+                    >
                       {a.open}
                     </Link>
                   ) : null}
@@ -327,7 +425,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
 
   return (
     <>
-      <SectionHeading index={4} title={a.catalogTitle} aside={pending.length} />
+      <SectionHeading index={5} title={a.catalogTitle} aside={pending.length} />
       {pending.length === 0 ? (
         <Empty>{a.catalogEmpty}</Empty>
       ) : (
@@ -337,6 +435,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
               <p className="[overflow-wrap:anywhere]">
                 <Link
                   href={coffeePath(coffee.brand_slug!, coffee.coffee_slug!)}
+                  prefetch={false}
                   className={`font-semiwide font-bold ${linkFocus}`}
                 >
                   {coffee.label}
@@ -386,7 +485,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
         </ul>
       )}
 
-      <SectionHeading index={5} title={a.brandsTitle} />
+      <SectionHeading index={6} title={a.brandsTitle} />
       <form action={mergeBrand} className="grid max-w-2xl gap-3 border-b border-border py-4">
         <p className="max-w-[62ch] text-sm text-muted-foreground">{a.brandsHint}</p>
         <div className="flex flex-wrap items-center gap-2">
@@ -547,6 +646,11 @@ async function Log({ supabase }: { supabase: TypedSupabaseClient }) {
 
 // Everything here is the admin's own view of the database, read on each request. The
 // database checks the role again for every row and every action.
+//
+// Links from here to public pages carry prefetch={false}. A link scrolled into view is
+// fetched ahead, and the button beside it changes that very page: a fetch that starts just
+// before the change and finishes just after it is cached as if it were current, and the
+// page then shows the old state (a reviewed coffee still "not reviewed") for up to an hour.
 async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
   const { supabase } = await requireAdmin();
   const { hata, tamam } = await searchParams;
@@ -575,14 +679,16 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
         </p>
       ) : null}
 
-      <SectionHeading index={1} title={a.reportsTitle} />
+      <SectionHeading index={1} title={a.invites.title} />
+      <Invitations />
+      <SectionHeading index={2} title={a.reportsTitle} />
       <Reports supabase={supabase} />
-      <SectionHeading index={2} title={a.hiddenTitle} />
+      <SectionHeading index={3} title={a.hiddenTitle} />
       <Hidden supabase={supabase} />
-      <SectionHeading index={3} title={a.restrictedTitle} />
+      <SectionHeading index={4} title={a.restrictedTitle} />
       <Restricted supabase={supabase} />
       <Catalog supabase={supabase} />
-      <SectionHeading index={6} title={a.logTitle} />
+      <SectionHeading index={7} title={a.logTitle} />
       <Log supabase={supabase} />
     </>
   );

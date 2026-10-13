@@ -21,6 +21,7 @@ export default function LoginPage() {
       <PageHeading
         title={t.auth.title}
         aside={<p>{authConfig.signupEnabled ? t.auth.signupOpen : t.auth.inviteOnly}</p>}
+        lead={authConfig.signupEnabled ? t.auth.signupOpen : t.auth.inviteOnly}
       />
       {/* Reads the URL, which the prerendered page does not know; the form does not wait. */}
       <Suspense fallback={null}>

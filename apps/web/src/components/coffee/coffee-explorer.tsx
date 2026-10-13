@@ -186,8 +186,8 @@ export function CoffeeExplorer({
             </button>
           ) : null}
         </p>
-        <div className="flex items-end gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex max-w-full flex-wrap items-end gap-3">
+          <div className="flex min-w-0 items-center gap-2">
             <label htmlFor="filter-sort" className="label-caps text-muted-foreground">
               {t.coffees.sort}
             </label>

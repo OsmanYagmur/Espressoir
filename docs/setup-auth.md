@@ -91,14 +91,40 @@ Bilmen gerekenler:
 
 ## 7. Davet göndermek
 
+İki yol var; ikisi de aynı e-postayı gönderir.
+
+### Davet ekranı
+
+**Panel → Yönetim → Davetler:** adresi yaz, "Davet gönder". Altında bekleyen (henüz kabul edilmemiş) davetler durur; her birinin yanında **Yeniden gönder** (yeni bağlantı gider, eskisi geçersiz olur) ve **Geri çek** (davet silinir, bağlantı çalışmaz) vardır. Kabul edilmiş bir davet listeden düşer ve buradan silinemez.
+
+Ekranın çalışması için site, Supabase'in **gizli anahtarını** bilmek zorunda: davet göndermek bir yönetici çağrısıdır, giriş yapmış bir kullanıcı olarak yapılamaz. Bir kez kurulur:
+
+1. Supabase → proje → **Project Settings → API Keys → Secret keys**. Değeri **kopyala simgesiyle** kopyala (ekrandaki maskeli metni seçip kopyalarsan anahtar eksik gelir).
+2. Vercel → proje → **Settings → Environment Variables → Add**:
+   - Key: `SUPABASE_SECRET_KEY`
+   - Type: **Secret** (Config değil; kaydedildikten sonra değeri Vercel'de de görünmez)
+   - Environment: **Production**, değer: **prod** projesinin gizli anahtarı.
+3. Aynı adla bir tane daha ekle: Environment **Preview**, değer: **dev** projesinin gizli anahtarı. İki ortamın anahtarını birbirine karıştırma: önizleme adresi canlıya davet göndermemeli.
+4. **Deployments → son yayın → Redeploy.** Değişkenler yalnızca yeni yayında geçerli olur.
+
+Anahtar tanımlı değilse ekran bozulmaz; "gizli anahtar tanımlı değil" yazar ve aşağıdaki komut çalışmaya devam eder.
+
+⚠️ Bu anahtar veritabanındaki bütün kuralları (RLS) atlar. Sitede yalnızca bu ekran için, yalnızca sunucuda ve yalnızca yönetici olduğun doğrulandıktan sonra kullanılır; tarayıcıya hiç gitmez. Adının başına `NEXT_PUBLIC_` **koyma**, sohbete ya da repoya yapıştırma. Sızdığından şüphelenirsen Supabase'te aynı ekrandan yenisini üret, eskisini sil, Vercel'deki iki değeri ve `.env` dosyalarını güncelle.
+
+### Komutla
+
 ```bash
 pnpm user:invite ada@example.com                 # dev
 pnpm user:invite --env prod ada@example.com      # prod (proje ref'ini sorar)
 ```
 
-Birden fazla adres yazılabilir. Davet edilen kişi bağlantıya tıklar, kullanıcı adını seçer, koşulları kabul eder ve defteri açılır.
+Birden fazla adres yazılabilir.
 
-**Bağlantı bir saat geçerlidir.** Davet kabul edilene kadar o kişinin hesabı yoktur; bu yüzden süresi dolan biri giriş sayfasından kod **isteyemez** (kayıt kapalı). Çözüm aynı komutu aynı adresle yeniden çalıştırmak: yeni bir bağlantı gider, eskisi geçersiz olur. Davet atmadan önce karşı tarafa haber vermek işi kolaylaştırır.
+### Davet edilen ne görür
+
+Bağlantıya tıklar, kullanıcı adını seçer, koşulları kabul eder ve defteri açılır.
+
+**Bağlantı bir saat geçerlidir.** Davet kabul edilene kadar o kişinin hesabı yoktur; bu yüzden süresi dolan biri giriş sayfasından kod **isteyemez** (kayıt kapalı). Çözüm daveti yeniden göndermek (ekrandan "Yeniden gönder" ya da aynı komut): yeni bir bağlantı gider, eskisi geçersiz olur. Davet atmadan önce karşı tarafa haber vermek işi kolaylaştırır.
 
 Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP Expiration", en fazla 86400 saniye = 24 saat), ama bu ayar giriş kodlarını da kapsar: kod ne kadar uzun süre geçerliyse tahmin edilmesi o kadar kolaylaşır. Uzatacaksan kod uzunluğunu 8'in altına indirme.
 
@@ -121,7 +147,8 @@ Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP 
 | E-postada kod yok, yalnızca bağlantı var                      | Şablonlar güncellenmemiş (4. adım).                                                                                                                  |
 | Bağlantı ana sayfaya düşüyor                                  | `/auth/callback` adresi Redirect URLs listesinde yok (2. adım).                                                                                      |
 | "Bu bağlantı geçersiz ya da süresi dolmuş"                    | Bağlantı bir kez kullanılmış ya da bir saati geçmiş. Giriş sayfasından yeni kod iste.                                                                |
-| "Bu davet bağlantısı geçersiz ya da süresi dolmuş"            | Davet bir saati geçmiş ya da yerine yenisi gönderilmiş. `pnpm user:invite` komutunu aynı adresle yeniden çalıştır.                                   |
+| "Bu davet bağlantısı geçersiz ya da süresi dolmuş"            | Davet bir saati geçmiş, geri çekilmiş ya da yerine yenisi gönderilmiş. Yönetim → Davetler'den yeniden gönder.                                        |
+| Yönetim → Davetler: "gizli anahtar tanımlı değil"             | `SUPABASE_SECRET_KEY` o ortamda (Production / Preview) yok ya da eklendikten sonra Redeploy yapılmadı (7. adım, "Davet ekranı").                     |
 | Google: "Kayıt şu an yalnızca davetle"                        | O Google hesabının e-postasıyla açılmış bir hesap yok.                                                                                               |
 | `pnpm user:invite`: "e-posta servisi bu adrese gönderemiyor"  | Özel SMTP kurulmamış (3. adım).                                                                                                                      |
 | Kendi hesabınla giremiyorsun ve Turnstile'dan şüpheleniyorsun | Supabase'te Captcha korumasını geçici olarak kapat, gir, nedenini bul, yeniden aç.                                                                   |
