@@ -65,9 +65,22 @@ describe("tastingInputSchema", () => {
     expect(errors({ ...base, pricePaid: -1 })).toEqual(["priceInvalid"]);
   });
 
-  it("clears score and date on a wishlist entry", () => {
-    const result = parse({ ...base, status: "wishlist" });
-    expect(result.data).toMatchObject({ status: "wishlist", score: null, tastedAt: null });
+  it("clears score, date and tags on a wishlist entry", () => {
+    const result = parse({ ...base, status: "wishlist", flavorTagSlugs: ["kakao"] });
+    expect(result.data).toMatchObject({
+      status: "wishlist",
+      score: null,
+      tastedAt: null,
+      flavorTagSlugs: [],
+    });
+  });
+
+  it("takes up to five flavour tags, counting a repeated one once", () => {
+    expect(parse(base).data?.flavorTagSlugs).toEqual([]);
+    const five = ["meyvemsi", "narenciye", "kakao", "findik", "bal"];
+    expect(parse({ ...base, flavorTagSlugs: [...five, "bal"] }).data?.flavorTagSlugs).toEqual(five);
+    expect(errors({ ...base, flavorTagSlugs: [...five, "vanilya"] })).toEqual(["tooManyTags"]);
+    expect(parse({ ...base, flavorTagSlugs: ["Bitter Çikolata"] }).success).toBe(false);
   });
 
   it("drops the capsule system unless the new coffee is a capsule", () => {
@@ -101,7 +114,13 @@ describe("toLogTastingArgs", () => {
       p_score: 8,
       p_tasted_at: "2026-10-09",
       p_notes: "Yumuşak içimli.",
+      p_flavor_tag_slugs: [],
     });
+  });
+
+  it("passes the flavour tags along", () => {
+    const input = tastingInputSchema(TODAY).parse({ ...base, flavorTagSlugs: ["kakao", "bal"] });
+    expect(toLogTastingArgs(input).p_flavor_tag_slugs).toEqual(["kakao", "bal"]);
   });
 
   it("passes a new coffee by name", () => {

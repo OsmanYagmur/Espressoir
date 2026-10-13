@@ -10,15 +10,19 @@ export type { Database, Json } from "./database.types";
 export type TypedSupabaseClient = SupabaseClient<Database>;
 
 export {
+  ARCHIVE_SPLIT_BYTES,
+  archiveSize,
   brewMethodRowSchema,
   coffeeRowSchema,
   fetchArchiveRows,
+  flavorTagRowSchema,
   parseArchive,
   tastingRowSchema,
   type Archive,
   type ArchiveRows,
   type BrewMethod,
   type Coffee,
+  type FlavorTag,
   type Tasting,
 } from "./archive";
 

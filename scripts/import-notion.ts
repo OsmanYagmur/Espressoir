@@ -25,6 +25,7 @@ import {
   createEmbeddedPostgres,
   type Queryable,
 } from "./lib/postgres";
+import { applySampleTaste } from "./lib/sample-taste";
 import {
   assertTarget,
   ENV_FILES,
@@ -54,6 +55,8 @@ const csvFile = resolve(repoRoot, option("--file") ?? "data/notion-export.csv");
 const pagesFolder = resolve(repoRoot, option("--pages") ?? "data/notion-export");
 const offline = flag("--offline");
 const dryRun = flag("--dry-run");
+/** The sample export (`pnpm seed:dev`), as opposed to somebody's own archive. */
+const sample = csvFile.startsWith(FIXTURES_FOLDER);
 
 async function main(): Promise<void> {
   if (!existsSync(csvFile)) {
@@ -86,11 +89,12 @@ async function main(): Promise<void> {
       JSON.stringify({ username: ownerUsername }),
     ]);
     result = await applyImportPlan(db as Queryable, plan, { ownerUsername });
+    if (sample) await applySampleTaste(db as Queryable);
     await db.close();
     context = { target: "yok (geçici, boş veritabanı)", mode: "offline", ownerUsername };
   } else {
     const target = parseTargetEnv(args);
-    if (target === "prod" && csvFile.startsWith(FIXTURES_FOLDER)) {
+    if (target === "prod" && sample) {
       throw new Error("Örnek veri (seed) prod'a yazılamaz. Bu komut yalnızca dev içindir.");
     }
     loadTargetEnv(target);
@@ -103,6 +107,8 @@ async function main(): Promise<void> {
       // One transaction: the import lands completely or not at all.
       await client.query("begin");
       result = await applyImportPlan(client, plan, { ownerUsername });
+      // The sample archive also gets taste profiles and tags (the export has no such columns).
+      if (sample) await applySampleTaste(client);
       await client.query(dryRun ? "rollback" : "commit");
     } catch (error) {
       await client.query("rollback").catch(() => undefined);
