@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { getArchive } from "@/lib/data/archive";
 import { brandSummaries } from "@/lib/data/selectors";
-import { brandPath, coffeePath, profilePath } from "@/lib/routes";
+import { brandPath, coffeePath, listPath, profilePath } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -42,6 +42,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: profile.stats.lastTastedAt ?? undefined,
         changeFrequency: "weekly" as const,
         priority: 0.5,
+      })),
+    ...archive.lists
+      .filter((list) => list.items.length > 0)
+      .map((list) => ({
+        url: url(listPath(list.owner.username, list.slug)),
+        lastModified: list.updatedAt.slice(0, 10),
+        changeFrequency: "monthly" as const,
+        priority: 0.4,
       })),
     ...["/kvkk", "/gizlilik", "/kosullar"].map((path) => ({
       url: url(path),

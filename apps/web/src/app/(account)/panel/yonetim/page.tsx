@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { requireAdmin } from "@/lib/auth";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { coffeePath, profilePath, tastingPath } from "@/lib/routes";
+import { coffeePath, listPath, profilePath, tastingPath } from "@/lib/routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
@@ -68,12 +68,15 @@ interface Target {
   hidden: boolean;
 }
 
+/** What an admin can hide or remove (a profile is restricted, a coffee reviewed or merged). */
+const HIDEABLE: ReadonlySet<ReportTarget> = new Set(["tasting", "comment", "list"]);
+
 async function loadTargets(
   supabase: TypedSupabaseClient,
   wanted: { type: ReportTarget; id: string }[],
 ): Promise<Map<string, Target>> {
   const ids = (type: ReportTarget) => wanted.filter((w) => w.type === type).map((w) => w.id);
-  const [tastings, comments, profiles, coffees] = await Promise.all([
+  const [tastings, comments, profiles, coffees, lists] = await Promise.all([
     supabase
       .from("tasting_feed")
       .select("tasting_id, user_id, username, brand_name, coffee_name, notes, is_hidden")
@@ -89,6 +92,10 @@ async function loadTargets(
       .from("coffee_overview")
       .select("coffee_id, coffee_name, coffee_slug, brand_name, brand_slug")
       .in("coffee_id", ids("coffee")),
+    supabase
+      .from("list_feed")
+      .select("list_id, user_id, username, slug, title, is_hidden")
+      .in("list_id", ids("list")),
   ]);
 
   const targets = new Map<string, Target>();
@@ -136,6 +143,18 @@ async function loadTargets(
       summary: `${row.brand_name} — ${row.coffee_name}`,
       href: coffeePath(row.brand_slug, row.coffee_slug),
       hidden: false,
+    });
+  }
+  for (const row of lists.data ?? []) {
+    if (!row.list_id || !row.username || !row.slug) continue;
+    targets.set(`list:${row.list_id}`, {
+      type: "list",
+      id: row.list_id,
+      userId: row.user_id,
+      username: row.username,
+      summary: row.title ?? "",
+      href: listPath(row.username, row.slug),
+      hidden: row.is_hidden === true,
     });
   }
   return targets;
@@ -365,7 +384,7 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
               ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              {target && (target.type === "tasting" || target.type === "comment") ? (
+              {target && HIDEABLE.has(target.type) ? (
                 <>
                   <HideForm target={target} hidden={target.hidden} />
                   <RemoveForm target={target} />
@@ -520,7 +539,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
 }
 
 async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
-  const [tastings, comments] = await Promise.all([
+  const [tastings, comments, lists] = await Promise.all([
     supabase
       .from("tasting_feed")
       .select("tasting_id, username, brand_name, coffee_name, notes")
@@ -531,6 +550,7 @@ async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
         "id, tasting_id, body, hidden_reason, author:profiles!comments_user_id_fkey(username)",
       )
       .not("hidden_at", "is", null),
+    supabase.from("list_feed").select("list_id, username, title").eq("is_hidden", true),
   ]);
   const rows = [
     ...(tastings.data ?? []).flatMap((row) =>
@@ -551,6 +571,18 @@ async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
       username: one(row.author)?.username ?? null,
       summary: excerpt(row.body),
     })),
+    ...(lists.data ?? []).flatMap((row) =>
+      row.list_id
+        ? [
+            {
+              type: "list" as const,
+              id: row.list_id,
+              username: row.username,
+              summary: row.title ?? "",
+            },
+          ]
+        : [],
+    ),
   ];
   if (rows.length === 0) return <Empty>{a.hiddenEmpty}</Empty>;
 
