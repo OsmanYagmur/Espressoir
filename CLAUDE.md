@@ -57,11 +57,12 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              /u/[username]/liste/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/yonetim (admin), /hesap,
-                             /hesap/kurulum
+                             /hesap/kurulum, /bildirimler
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
-apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*, /giris only
+apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*,
+                             /bildirimler, /giris only
 apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
                              panel/ (forms, coffee picker), account/ (header link, Turnstile,
                              form message), social/ (follow, feed, like, comments, report)
@@ -320,6 +321,29 @@ Lists (Phase 3B):
 - Merging two coffees moves list entries to the survivor; an account that is deleted takes its
   lists with it; the data export includes them.
 
+Notifications (Phase 3C):
+
+- **Made by triggers, never by the app:** `likes`, `comments` and `follows` are written by the
+  browser straight to Supabase, so the database is the one place that sees them all. A like
+  tells the tasting's author; a comment tells the author; a reply tells the author of the
+  comment it answers and, if that is someone else, the tasting's author too; a follow tells
+  the followed. Never oneself, never about a hidden tasting.
+- **`notifications` has no write grants at all.** The recipient reads (RLS), and
+  `mark_notifications_read_v1(p_before)` marks as read "up to" a moment, so one arriving while
+  the list is on screen stays unread. Reads go through `notification_feed`, which also drops
+  rows whose tasting or comment the member can no longer see.
+- **One per like and per follow** (partial unique indexes). Taken back unseen, it is deleted;
+  once read it stays, so like → unlike → like does not notify twice. A comment that is removed
+  or hidden, and a tasting that is hidden, take their notifications along. The newest
+  `NOTIFICATIONS_KEPT` (200) per member are kept.
+- **`type` is text with a check** (`NOTIFICATION_TYPES`; a test compares the two), not an enum:
+  see the note on enum values under Lists.
+- **No open connection.** The header's bell (`NotificationLink`) shows only to browsers with a
+  session cookie, loads the Supabase client on demand and counts unread rows on every page
+  change and when the tab comes back into view. `/bildirimler` marks what it shows as read
+  from a client effect (`MarkRead`), never during rendering: a page fetched ahead must not
+  swallow notifications.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -350,8 +374,9 @@ Lists (Phase 3B):
         used tags on a coffee, a member's palate on their profile.
   - [x] 3B lists: public or private lists of coffees with notes and an order, "Listeye ekle"
         and one-click "Denemek istiyorum" on a coffee's page, list reports in the admin panel.
-  - [ ] 3C in-app notifications · 3D photos (one per tasting + avatar) · 3E PWA and the
-        quick form.
+  - [x] 3C notifications: likes, comments, replies and new followers; the unread count in the
+        header; `/bildirimler`.
+  - [ ] 3D photos (one per tasting + avatar) · 3E PWA and the quick form.
   - [ ] 3F cafés (owner's addition, 2026-10-13): adding cafés and rating their drinks. Not
         in the brief; the open design questions are in the plan file and are asked before it
         starts (model, location detail and cost, who adds, where the ratings show).
@@ -398,9 +423,10 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 3B's is `20261014090000_lists`: without it the list pages and both buttons
-  on a coffee's page fail (reading stays fine: the archive treats the missing view as "no
-  lists"). After any branch switch, look for iCloud's ` 2` copies first (`git status`).
+  `db:push:prod`). 3C's is `20261014120000_notifications`: without it `/bildirimler` fails and
+  the bell stays empty (everything else works). After any branch switch, look for iCloud's
+  ` 2` copies first (`git status`). The owner has merged before migrating three times, and
+  once with a red check: say both plainly in every PR.
 
 - Done, for the record (2026-10-13): every migration is on dev and prod; sign-in setup on both
   projects (redirect URLs, Resend SMTP, templates, Turnstile); `SUPABASE_SECRET_KEY` is on

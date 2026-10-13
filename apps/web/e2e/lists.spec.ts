@@ -61,7 +61,14 @@ test("a member makes a list, fills it from two places, orders it and shares it",
   await page.getByRole("button", { name: "Yukarı taşı: Ristretto (Siyah Kapsül)" }).click();
   await expect(entries.nth(0)).toContainText("Ristretto (Siyah Kapsül)");
   await page.getByLabel("Not (isteğe bağlı): Ristretto (Siyah Kapsül)").fill("Önce bu.");
+  // The box shows what was typed either way: wait for the save itself before looking at
+  // pages that are built from what was saved.
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" && response.url().includes("/panel/listeler/"),
+  );
   await entries.nth(0).getByRole("button", { name: "Notu kaydet" }).click();
+  await saved;
   await expect(page.getByLabel("Not (isteğe bağlı): Ristretto (Siyah Kapsül)")).toHaveValue(
     "Önce bu.",
   );

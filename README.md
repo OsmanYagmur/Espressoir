@@ -103,5 +103,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [ ] **Faz 3: Sosyal derinlik.** Beş adımda:
   - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
   - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
-  - [ ] 3C Bildirimler · 3D Fotoğraf · 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
+  - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
+  - [ ] 3D Fotoğraf · 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
 - [ ] Faz 4+: Mobil (Expo)

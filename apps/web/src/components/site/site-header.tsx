@@ -2,6 +2,7 @@ import { siteConfig } from "@espressoir/core";
 import Link from "next/link";
 
 import { AccountLink } from "@/components/account/account-link";
+import { NotificationLink } from "@/components/account/notification-link";
 import { t } from "@/lib/i18n";
 
 import { Wordmark } from "./logo";
@@ -28,6 +29,7 @@ export function SiteHeader() {
             <NavLinks />
           </nav>
           <AccountLink />
+          <NotificationLink />
           <ThemeToggle />
         </div>
         {/* Small screens: links get their own row under a hairline instead of a menu button. */}

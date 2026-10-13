@@ -24,5 +24,11 @@ export const LIST_NOTE_MAX_LENGTH = 280;
 export const LISTS_PER_MEMBER_MAX = 50;
 export const LIST_ITEMS_MAX = 100;
 
+/** What a member is told about (the check on notifications.type). */
+export const NOTIFICATION_TYPES = ["like", "comment", "reply", "follow"] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+/** How many notifications are kept per member; older ones are dropped. */
+export const NOTIFICATIONS_KEPT = 200;
+
 /** How long an admin can restrict a member for, in days (the choices the panel offers). */
 export const RESTRICTION_DAYS = [1, 7, 30] as const;

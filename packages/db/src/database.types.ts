@@ -864,6 +864,139 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          actor_id: string;
+          comment_id: string | null;
+          created_at: string;
+          id: string;
+          read_at: string | null;
+          tasting_id: string | null;
+          type: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_id: string;
+          comment_id?: string | null;
+          created_at?: string;
+          id?: string;
+          read_at?: string | null;
+          tasting_id?: string | null;
+          type: string;
+          user_id: string;
+        };
+        Update: {
+          actor_id?: string;
+          comment_id?: string | null;
+          created_at?: string;
+          id?: string;
+          read_at?: string | null;
+          tasting_id?: string | null;
+          type?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tastings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       profile_private: {
         Row: {
           profile_id: string;
@@ -1427,6 +1560,52 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      notification_feed: {
+        Row: {
+          actor_display_name: string | null;
+          actor_username: string | null;
+          brand_name: string | null;
+          coffee_name: string | null;
+          comment_excerpt: string | null;
+          comment_id: string | null;
+          created_at: string | null;
+          notification_id: string | null;
+          read_at: string | null;
+          tasting_id: string | null;
+          type: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "notifications_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["tasting_id"];
+          },
+          {
+            foreignKeyName: "notifications_tasting_id_fkey";
+            columns: ["tasting_id"];
+            isOneToOne: false;
+            referencedRelation: "tastings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profile_overview: {
         Row: {
           avatar_url: string | null;
@@ -1606,6 +1785,7 @@ export type Database = {
           tasting_id: string;
         }[];
       };
+      mark_notifications_read_v1: { Args: { p_before?: string }; Returns: number };
       merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
       reorder_list_v1: { Args: { p_coffee_ids: string[]; p_list_id: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
