@@ -54,8 +54,10 @@ Playwright suite, signed-in flows included, against `supabase start` on the runn
 ```
 apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'navigation'
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
+                             /u/[username]/liste/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
-apps/web/src/app/(account)/  /giris, /panel, /panel/yonetim (admin), /hesap, /hesap/kurulum
+apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/yonetim (admin), /hesap,
+                             /hesap/kurulum
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
@@ -286,6 +288,32 @@ Taste (Phase 3A):
   a database test caps what one tasting or coffee row may weigh. That warning is the cue to
   split the read.
 
+Lists (Phase 3B):
+
+- **`lists` and `list_items`**: a member's named, ordered collections of coffees, public or
+  private (`is_public`), each entry with an optional note. Limits are triggers:
+  `LISTS_PER_MEMBER_MAX` (50), `LIST_ITEMS_MAX` (100), 10 new lists a day. The slug is made
+  from the title once, unique per member, and survives a rename (`/u/[username]/liste/[slug]`).
+- **Members write title, description, visibility and notes** (column grants); the slug, the
+  order and the admin columns are not theirs. The order changes through `reorder_list_v1`,
+  which takes every entry exactly once.
+- **"Want to try" is still the `wishlist` tasting status**, now one click on a coffee's page.
+  Wishlist entries are counted on that page ("3 kişi denemek istiyor"), not listed among the
+  tastings.
+- **List writes are Server Actions** (`panel/listeler/actions.ts`), unlike likes and comments:
+  a list is part of the cached archive (`archive.lists`, from the `list_feed` view), so a
+  change must refresh it. The buttons on a coffee's page (`CoffeeActions`) read the member's
+  own state in the browser and call those actions; visitors get links to the login.
+- **A read of something newer than the database is optional:** `readAll(…, { optional: true })`
+  returns nothing when the relation does not exist yet, instead of failing the whole archive.
+  Use it for the first read of every new view.
+- **Lists can be reported and hidden** like tastings: `report_target` has `list`, and
+  `admin_set_hidden_v1` / `admin_delete_v1` handle it. Adding an enum value cannot be undone in
+  place: the rollback rebuilds the type (see the migration's `.down.sql`) — avoid new enum
+  values where a boolean or a text check will do.
+- Merging two coffees moves list entries to the survivor; an account that is deleted takes its
+  lists with it; the data export includes them.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -314,8 +342,13 @@ Taste (Phase 3A):
       one starts only with the owner's go:
   - [x] 3A taste: tag picker in the form, radar chart on a tasting, community profile and most
         used tags on a coffee, a member's palate on their profile.
-  - [ ] 3B lists (public/private) and one-click "want to try" · 3C in-app notifications ·
-        3D photos (one per tasting + avatar) · 3E PWA and the quick form.
+  - [x] 3B lists: public or private lists of coffees with notes and an order, "Listeye ekle"
+        and one-click "Denemek istiyorum" on a coffee's page, list reports in the admin panel.
+  - [ ] 3C in-app notifications · 3D photos (one per tasting + avatar) · 3E PWA and the
+        quick form.
+  - [ ] 3F cafés (owner's addition, 2026-10-13): adding cafés and rating their drinks. Not
+        in the brief; the open design questions are in the plan file and are asked before it
+        starts (model, location detail and cost, who adds, where the ratings show).
 - [ ] Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
@@ -358,8 +391,10 @@ Phase 3 decisions (owner-approved 2026-10-13):
 
 Still open on the owner's side (remind, don't do for them):
 
-- **Apply the 3A migration before merging its PR** (`pnpm db:push:dev`, then `db:push:prod`):
-  without it saving a tasting fails (the form calls `log_tasting_v2`).
+- **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
+  `db:push:prod`). 3B's is `20261014090000_lists`: without it the list pages and both buttons
+  on a coffee's page fail (reading stays fine: the archive treats the missing view as "no
+  lists"). After any branch switch, look for iCloud's ` 2` copies first (`git status`).
 
 - Done, for the record (2026-10-13): every migration is on dev and prod; sign-in setup on both
   projects (redirect URLs, Resend SMTP, templates, Turnstile); `SUPABASE_SECRET_KEY` is on

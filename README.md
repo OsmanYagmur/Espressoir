@@ -76,7 +76,8 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 | `/hakkinda`                       | Site ve puanlama hakkında                                                      |
 | `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin                                    |
 | `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                    |
-| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, denenecekler; takip              |
+| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip    |
+| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                  |
 | `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ekleme, düzenleme            |
 | `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                        |
 | `/panel/yonetim`                  | Yönetici: şikâyetler, gizle/sil, üye kısıtlama, kahve doğrulama ve birleştirme |
@@ -101,5 +102,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
 - [ ] **Faz 3: Sosyal derinlik.** Beş adımda:
   - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
-  - [ ] 3B Listeler · 3C Bildirimler · 3D Fotoğraf · 3E PWA ve hızlı form
+  - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
+  - [ ] 3C Bildirimler · 3D Fotoğraf · 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
 - [ ] Faz 4+: Mobil (Expo)
