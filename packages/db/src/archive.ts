@@ -18,6 +18,7 @@ import {
 } from "@espressoir/core";
 import { z } from "zod";
 
+import { cafeRowSchema, cafeVisitRowSchema, type Cafe, type CafeVisit } from "./cafe";
 import type { TypedSupabaseClient } from "./index";
 import { listRowSchema, type MemberList } from "./list";
 import { profileRowSchema, type Profile } from "./profile";
@@ -228,6 +229,10 @@ export interface Archive {
   profiles: Profile[];
   /** Public lists, with their entries. */
   lists: MemberList[];
+  /** Every café, with its public numbers. */
+  cafes: Cafe[];
+  /** Public visits to cafés. */
+  cafeVisits: CafeVisit[];
 }
 
 /** Raw rows of the relations, exactly as the API (or a snapshot file) returns them. */
@@ -241,6 +246,9 @@ export interface ArchiveRows {
   flavorTags?: unknown[];
   /** Absent in snapshot files written before lists existed. */
   lists?: unknown[];
+  /** Absent in snapshot files written before cafés existed. */
+  cafes?: unknown[];
+  cafeVisits?: unknown[];
 }
 
 export function parseArchive(rows: ArchiveRows): Archive {
@@ -251,6 +259,8 @@ export function parseArchive(rows: ArchiveRows): Archive {
     flavorTags: z.array(flavorTagRowSchema).parse(rows.flavorTags ?? []),
     profiles: z.array(profileRowSchema).parse(rows.profiles ?? []),
     lists: z.array(listRowSchema).parse(rows.lists ?? []),
+    cafes: z.array(cafeRowSchema).parse(rows.cafes ?? []),
+    cafeVisits: z.array(cafeVisitRowSchema).parse(rows.cafeVisits ?? []),
   };
 }
 
@@ -296,37 +306,59 @@ async function readAll<Row>(
 
 /**
  * Everything the public archive shows: all coffees, every public tasting, the brew methods,
- * the flavour tags, the members and their public lists. Works with any client; what comes back still depends on that client's
- * rights (RLS).
+ * the flavour tags, the members and their public lists, the cafés and their public visits.
+ * Works with any client; what comes back still depends on that client's rights (RLS).
  */
 export async function fetchArchiveRows(client: TypedSupabaseClient): Promise<ArchiveRows> {
-  const [coffees, tastings, brewMethods, profiles, flavorTags, lists] = await Promise.all([
-    readAll("Kahveler", (from, to) =>
-      client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
-    ),
-    readAll("Tadımlar", (from, to) =>
-      client
-        .from("tasting_feed")
-        .select("*")
-        .eq("visibility", "public")
-        .order("tasting_id")
-        .range(from, to),
-    ),
-    readAll("Demleme yöntemleri", (from, to) =>
-      client.from("brew_methods").select("*").order("sort_order").range(from, to),
-    ),
-    readAll("Profiller", (from, to) =>
-      client.from("profile_overview").select("*").order("user_id").range(from, to),
-    ),
-    readAll("Tat etiketleri", (from, to) =>
-      client.from("flavor_tags").select("*").order("sort_order").range(from, to),
-    ),
-    readAll(
-      "Listeler",
-      (from, to) =>
-        client.from("list_feed").select("*").eq("is_public", true).order("list_id").range(from, to),
-      { optional: true },
-    ),
-  ]);
-  return { coffees, tastings, brewMethods, profiles, flavorTags, lists };
+  const [coffees, tastings, brewMethods, profiles, flavorTags, lists, cafes, cafeVisits] =
+    await Promise.all([
+      readAll("Kahveler", (from, to) =>
+        client.from("coffee_overview").select("*").order("coffee_id").range(from, to),
+      ),
+      readAll("Tadımlar", (from, to) =>
+        client
+          .from("tasting_feed")
+          .select("*")
+          .eq("visibility", "public")
+          .order("tasting_id")
+          .range(from, to),
+      ),
+      readAll("Demleme yöntemleri", (from, to) =>
+        client.from("brew_methods").select("*").order("sort_order").range(from, to),
+      ),
+      readAll("Profiller", (from, to) =>
+        client.from("profile_overview").select("*").order("user_id").range(from, to),
+      ),
+      readAll("Tat etiketleri", (from, to) =>
+        client.from("flavor_tags").select("*").order("sort_order").range(from, to),
+      ),
+      readAll(
+        "Listeler",
+        (from, to) =>
+          client
+            .from("list_feed")
+            .select("*")
+            .eq("is_public", true)
+            .order("list_id")
+            .range(from, to),
+        { optional: true },
+      ),
+      readAll(
+        "Kafeler",
+        (from, to) => client.from("cafe_overview").select("*").order("cafe_id").range(from, to),
+        { optional: true },
+      ),
+      readAll(
+        "Kafe ziyaretleri",
+        (from, to) =>
+          client
+            .from("cafe_visit_feed")
+            .select("*")
+            .eq("visibility", "public")
+            .order("visit_id")
+            .range(from, to),
+        { optional: true },
+      ),
+    ]);
+  return { coffees, tastings, brewMethods, profiles, flavorTags, lists, cafes, cafeVisits };
 }
