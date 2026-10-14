@@ -9,6 +9,7 @@ import { PageShell } from "@/components/site/page-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { getCafeFormOptions } from "@/lib/data/cafe-form-options";
+import { placeOf } from "@/lib/data/cafes";
 import { t } from "@/lib/i18n";
 
 import { createCafeVisit } from "../actions";
@@ -19,11 +20,27 @@ export const metadata: Metadata = {
 };
 
 async function NewVisit({ searchParams }: PageProps<"/panel/kafe/yeni">) {
-  await requireUser();
+  const { supabase } = await requireUser();
   const { kafe } = await searchParams;
   const options = await getCafeFormOptions();
-  // From a café's page ("Burada ne içtin?"): that café is already chosen.
+  // From a café's page ("Burada ne içtin?"): that café is already chosen. It is read from
+  // the database, not looked up in the cached archive: a café added a moment ago may not
+  // be in the cached copy yet, and the form would open without it.
   const cafeId = typeof kafe === "string" && z.uuid().safeParse(kafe).success ? kafe : "";
+  if (cafeId && !options.cafes.some((cafe) => cafe.id === cafeId)) {
+    const { data } = await supabase
+      .from("cafe_overview")
+      .select("cafe_id, cafe_name, city_code, district")
+      .eq("cafe_id", cafeId)
+      .maybeSingle();
+    if (data?.cafe_id && data.cafe_name && data.city_code) {
+      options.cafes.unshift({
+        id: data.cafe_id,
+        label: `${data.cafe_name} — ${placeOf({ cityCode: data.city_code, district: data.district })}`,
+        cityCode: data.city_code,
+      });
+    }
+  }
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: siteConfig.timeZone }).format(
     new Date(),
   );
