@@ -41,9 +41,15 @@ export const metadata: Metadata = {
     description: t.meta.description,
   },
   twitter: { card: "summary_large_image" },
+  // Added to an iPhone's home screen, the site opens full screen under its own name.
+  appleWebApp: { capable: true, title: siteConfig.name, statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
+  // The page may reach under the rounded corners and the home bar; what must stay clear
+  // of them (the form's save bar) keeps the safe-area insets as padding.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f4f4f1" },
     { media: "(prefers-color-scheme: dark)", color: "#141211" },

@@ -17,9 +17,29 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** How many of the member's recent coffees are offered as one-tap choices. */
+const RECENT = 6;
+
 async function NewTasting() {
-  await requireUser();
+  const { user, supabase } = await requireUser();
   const options = await getTastingFormOptions();
+  // The member's own latest tastings, private ones included: the coffees they come back
+  // to, and how they brewed last time (most people use one or two methods every day).
+  const { data: mine } = await supabase
+    .from("tasting_feed")
+    .select("coffee_id, coffee_name, brand_name, brew_method_slug, device")
+    .eq("user_id", user.id)
+    .eq("status", "logged")
+    .order("created_at", { ascending: false })
+    .order("tasting_id", { ascending: false })
+    .limit(40);
+  const recent: { id: string; label: string }[] = [];
+  for (const row of mine ?? []) {
+    if (!row.coffee_id || recent.some((coffee) => coffee.id === row.coffee_id)) continue;
+    recent.push({ id: row.coffee_id, label: `${row.brand_name} — ${row.coffee_name}` });
+    if (recent.length === RECENT) break;
+  }
+  const last = mine?.[0];
   // Dated today by default, in the archive's own time zone.
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: siteConfig.timeZone }).format(
     new Date(),
@@ -28,9 +48,15 @@ async function NewTasting() {
   return (
     <TastingForm
       action={createTasting}
-      options={options}
+      options={{ ...options, recent }}
       today={today}
-      initial={{ status: "logged", visibility: "public", tastedAt: today }}
+      initial={{
+        status: "logged",
+        visibility: "public",
+        tastedAt: today,
+        brewMethodSlug: last?.brew_method_slug ?? "",
+        device: last?.device ?? "",
+      }}
     />
   );
 }
