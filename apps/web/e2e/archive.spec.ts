@@ -226,6 +226,49 @@ test("no page is wider than a phone's screen", async ({ page }) => {
   }
 });
 
+test("the site can go on a phone's home screen and open like an app", async ({ page, request }) => {
+  await page.goto("/");
+  const manifestHref = await page.locator('link[rel="manifest"]').getAttribute("href");
+  expect(manifestHref).toBeTruthy();
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
+  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+    "content",
+    "Espressoir",
+  );
+
+  const manifest = (await (await request.get(manifestHref!)).json()) as {
+    name: string;
+    display: string;
+    start_url: string;
+    lang: string;
+    icons: { src: string; sizes: string; purpose?: string }[];
+    shortcuts: { name: string; url: string }[];
+  };
+  expect(manifest).toMatchObject({
+    name: "Espressoir",
+    display: "standalone",
+    start_url: "/",
+    lang: "tr",
+  });
+  expect(manifest.icons.map((icon) => icon.sizes).sort()).toEqual([
+    "192x192",
+    "512x512",
+    "512x512",
+  ]);
+  expect(manifest.icons.some((icon) => icon.purpose === "maskable")).toBe(true);
+  expect(manifest.shortcuts).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: "Tadım ekle", url: "/panel/tadim/yeni" }),
+      expect.objectContaining({ name: "Akış", url: "/akis" }),
+    ]),
+  );
+  for (const icon of manifest.icons) {
+    const response = await request.get(icon.src);
+    expect(response.ok(), icon.src).toBe(true);
+    expect(response.headers()["content-type"]).toBe("image/png");
+  }
+});
+
 test("unknown pages show the Turkish 404", async ({ page }) => {
   const response = await page.goto("/boyle-bir-sayfa-yok");
   expect(response?.status()).toBe(404);
