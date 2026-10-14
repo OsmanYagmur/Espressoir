@@ -24,6 +24,7 @@
     "seed:dev": "tsx scripts/import-notion.ts --env dev --file scripts/notion/fixtures/sample-export.csv",
     "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",
     "user:invite": "tsx scripts/user-invite.ts",
+    "media:sweep": "tsx scripts/media-sweep.ts",
     "snapshot:offline": "tsx scripts/offline-snapshot.ts",
     "dev:offline": "pnpm snapshot:offline && ARCHIVE_SNAPSHOT=1 turbo run dev --filter=@espressoir/web"
   },

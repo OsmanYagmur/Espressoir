@@ -87,13 +87,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm --filter @espressoir/web exec playwright install --with-deps chromium
-      # Database, API, auth and the mail catcher (sign-in codes and invitations are read
-      # from it); the migrations are applied from scratch.
+      # Database, API, auth, storage (pictures are uploaded in the tests) and the mail
+      # catcher (sign-in codes and invitations are read from it); the migrations are
+      # applied from scratch.
       # Docker runs here on GitHub's machine, never on a developer laptop.
       - name: Start local Supabase
         run: >-
           pnpm exec supabase start
-          -x studio,imgproxy,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          -x studio,imgproxy,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
       - name: Export connection settings and one-off test passwords
         run: |
           pnpm exec supabase status -o env > "$RUNNER_TEMP/supabase.env"
