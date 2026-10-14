@@ -1,7 +1,7 @@
 "use client";
 
 import { PHOTO_ALT_MAX_LENGTH, PHOTO_SOURCE_MAX_BYTES } from "@espressoir/core";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
@@ -69,6 +69,15 @@ export function PhotoField({
       if (input.current) input.current.value = "";
     }
   }
+
+  // A file picked before the page had finished loading (a slow phone, a quick hand) sits
+  // in the input without anyone having heard about it: take it up once the page is live.
+  useEffect(() => {
+    const early = input.current?.files?.[0];
+    if (early) void Promise.resolve().then(() => pick(early));
+    // Once, when the page comes alive; `pick` itself changes with every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const preview = photo ? smallMediaUrl(photo.path) : null;
 

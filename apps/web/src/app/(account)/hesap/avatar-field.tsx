@@ -1,7 +1,7 @@
 "use client";
 
 import { PHOTO_SOURCE_MAX_BYTES } from "@espressoir/core";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { format, t } from "@/lib/i18n";
@@ -80,6 +80,14 @@ export function AvatarField({
       setBusy(false);
     }
   }
+
+  // A file picked before the page had finished loading (a slow phone, a quick hand) sits
+  // in the input without anyone having heard about it: take it up once the page is live.
+  useEffect(() => {
+    const early = input.current?.files?.[0];
+    if (early) void Promise.resolve().then(() => pick(early));
+    // Once, when the page comes alive.
+  }, []);
 
   const src = path ? mediaUrl(path) : null;
 
