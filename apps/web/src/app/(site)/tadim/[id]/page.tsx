@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { TastingItem } from "@/components/coffee/tasting-item";
+import { TastingPhoto } from "@/components/coffee/tasting-photo";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
@@ -114,6 +115,17 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
       <ol aria-label={p.kicker}>
         <TastingItem tasting={tasting} showAuthor standalone />
       </ol>
+
+      {tasting.photo ? (
+        <figure className="border-b border-border py-4">
+          <TastingPhoto tasting={tasting} className="max-h-[80vh] w-auto" />
+          {tasting.photo.alt ? (
+            <figcaption className="mt-2 max-w-[62ch] font-mono text-xs text-muted-foreground">
+              {tasting.photo.alt}
+            </figcaption>
+          ) : null}
+        </figure>
+      ) : null}
 
       {hasProfile || tasting.wouldBuyAgain !== null ? (
         <section

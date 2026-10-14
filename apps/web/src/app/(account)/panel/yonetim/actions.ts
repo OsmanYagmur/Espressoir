@@ -9,6 +9,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { AUTH_CALLBACK_PATH } from "@/lib/auth-config";
 import { refreshArchive } from "@/lib/data/refresh-archive";
+import { removeMedia } from "@/lib/media-server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const PANEL = "/panel/yonetim";
@@ -19,6 +20,7 @@ const KNOWN_ERRORS = [
   "target_not_found",
   "admin_cannot_be_restricted",
   "merge_same_target",
+  "target_has_no_photo",
 ] as const;
 
 const id = z.uuid();
@@ -220,5 +222,32 @@ export async function cancelInvitation(formData: FormData): Promise<void> {
     console.error("[admin] invitation not withdrawn:", removed.error.status, removed.error.code);
     back("unknown");
   }
+  back();
+}
+
+// ── pictures ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Takes a picture down: the row forgets it (and the act is logged) through the database,
+ * then the files go too, removed as the admin (the bucket lets admins remove any file).
+ */
+export async function removePhoto(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ type: z.enum(["tasting", "profile"]), id })
+    .safeParse({ type: formData.get("targetType"), id: formData.get("targetId") });
+  if (!parsed.success) back("invalid");
+
+  const { supabase } = await requireAdmin();
+  const { data: previous, error } = await supabase.rpc("admin_remove_photo_v1", {
+    p_target_type: parsed.data.type,
+    p_target_id: parsed.data.id,
+  });
+  if (error) {
+    const known = KNOWN_ERRORS.find((code) => error.message.includes(code));
+    if (!known) console.error("[admin] photo not removed:", error.message);
+    back(known ?? "unknown");
+  }
+  await removeMedia(supabase, [previous]);
+  refreshArchive();
   back();
 }

@@ -61,6 +61,7 @@ pnpm dev                       # http://localhost:3000
 | `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (sitede: Panel → Yönetim → Davetler)          |
 | `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)          |
 | `pnpm seed:dev`                     | Dev'e örnek arşivi yükler (prod'u reddeder)                                   |
+| `pnpm media:sweep`                  | Hiçbir kaydın göstermediği fotoğraf dosyalarını listeler (`--apply` siler)    |
 
 Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec playwright install chromium`, ya da kurulu Chrome'u göster: `PLAYWRIGHT_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`.
 
@@ -104,5 +105,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
   - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
   - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
-  - [ ] 3D Fotoğraf · 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
+  - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
+  - [ ] 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
 - [ ] Faz 4+: Mobil (Expo)

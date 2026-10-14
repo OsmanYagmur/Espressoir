@@ -22,6 +22,7 @@ import { findProfile, listsBy, scoresOf, tastingsBy } from "@/lib/data/selectors
 import { tasteSummary } from "@/lib/data/taste-summary";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
+import { mediaUrl } from "@/lib/media";
 import { listPath, profilePath } from "@/lib/routes";
 
 type Props = PageProps<"/u/[username]">;
@@ -96,6 +97,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
   ).map((group) => ({ ...group, label: methodNames.get(group.key) ?? group.key }));
   const taste = tasteSummary(archive, tastings);
   const lists = listsBy(archive, profile.id);
+  const avatar = profile.avatarPath ? mediaUrl(profile.avatarPath) : null;
   let section = 0;
 
   return (
@@ -111,6 +113,16 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
         }
         aside={
           <>
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element -- already the right size
+              <img
+                src={avatar}
+                alt={format(t.photo.avatarAlt, { username: profile.username })}
+                width={96}
+                height={96}
+                className="mb-3 size-24 border border-border bg-muted object-cover md:ml-auto"
+              />
+            ) : null}
             {profile.bio ? (
               // Plain text, escaped by React; line breaks the member typed are kept.
               <p className="mb-2 text-left font-sans text-sm [overflow-wrap:anywhere] whitespace-pre-line text-foreground md:text-right">

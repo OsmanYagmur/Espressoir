@@ -14,6 +14,7 @@ import { profilePath } from "@/lib/routes";
 import { signOut } from "../giris/actions";
 
 import { DeleteAccountForm, ExportDataButton, ProfileForm } from "./account-forms";
+import { AvatarField } from "./avatar-field";
 
 export const metadata: Metadata = {
   title: t.account.title,
@@ -33,6 +34,9 @@ async function Account() {
     .eq("id", user.id)
     .single();
   if (error) throw new Error(error.message);
+  // Asked for on its own: a database that does not have the column yet (code deployed
+  // before its migration) then costs this one section, not the whole page.
+  const avatar = await supabase.from("profiles").select("avatar_path").eq("id", user.id).single();
 
   return (
     <>
@@ -54,10 +58,17 @@ async function Account() {
         }}
       />
 
-      <SectionHeading index={2} title={a.exportSection} />
+      {avatar.error ? null : (
+        <>
+          <SectionHeading index={2} title={t.photo.avatar.section} />
+          <AvatarField initialPath={avatar.data.avatar_path} username={profile.username} />
+        </>
+      )}
+
+      <SectionHeading index={3} title={a.exportSection} />
       <ExportDataButton />
 
-      <SectionHeading index={3} title={a.sessionSection} />
+      <SectionHeading index={4} title={a.sessionSection} />
       <div className="grid max-w-2xl gap-4 py-5">
         {user.email ? (
           <p className="font-mono text-sm">{format(a.signedInWith, { email: user.email })}</p>
@@ -69,7 +80,7 @@ async function Account() {
         </form>
       </div>
 
-      <SectionHeading index={4} title={a.deleteSection} />
+      <SectionHeading index={5} title={a.deleteSection} />
       <DeleteAccountForm />
     </>
   );

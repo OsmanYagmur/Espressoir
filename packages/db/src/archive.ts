@@ -123,6 +123,11 @@ export const tastingRowSchema = z
     // Absent until the flavour tag migration is applied.
     flavor_tag_slugs: z.array(z.string().min(1)).optional(),
     flavor_tag_names: z.array(z.string().min(1)).optional(),
+    // Absent until the media migration is applied.
+    photo_path: z.string().nullable().optional(),
+    photo_width: z.number().int().positive().nullable().optional(),
+    photo_height: z.number().int().positive().nullable().optional(),
+    photo_alt: z.string().nullable().optional(),
   })
   .transform((row) => ({
     id: row.tasting_id,
@@ -145,6 +150,16 @@ export const tastingRowSchema = z
       slug,
       name: row.flavor_tag_names?.[index] ?? slug,
     })),
+    /** The tasting's picture: its path in the "media" bucket, its size, what it shows. */
+    photo:
+      row.photo_path && row.photo_width && row.photo_height
+        ? {
+            path: row.photo_path,
+            width: row.photo_width,
+            height: row.photo_height,
+            alt: row.photo_alt ?? null,
+          }
+        : null,
     createdAt: row.created_at,
     likeCount: row.like_count ?? 0,
     /** Comments that are neither removed nor hidden. */

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import { FlavorTags } from "./flavor-tags";
 import { ScoreBadge } from "./score-badge";
+import { TastingPhoto } from "./tasting-photo";
 
 const linkFocus =
   "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
@@ -106,6 +107,16 @@ export function TastingItem({
             {wishlist ? t.coffeeDetail.wishlistNote : t.coffee.noNotes}
           </p>
         )}
+        {/* On its own page the tasting shows the full picture instead. */}
+        {tasting.photo && !standalone ? (
+          tasting.visibility === "public" ? (
+            <Link href={tastingPath(tasting.id)} data-plain className="mt-2.5 block w-fit">
+              <TastingPhoto tasting={tasting} small className="max-h-56 w-auto" />
+            </Link>
+          ) : (
+            <TastingPhoto tasting={tasting} small className="mt-2.5 max-h-56 w-auto" />
+          )
+        ) : null}
         <FlavorTags tags={tasting.tags} className="mt-2" />
         {!standalone && !wishlist && tasting.visibility === "public" ? (
           <p className="mt-2 font-mono text-xs text-muted-foreground sade:mt-3">
