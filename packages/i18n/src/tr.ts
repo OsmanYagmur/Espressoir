@@ -615,6 +615,13 @@ export const tr = {
       unknown: "beklenmedik bir hata",
     },
   },
+  pwa: {
+    shortName: "Espressoir",
+    shortcuts: {
+      newTasting: "Tadım ekle",
+      feed: "Akış",
+    },
+  },
   photo: {
     label: "Fotoğraf",
     hint: "Fincan, paket ya da demleme: tadımına bir fotoğraf ekleyebilirsin. Gönderilmeden önce telefonunda küçültülür; konum bilgisi silinir.",
@@ -775,6 +782,7 @@ export const tr = {
       },
       tasteHint: "1 düşük, 5 yüksek.",
       tasteNone: "Boş",
+      recent: "Son içtiklerin",
       flavorTags: "Tat etiketleri",
       flavorTagsHint: "Fincanda ne bulduysan onu işaretle. En fazla {max}.",
       flavorTagsCount: "{count} / {max} seçili",

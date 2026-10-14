@@ -92,6 +92,40 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
   await expect(page.getByRole("listitem").filter({ hasText: coffeeName })).toHaveCount(0);
 });
 
+test("a new tasting starts from the last one: its coffees one tap away, its method filled in", async ({
+  page,
+}, testInfo) => {
+  const coffeeName = `Hızlı ${testInfo.project.name} ${Date.now()}`;
+  await signIn(page, owner);
+
+  // A tasting to start from: a new coffee, brewed with a V60 on a particular grinder.
+  await page.goto("/panel/tadim/yeni");
+  await page.getByText("Yeni kahve", { exact: true }).click();
+  await page.getByLabel("Marka", { exact: true }).fill("E2E Kavurucu");
+  await page.getByLabel("Kahve adı", { exact: true }).fill(coffeeName);
+  await page.getByRole("group", { name: "Puan" }).getByText("6", { exact: true }).click();
+  await page.getByLabel("Demleme yöntemi", { exact: true }).selectOption({ label: "V60" });
+  await page.getByLabel("Cihaz", { exact: true }).fill("Hızlı Test Değirmeni");
+  await page.getByRole("button", { name: "Kaydet" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${coffeeName}.`);
+
+  // The next one: the coffee is first among the recent ones, method and device are set.
+  await page.goto("/panel/tadim/yeni");
+  const recent = page.getByRole("group", { name: "Son içtiklerin" });
+  await expect(recent.getByRole("button").first()).toHaveText(`E2E Kavurucu — ${coffeeName}`);
+  await expect(page.getByLabel("Demleme yöntemi", { exact: true })).toHaveValue("v60");
+  await expect(page.getByLabel("Cihaz", { exact: true })).toHaveValue("Hızlı Test Değirmeni");
+
+  // Four steps: the coffee, the score, a word, save.
+  await recent.getByRole("button", { name: `E2E Kavurucu — ${coffeeName}` }).click();
+  await page.getByRole("group", { name: "Puan" }).getByText("8", { exact: true }).click();
+  await page.getByLabel("Not", { exact: true }).fill("İkincisi daha iyi.");
+  await page.getByRole("button", { name: "Kaydet" }).click();
+  const tastings = page.getByRole("list", { name: "Tadımlar" });
+  await expect(tastings).toContainText("İkincisi daha iyi.");
+  await expect(tastings).toContainText("V60 · Hızlı Test Değirmeni");
+});
+
 test("the form explains what is wrong instead of losing what was typed", async ({ page }) => {
   await signIn(page, owner);
   await page.goto("/panel/tadim/yeni");

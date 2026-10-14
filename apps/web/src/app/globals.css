@@ -104,6 +104,14 @@
 }
 
 @layer base {
+  /* Opened from the home screen, the page reaches under the rounded corners and the home
+     bar (viewport-fit=cover in the layout): the content keeps clear of them. */
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

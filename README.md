@@ -106,5 +106,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
   - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
   - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
-  - [ ] 3E PWA ve hızlı form · 3F Kafeler ve kafe içecekleri
+  - [x] 3E Ana ekran ve hızlı form: telefonda ana ekrana eklenir, uygulama gibi açılır; son içtiğin kahveler tek dokunuşta, yöntem ve cihaz son tadımdan dolu gelir.
+  - [ ] 3F Kafeler ve kafe içecekleri
 - [ ] Faz 4+: Mobil (Expo)

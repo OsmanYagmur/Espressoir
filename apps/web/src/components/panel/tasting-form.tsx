@@ -38,6 +38,8 @@ const TASTE_LEVELS = Array.from({ length: TASTE_MAX - TASTE_MIN + 1 }, (_, i) =>
 
 export interface TastingFormOptions {
   coffees: { id: string; label: string }[];
+  /** The member's own most recent coffees, newest first: one tap away in a new tasting. */
+  recent?: { id: string; label: string }[];
   brands: string[];
   brewMethods: { slug: string; name: string }[];
   devices: string[];
@@ -234,6 +236,24 @@ export function TastingForm({
                 { value: "new", label: f.newCoffee },
               ]}
             />
+            {coffeeMode === "existing" && !picked && options.recent?.length ? (
+              // The quickest way in: what the member had last time, one tap each.
+              <fieldset className="grid gap-1.5">
+                <legend className="label-caps mb-1.5 text-muted-foreground">{f.recent}</legend>
+                <div className="flex flex-wrap gap-1.5">
+                  {options.recent.map((coffee) => (
+                    <button
+                      key={coffee.id}
+                      type="button"
+                      onClick={() => setPicked(coffee)}
+                      className="min-h-11 border border-input px-3 py-2 text-left text-sm hover:border-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                    >
+                      {coffee.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
             {coffeeMode === "existing" ? (
               <CoffeePicker
                 catalog={options.coffees}
@@ -540,8 +560,14 @@ export function TastingForm({
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Button type="submit" disabled={pending} className="h-11 px-8 font-mono text-xs uppercase">
+      {/* On a phone the save button stays at the bottom of the screen, within the thumb's
+          reach, whatever is open above it; clear of the home bar when opened as an app. */}
+      <div className="sticky bottom-0 z-10 -mx-5 mt-6 flex flex-wrap gap-3 border-t border-rule bg-background px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:border-0 sm:p-0">
+        <Button
+          type="submit"
+          disabled={pending}
+          className="h-11 flex-1 px-8 font-mono text-xs uppercase sm:flex-none"
+        >
           {pending ? f.saving : f.save}
         </Button>
         <Button asChild variant="outline" className="h-11 font-mono text-xs uppercase">

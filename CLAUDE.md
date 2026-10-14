@@ -370,6 +370,20 @@ Photos (Phase 3D):
   tests that write to `storage.objects` as a member run only there.
 - Pictures are not in the `pg_dump` backup (docs/backup.md).
 
+Home screen and the quick form (Phase 3E):
+
+- **A web app manifest, no service worker** (`app/manifest.ts`): standalone, portrait, two
+  shortcuts ("Tadım ekle", "Akış"). The site needs the network; an offline copy of pages that
+  change with every tasting and sign-in would only be out of date. iPhone: `appleWebApp` in the
+  root layout and `app/apple-icon.png`.
+- **Icons are plain PNG files** (`public/icons/`, drawn once; how is in its README), so they
+  cost nothing to serve. Maskable keeps the square inside the middle 80 %.
+- **`viewportFit: "cover"`**: the body keeps the safe-area insets as padding, and so does the
+  form's save bar.
+- **The new-tasting form starts from the member's last tastings:** up to six recent coffees as
+  one-tap buttons, brew method and device from the latest one; on a phone the save button
+  stays at the bottom of the screen. A tasting of a known coffee is four steps.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -404,7 +418,8 @@ Photos (Phase 3D):
         header; `/bildirimler`.
   - [x] 3D photos: one per tasting (with a small twin for lists) and a profile picture,
         prepared in the browser without EXIF; admins can take them down; `pnpm media:sweep`.
-  - [ ] 3E PWA and the quick form.
+  - [x] 3E home screen and quick form: manifest, icons, shortcuts; recent coffees one tap away,
+        last method and device filled in, a save bar within the thumb's reach.
   - [ ] 3F cafés (owner's addition, 2026-10-13): adding cafés and rating their drinks. Not
         in the brief; the open design questions are in the plan file and are asked before it
         starts (model, location detail and cost, who adds, where the ratings show).
@@ -451,8 +466,7 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 3D's is `20261015090000_media`: without it adding a picture fails (pages
-  and the rest of the forms keep working). After any branch switch, look for iCloud's
+  `db:push:prod`). 3E has none. After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 
