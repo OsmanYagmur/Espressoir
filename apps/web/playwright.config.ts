@@ -5,7 +5,7 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 // Lets environments with a preinstalled Chromium (e.g. sandboxes) skip `playwright install`.
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 // Specs that sign in and write to the database.
-const SIGNED_IN = /(panel|account|community|lists|moderation|notifications|photos)\.spec/;
+const SIGNED_IN = /(panel|account|community|lists|moderation|notifications|photos|cafes)\.spec/;
 
 export default defineConfig({
   testDir: "./e2e",

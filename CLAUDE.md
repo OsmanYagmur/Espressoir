@@ -384,6 +384,32 @@ Home screen and the quick form (Phase 3E):
   one-tap buttons, brew method and device from the latest one; on a phone the save button
   stays at the bottom of the screen. A tasting of a known coffee is four steps.
 
+Cafés (Phase 3F):
+
+- **A section of their own:** `cafes` (name, `city_code` = plate number 1–81, optional
+  district, optional `map_url`) and `cafe_visits` (drink kind, optional menu name, score 1–10,
+  note, day, price, visibility). Nothing about cafés enters coffee numbers, `/` or
+  `/istatistik`. The provinces are `TR_CITIES` in `@espressoir/core`; a café's address is
+  `/kafe/<city slug>/<café slug>`, the slug made once, unique per city (`cafePath`).
+- **Members add cafés like coffees:** at once, unreviewed (`set_cafe_review_state`), 5 a day,
+  30 visits a day; the form warns about look-alikes in the same city (`search_cafes_v1`,
+  trigram over the folded name + district). Admins review, merge (`admin_merge_cafes_v1`
+  moves visits and reports) and delete an empty café (`admin_delete_v1('cafe', …)` refuses
+  one with visits). Unreviewed cafés stay out of the sitemap.
+- **A map link is only ever pasted, never fetched:** https on a known map service
+  (`MAP_URL_PATTERN`, the same expression as the `cafes_map_url_format` check; a test
+  compares them), shown as `rel="nofollow ugc noopener noreferrer"`. No map service, no key.
+- **Drink kinds are text with a check** (`CAFE_DRINKS`, compared by a test), not an enum;
+  `report_target` did get `cafe` and `cafe_visit` (its rollback rebuilds the type).
+- **Visits are read like tastings:** public for all, followers for followers, private for the
+  author, hidden for nobody else (same policies). The archive carries every café
+  (`cafe_overview`, numbers from public visits only) and the public visits
+  (`cafe_visit_feed`, no price), both read with `{ optional: true }`; pages derive the rest
+  in `lib/data/cafes.ts`. `log_cafe_visit_v1` finds or creates the café (same folded name in
+  the same city) and adds the visit in one transaction; edits and deletes are table calls.
+- **Visits have no page, likes or comments** (each one carries its own report button), and
+  the feed's "Kafeler" tab is one server-rendered page of the latest visits.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -420,9 +446,9 @@ Home screen and the quick form (Phase 3E):
         prepared in the browser without EXIF; admins can take them down; `pnpm media:sweep`.
   - [x] 3E home screen and quick form: manifest, icons, shortcuts; recent coffees one tap away,
         last method and device filled in, a save bar within the thumb's reach.
-  - [ ] 3F cafés (owner's addition, 2026-10-13): adding cafés and rating their drinks. Not
-        in the brief; the open design questions are in the plan file and are asked before it
-        starts (model, location detail and cost, who adds, where the ratings show).
+  - [x] 3F cafés (owner's addition, 2026-10-13; decided 2026-10-14): members add cafés (city,
+        district, pasted map link) and rate what they drank there; `/kafeler`, a café's page
+        with an average per drink, visits on profiles and in the feed; review and merge.
 - [ ] Phase 4+ Expo app.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
@@ -456,7 +482,10 @@ Phase 2 decisions (owner-approved; they become conventions as each step lands):
 
 Phase 3 decisions (owner-approved 2026-10-13):
 
-- **Order:** 3A → 3E as listed. **Photos:** one per tasting plus an avatar, resized and
+- **Order:** 3A → 3E as listed, then 3F. **Cafés:** a separate section (not the coffee
+  catalog), city + district + optional map link (no map service), every member adds them under
+  the coffee rules, shown on `/kafeler`, café pages, profiles and the feed only.
+- **Photos:** one per tasting plus an avatar, resized and
   re-encoded in the browser (which drops EXIF), storage rules as RLS, no secret key.
   **PWA:** home screen + quick form, no service worker, no offline. **No Notion sync.**
 - **"Want to try" stays the `wishlist` tasting status**; lists are a separate feature.
@@ -466,7 +495,8 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 3E has none. After any branch switch, look for iCloud's
+  `db:push:prod`). 3F's is `20261016090000_cafes`: without it the café pages are empty and
+  adding a visit fails (everything else works). After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

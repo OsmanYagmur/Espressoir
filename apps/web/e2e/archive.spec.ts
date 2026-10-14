@@ -216,6 +216,8 @@ test("no page is wider than a phone's screen", async ({ page }) => {
     "/akis",
     "/istatistik",
     "/kahve/nespresso/ristretto-siyah-kapsul",
+    "/kafeler",
+    "/kafe/istanbul/ornek-kahve-atolyesi",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -279,6 +281,7 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
   const sitemap = await (await request.get("/sitemap.xml")).text();
   expect(sitemap).toContain("/kahve/nespresso/ristretto-siyah-kapsul</loc>");
   expect(sitemap).toContain("/marka/kahve-dunyasi</loc>");
+  expect(sitemap).toContain("/kafe/istanbul/ornek-kahve-atolyesi</loc>");
 
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /panel");
@@ -535,6 +538,86 @@ test.describe("lists", () => {
       "href",
       "/giris",
     );
+  });
+});
+
+test.describe("cafés", () => {
+  const cafeList = (page: Page) => page.getByRole("list", { name: "Kafeler" });
+
+  test("are listed apart from the coffees and filtered by city and name", async ({ page }) => {
+    await page.goto("/");
+    await mainNav(page).getByRole("link", { name: "Kafeler" }).click();
+    await expect(page).toHaveURL(/\/kafeler$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafeler.");
+    await expect(cafeList(page).getByRole("listitem")).toHaveCount(2);
+    // The busiest first, with its visits and average.
+    const first = cafeList(page).getByRole("listitem").first();
+    await expect(first).toContainText("Örnek Kahve Atölyesi");
+    await expect(first).toContainText("Kadıköy, İstanbul");
+    await expect(first).toContainText("3 ziyaret");
+    await expect(first.getByRole("img", { name: "10 üzerinden 8 puan" })).toBeVisible();
+
+    await page.getByLabel("Şehir").selectOption({ label: "İzmir" });
+    await expect(page).toHaveURL(/sehir=izmir/);
+    await expect(cafeList(page).getByRole("listitem")).toHaveCount(1);
+    await expect(cafeList(page)).toContainText("Liman Kahvecisi");
+
+    await page.getByRole("button", { name: "Filtreleri temizle" }).click();
+    await page.getByRole("searchbox", { name: "Ara" }).fill("KADIKÖY");
+    await expect(cafeList(page).getByRole("listitem")).toHaveCount(1);
+    await expect(page.getByRole("status")).toContainText("2 kafeden 1 tanesi");
+    // A café's numbers are not the coffees': the coffee list is unchanged.
+    await page.goto("/kahveler");
+    await expect(page.getByRole("status")).toContainText("20 kahve");
+  });
+
+  test("a café's page shows its visits and an average per drink, each with its n", async ({
+    page,
+  }) => {
+    await page.goto("/kafeler");
+    await cafeList(page).getByRole("link", { name: "Örnek Kahve Atölyesi" }).click();
+    await expect(page).toHaveURL(/\/kafe\/istanbul\/ornek-kahve-atolyesi$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Örnek Kahve Atölyesi.");
+    await expect(page.getByRole("img", { name: "10 üzerinden 8 puan" }).first()).toBeVisible();
+
+    const visits = page.getByRole("list", { name: "Ziyaretler" }).getByRole("listitem");
+    await expect(visits).toHaveCount(3);
+    // Newest visit first, each with who and what.
+    await expect(visits.nth(0)).toContainText("Espresso");
+    await expect(visits.nth(1)).toContainText("Filtre kahve · Etiyopya V60");
+    await expect(visits.nth(1)).toContainText("Çiçeksi, temiz bitiş.");
+    await expect(visits.nth(1).getByRole("link", { name: /^@/ })).toBeVisible();
+
+    // Three drinks, one visit each: every row says n = 1 and is marked as a small sample.
+    const drinks = page.getByRole("table", { name: /içecek türüne göre ortalama puan/ }).first();
+    await expect(drinks.getByRole("row")).toHaveCount(4);
+    await expect(drinks.getByRole("row", { name: /Filtre kahve/ })).toContainText("n < 3");
+    // Visitors are sent to the login to add their own visit.
+    await expect(page.getByRole("link", { name: "Burada ne içtin?" })).toHaveAttribute(
+      "href",
+      /\/panel\/kafe\/yeni\?kafe=/,
+    );
+    await expect(page.getByRole("button", { name: "Şikâyet et" })).toHaveCount(0);
+  });
+
+  test("the feed has a tab for café visits, and a member's page lists theirs", async ({ page }) => {
+    await page.goto("/akis");
+    await page.getByRole("tab", { name: "Kafeler" }).click();
+    await expect(page).toHaveURL(/sekme=kafeler/);
+    const visits = page.getByRole("list", { name: "Kafeler" }).getByRole("listitem");
+    await expect(visits).toHaveCount(4);
+    await expect(visits.first()).toContainText(/Örnek Kahve Atölyesi|Liman Kahvecisi/);
+
+    await visits.first().getByRole("link", { name: /^@/ }).click();
+    await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
+    await expect(
+      page.getByRole("list", { name: "Kafe ziyaretleri" }).getByRole("listitem"),
+    ).toHaveCount(4);
+  });
+
+  test("a café that does not exist is a 404", async ({ page }) => {
+    const response = await page.goto("/kafe/istanbul/boyle-bir-kafe-yok");
+    expect(response?.status()).toBe(404);
   });
 });
 
