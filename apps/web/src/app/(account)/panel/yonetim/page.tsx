@@ -18,11 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { requireAdmin } from "@/lib/auth";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
+import { mediaUrl, smallMediaUrl } from "@/lib/media";
 import { coffeePath, listPath, profilePath, tastingPath } from "@/lib/routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
   cancelInvitation,
+  removePhoto,
   inviteMember,
   mergeBrand,
   mergeCoffee,
@@ -66,6 +68,8 @@ interface Target {
   summary: string;
   href: ReturnType<typeof tastingPath> | null;
   hidden: boolean;
+  /** The picture an admin can take down from this row (a tasting's, a member's). */
+  photo: string | null;
 }
 
 /** What an admin can hide or remove (a profile is restricted, a coffee reviewed or merged). */
@@ -79,7 +83,8 @@ async function loadTargets(
   const [tastings, comments, profiles, coffees, lists] = await Promise.all([
     supabase
       .from("tasting_feed")
-      .select("tasting_id, user_id, username, brand_name, coffee_name, notes, is_hidden")
+      // Every column: those a database without the latest migration lacks are just absent.
+      .select("*")
       .in("tasting_id", ids("tasting")),
     supabase
       .from("comments")
@@ -87,7 +92,7 @@ async function loadTargets(
         "id, tasting_id, user_id, body, hidden_at, author:profiles!comments_user_id_fkey(username)",
       )
       .in("id", ids("comment")),
-    supabase.from("profiles").select("id, username").in("id", ids("profile")),
+    supabase.from("profiles").select("*").in("id", ids("profile")),
     supabase
       .from("coffee_overview")
       .select("coffee_id, coffee_name, coffee_slug, brand_name, brand_slug")
@@ -109,6 +114,7 @@ async function loadTargets(
       summary: `${row.brand_name} ${row.coffee_name}${row.notes ? `: ${excerpt(row.notes)}` : ""}`,
       href: tastingPath(row.tasting_id),
       hidden: row.is_hidden === true,
+      photo: row.photo_path ?? null,
     });
   }
   for (const row of comments.data ?? []) {
@@ -120,6 +126,7 @@ async function loadTargets(
       summary: excerpt(row.body) || t.social.deleted,
       href: tastingPath(row.tasting_id),
       hidden: row.hidden_at !== null,
+      photo: null,
     });
   }
   for (const row of profiles.data ?? []) {
@@ -131,6 +138,7 @@ async function loadTargets(
       summary: `@${row.username}`,
       href: profilePath(row.username),
       hidden: false,
+      photo: row.avatar_path ?? null,
     });
   }
   for (const row of coffees.data ?? []) {
@@ -143,6 +151,7 @@ async function loadTargets(
       summary: `${row.brand_name} — ${row.coffee_name}`,
       href: coffeePath(row.brand_slug, row.coffee_slug),
       hidden: false,
+      photo: null,
     });
   }
   for (const row of lists.data ?? []) {
@@ -155,9 +164,38 @@ async function loadTargets(
       summary: row.title ?? "",
       href: listPath(row.username, row.slug),
       hidden: row.is_hidden === true,
+      photo: null,
     });
   }
   return targets;
+}
+
+/** The picture itself (small), and the button that takes it down: file and all. */
+function PhotoForm({ target }: { target: Pick<Target, "type" | "id" | "photo"> }) {
+  const src = target.photo
+    ? target.type === "tasting"
+      ? smallMediaUrl(target.photo)
+      : mediaUrl(target.photo)
+    : null;
+  return (
+    <form action={removePhoto} className="flex flex-wrap items-center gap-2">
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- already the right size
+        <img
+          src={src}
+          alt=""
+          width={48}
+          height={48}
+          className="size-12 border border-border object-cover"
+        />
+      ) : null}
+      <input type="hidden" name="targetType" value={target.type} />
+      <input type="hidden" name="targetId" value={target.id} />
+      <Button type="submit" variant="outline" className={small}>
+        {t.photo.admin.remove}
+      </Button>
+    </form>
+  );
 }
 
 function HideForm({ target, hidden }: { target: Pick<Target, "type" | "id">; hidden: boolean }) {
@@ -390,6 +428,7 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
                   <RemoveForm target={target} />
                 </>
               ) : null}
+              {target?.photo ? <PhotoForm target={target} /> : null}
               {target?.userId ? <RestrictForm userId={target.userId} /> : null}
             </div>
             <form action={resolveReport} className="flex flex-wrap items-center gap-2">
@@ -690,13 +729,24 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
     typeof hata === "string"
       ? (a.errors[hata as keyof typeof a.errors] ?? a.errors.unknown)
       : undefined;
+  // How much of the free plan's 1 GB the pictures take (nothing shown if it cannot be read).
+  const { data: usage } = await supabase.rpc("media_usage_v1");
+  const stored = usage?.[0];
 
   return (
     <>
-      <nav className="border-b border-border py-4 font-mono text-xs uppercase">
-        <Link href="/panel" className={linkFocus}>
+      <nav className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border py-4 font-mono text-xs">
+        <Link href="/panel" className={`uppercase ${linkFocus}`}>
           {a.back}
         </Link>
+        {stored ? (
+          <p className="text-muted-foreground">
+            {format(t.photo.admin.usage, {
+              files: stored.files,
+              size: Math.round((Number(stored.bytes) / 1024 / 1024) * 10) / 10,
+            })}
+          </p>
+        ) : null}
       </nav>
       {reason ? (
         <p

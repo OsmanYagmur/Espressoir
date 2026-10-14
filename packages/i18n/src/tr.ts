@@ -603,6 +603,7 @@ export const tr = {
       target_not_found: "içerik bulunamadı",
       admin_cannot_be_restricted: "yöneticiler kısıtlanamaz",
       merge_same_target: "bir kayıt kendisiyle birleştirilemez",
+      target_has_no_photo: "bu kaydın fotoğrafı yok",
       user_not_found: "bu kullanıcı adıyla bir üye yok",
       invite_exists: "bu adresle zaten bir hesap var",
       invite_email: "geçerli bir e-posta adresi yaz",

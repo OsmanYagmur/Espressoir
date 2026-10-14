@@ -35,6 +35,7 @@ export const legalTr = {
           "Hesap: e-posta adresin. Google ile giriş yaparsan Google'ın ilettiği ad, e-posta ve profil fotoğrafı adresi kimlik doğrulama kaydında saklanır; sitede gösterilmez.",
           "Profil: kullanıcı adın, görünen adın ve hakkında yazdığın metin. Bunlar herkese açıktır.",
           "İçerik: tadımların (puan, not, tarih, demleme yöntemi, cihaz, görünürlük ayarı), takip ettiklerin ve seni takip edenler, kataloğa eklediğin kahve ve markalar.",
+          "Fotoğraflar: tadımlarına ve profiline eklediğin fotoğraflar. Gönderilmeden önce cihazında küçültülür ve yeniden kaydedilir; bu sırada konum, cihaz ve çekim zamanı gibi bilgiler silinir, bize yalnızca görüntü ulaşır.",
           "Kayıtlar: kabul ettiğin koşulların sürümü ve tarihi, kullanıcı adı değişikliğinin tarihi, varsa hesabına uygulanan kısıtlama.",
           "İşlem güvenliği: oturum çerezi, giriş zamanları ve altyapı sağlayıcılarının günlüklerinde yer alan IP adresi ile tarayıcı bilgisi.",
         ],
@@ -112,6 +113,7 @@ export const legalTr = {
           "Herkese açık: herkes görür; kahvenin sayfasında, profilinde ve arama motorlarında yer alabilir.",
           "Takipçiler: yalnızca seni takip eden üyeler görür.",
           "Yalnız ben: yalnızca sen görürsün.",
+          "Fotoğraflar: profil resmin herkese açıktır. Tadım fotoğrafı tadımla birlikte görünür; ancak fotoğraf dosyası tahmin edilemeyen bir adreste durur ve o adresi bilen herkes açabilir. Yalnızca takipçilere ya da yalnız sana açık bir tadımın fotoğrafını, adresinin paylaşılmasını istemiyorsan ekleme.",
         ],
       },
       {
@@ -183,7 +185,7 @@ export const legalTr = {
         items: [
           "Hakaret, taciz, nefret söylemi ve tehdit.",
           "Spam, reklam ve karşılığında çıkar sağlanan, bunu belirtmeyen değerlendirmeler.",
-          "Başkasının kişisel verilerini paylaşmak.",
+          "Başkasının kişisel verilerini paylaşmak; başkalarını onların izni olmadan gösteren ya da uygunsuz içerik taşıyan fotoğraf yüklemek.",
           "Başkasına ait metinleri izinsiz kopyalamak.",
           "Yanıltıcı kahve ya da marka kaydı açmak, aynı kahveyi bilerek tekrar tekrar eklemek.",
           "Siteyi otomatik araçlarla taramak, sınırları aşmaya ya da güvenliği zorlamaya çalışmak.",
@@ -192,7 +194,7 @@ export const legalTr = {
       {
         title: "İçeriğinin sahibi sensin",
         paragraphs: [
-          "Tadım notların sana aittir. Onları Espressoir'da seçtiğin görünürlükle yayınlamamıza ve sitenin çalışması için gereken biçimde (listeleme, ortalama hesaplama, paylaşım görseli üretme) kullanmamıza izin vermiş olursun. Hesabını sildiğinde bu izin sona erer ve içeriğin silinir.",
+          "Tadım notların ve fotoğrafların sana aittir. Onları Espressoir'da seçtiğin görünürlükle yayınlamamıza ve sitenin çalışması için gereken biçimde (listeleme, ortalama hesaplama, küçültme, paylaşım görseli üretme) kullanmamıza izin vermiş olursun. Hesabını sildiğinde bu izin sona erer ve içeriğin, fotoğrafların dahil, silinir.",
           "Kataloğa eklediğin kahve ve marka bilgileri ortak kataloğun parçası olur; düzeltilebilir, birleştirilebilir ve hesabın silinse de kalır.",
         ],
         items: [],
