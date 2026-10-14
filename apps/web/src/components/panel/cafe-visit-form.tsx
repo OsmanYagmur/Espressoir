@@ -17,6 +17,7 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { SectionHeading } from "@/components/site/section-heading";
+import { submitWithoutReset } from "@/lib/form-submit";
 import { format, t } from "@/lib/i18n";
 
 import type { CafeVisitFormState } from "@/app/(account)/panel/kafe/actions";
@@ -72,7 +73,7 @@ export function CafeVisitForm({
     (value("visibility") || "public") !== "public";
 
   return (
-    <form action={formAction} className="max-w-2xl pb-10">
+    <form action={formAction} onSubmit={submitWithoutReset(formAction)} className="max-w-2xl pb-10">
       <SectionHeading index={1} title={f.cafeSection} />
       <div className="grid gap-5 border-b border-border py-5">
         {editing ? (

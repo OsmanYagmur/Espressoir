@@ -41,11 +41,14 @@ export function CafeExplorer({
   }, [cafes, city, query]);
   const active = (city ? 1 : 0) + (query.trim() ? 1 : 0);
 
-  // The History API keeps this a purely client-side update, as on the coffee list.
+  // The History API keeps this a purely client-side update, as on the coffee list. The
+  // other filter is read from the address itself, not from this render: right after a
+  // change the render may not have caught up yet, and a stale city would come back.
   const update = (next: { sehir?: string; q?: string }) => {
+    const current = new URLSearchParams(window.location.search);
     const params = new URLSearchParams();
-    const sehir = next.sehir ?? city;
-    const q = next.q ?? query;
+    const sehir = next.sehir ?? current.get("sehir") ?? "";
+    const q = next.q ?? current.get("q") ?? "";
     if (sehir) params.set("sehir", sehir);
     if (q) params.set("q", q);
     const search = params.toString();

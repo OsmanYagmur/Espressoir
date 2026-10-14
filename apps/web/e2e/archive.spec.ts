@@ -563,6 +563,7 @@ test.describe("cafés", () => {
     await expect(cafeList(page)).toContainText("Liman Kahvecisi");
 
     await page.getByRole("button", { name: "Filtreleri temizle" }).click();
+    await expect(page).toHaveURL(/\/kafeler$/);
     await page.getByRole("searchbox", { name: "Ara" }).fill("KADIKÖY");
     await expect(cafeList(page).getByRole("listitem")).toHaveCount(1);
     await expect(page.getByRole("status")).toContainText("2 kafeden 1 tanesi");

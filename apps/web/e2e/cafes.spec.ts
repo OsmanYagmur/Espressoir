@@ -48,6 +48,11 @@ test("a member adds a visit at a new café, then another one there", async ({ pa
   await expect(seen(page, /harita bağlantısı gibi görünmüyor/)).toBeVisible();
   await expect(page.getByLabel("Kafenin adı", { exact: true })).toHaveValue(name);
   await expect(page.getByLabel("Not", { exact: true })).toHaveValue("Uçtan uca kafe notu.");
+  // Every choice survives the error: the mode, the city, the drink and the score.
+  await expect(page.getByRole("radio", { name: "Yeni kafe" })).toBeChecked();
+  await expect(page.getByLabel("Şehir", { exact: true })).toHaveValue("6");
+  await expect(page.getByRole("radio", { name: "Flat white" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "8", exact: true })).toBeChecked();
 
   await page
     .getByLabel("Harita bağlantısı", { exact: true })
