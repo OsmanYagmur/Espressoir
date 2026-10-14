@@ -1,6 +1,7 @@
 import {
   MODERATION_NOTE_MAX_LENGTH,
   RESTRICTION_DAYS,
+  cityByCode,
   siteConfig,
   type ReportTarget,
 } from "@espressoir/core";
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireAdmin } from "@/lib/auth";
+import { cafeHref } from "@/lib/data/cafes";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { mediaUrl, smallMediaUrl } from "@/lib/media";
@@ -27,10 +29,12 @@ import {
   removePhoto,
   inviteMember,
   mergeBrand,
+  mergeCafe,
   mergeCoffee,
   removeContent,
   resolveReport,
   restrictMember,
+  reviewCafe,
   reviewCoffee,
   setHidden,
 } from "./actions";
@@ -72,15 +76,26 @@ interface Target {
   photo: string | null;
 }
 
-/** What an admin can hide or remove (a profile is restricted, a coffee reviewed or merged). */
-const HIDEABLE: ReadonlySet<ReportTarget> = new Set(["tasting", "comment", "list"]);
+/**
+ * What an admin can hide or remove (a profile is restricted, a coffee or a café reviewed
+ * or merged; an empty café can also be removed).
+ */
+const HIDEABLE: ReadonlySet<ReportTarget> = new Set(["tasting", "comment", "list", "cafe_visit"]);
+
+/** "Name — District, City". */
+const cafeLabel = (row: {
+  cafe_name: string | null;
+  district: string | null;
+  city_code: number | null;
+}) =>
+  `${row.cafe_name} — ${[row.district, cityByCode(row.city_code ?? 0)?.name].filter(Boolean).join(", ")}`;
 
 async function loadTargets(
   supabase: TypedSupabaseClient,
   wanted: { type: ReportTarget; id: string }[],
 ): Promise<Map<string, Target>> {
   const ids = (type: ReportTarget) => wanted.filter((w) => w.type === type).map((w) => w.id);
-  const [tastings, comments, profiles, coffees, lists] = await Promise.all([
+  const [tastings, comments, profiles, coffees, lists, cafes, visits] = await Promise.all([
     supabase
       .from("tasting_feed")
       // Every column: those a database without the latest migration lacks are just absent.
@@ -101,6 +116,16 @@ async function loadTargets(
       .from("list_feed")
       .select("list_id, user_id, username, slug, title, is_hidden")
       .in("list_id", ids("list")),
+    supabase
+      .from("cafe_overview")
+      .select("cafe_id, cafe_name, cafe_slug, city_code, district, is_reviewed")
+      .in("cafe_id", ids("cafe")),
+    supabase
+      .from("cafe_visit_feed")
+      .select(
+        "visit_id, user_id, username, drink, drink_name, notes, is_hidden, cafe_name, cafe_slug, city_code, district",
+      )
+      .in("visit_id", ids("cafe_visit")),
   ]);
 
   const targets = new Map<string, Target>();
@@ -163,6 +188,32 @@ async function loadTargets(
       username: row.username,
       summary: row.title ?? "",
       href: listPath(row.username, row.slug),
+      hidden: row.is_hidden === true,
+      photo: null,
+    });
+  }
+  for (const row of cafes.data ?? []) {
+    if (!row.cafe_id || !row.cafe_slug || !row.city_code) continue;
+    targets.set(`cafe:${row.cafe_id}`, {
+      type: "cafe",
+      id: row.cafe_id,
+      userId: null,
+      username: null,
+      summary: cafeLabel(row),
+      href: cafeHref({ cityCode: row.city_code, slug: row.cafe_slug }),
+      hidden: false,
+      photo: null,
+    });
+  }
+  for (const row of visits.data ?? []) {
+    if (!row.visit_id || !row.cafe_slug || !row.city_code) continue;
+    targets.set(`cafe_visit:${row.visit_id}`, {
+      type: "cafe_visit",
+      id: row.visit_id,
+      userId: row.user_id,
+      username: row.username,
+      summary: `${cafeLabel(row)}${row.notes ? `: ${excerpt(row.notes)}` : ""}`,
+      href: cafeHref({ cityCode: row.city_code, slug: row.cafe_slug }),
       hidden: row.is_hidden === true,
       photo: null,
     });
@@ -270,6 +321,17 @@ function RestrictForm({ userId }: { userId?: string }) {
       />
       <Button type="submit" variant="outline" className={small}>
         {a.restrict}
+      </Button>
+    </form>
+  );
+}
+
+function ReviewCafeForm({ cafeId }: { cafeId: string }) {
+  return (
+    <form action={reviewCafe}>
+      <input type="hidden" name="cafeId" value={cafeId} />
+      <Button type="submit" className={small}>
+        {a.review}
       </Button>
     </form>
   );
@@ -428,6 +490,12 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
                   <RemoveForm target={target} />
                 </>
               ) : null}
+              {target?.type === "cafe" ? (
+                <>
+                  <ReviewCafeForm cafeId={target.id} />
+                  <RemoveForm target={target} />
+                </>
+              ) : null}
               {target?.photo ? <PhotoForm target={target} /> : null}
               {target?.userId ? <RestrictForm userId={target.userId} /> : null}
             </div>
@@ -577,8 +645,97 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
   );
 }
 
+/** Cafés members added that no admin has checked: review, merge into the right one, or remove. */
+async function Cafes({ supabase }: { supabase: TypedSupabaseClient }) {
+  const { data, error } = await supabase
+    .from("cafe_overview")
+    .select("cafe_id, cafe_name, cafe_slug, city_code, district, is_reviewed, visit_count")
+    .order("city_code")
+    .order("cafe_name");
+  // A database without cafés yet has nothing to review.
+  if (error) return <Empty>{a.cafesEmpty}</Empty>;
+
+  const all = data.flatMap((cafe) =>
+    cafe.cafe_id && cafe.cafe_slug && cafe.city_code
+      ? [
+          {
+            id: cafe.cafe_id,
+            label: cafeLabel(cafe),
+            href: cafeHref({ cityCode: cafe.city_code, slug: cafe.cafe_slug }),
+            cityCode: cafe.city_code,
+            reviewed: cafe.is_reviewed === true,
+            visits: cafe.visit_count ?? 0,
+          },
+        ]
+      : [],
+  );
+  const pending = all.filter((cafe) => !cafe.reviewed);
+  if (pending.length === 0) return <Empty>{a.cafesEmpty}</Empty>;
+
+  return (
+    <>
+      <p className="max-w-[62ch] py-3 text-sm text-muted-foreground">{a.cafesHint}</p>
+      <ul aria-label={a.cafesTitle}>
+        {pending.map((cafe) => (
+          <li key={cafe.id} className="grid gap-3 border-b border-border py-4">
+            <p className="[overflow-wrap:anywhere]">
+              <Link
+                href={cafe.href}
+                prefetch={false}
+                className={`font-semiwide font-bold ${linkFocus}`}
+              >
+                {cafe.label}
+              </Link>{" "}
+              <span className="font-mono text-xs text-muted-foreground">
+                {format(t.cafes.visitCount, { count: cafe.visits })}
+              </span>
+            </p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <ReviewCafeForm cafeId={cafe.id} />
+              <form action={mergeCafe} className="flex flex-wrap items-center gap-2">
+                <input type="hidden" name="from" value={cafe.id} />
+                <Select
+                  name="into"
+                  aria-label={a.mergeInto}
+                  required
+                  defaultValue=""
+                  className={`${field} w-64`}
+                >
+                  <option value="">
+                    {a.mergeInto}: {a.choose}
+                  </option>
+                  {/* Cafés in the same city first: a duplicate is almost always one of them. */}
+                  {[...all]
+                    .filter((other) => other.id !== cafe.id)
+                    .sort(
+                      (x, y) =>
+                        Number(y.cityCode === cafe.cityCode) - Number(x.cityCode === cafe.cityCode),
+                    )
+                    .map((other) => (
+                      <option key={other.id} value={other.id}>
+                        {other.label}
+                      </option>
+                    ))}
+                </Select>
+                <label className="flex items-center gap-1.5 font-mono text-xs">
+                  <input type="checkbox" name="sure" required className="accent-foreground" />
+                  {a.sure}
+                </label>
+                <Button type="submit" variant="outline" className={small}>
+                  {a.merge}
+                </Button>
+              </form>
+              {cafe.visits === 0 ? <RemoveForm target={{ type: "cafe", id: cafe.id }} /> : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
-  const [tastings, comments, lists] = await Promise.all([
+  const [tastings, comments, lists, visits] = await Promise.all([
     supabase
       .from("tasting_feed")
       .select("tasting_id, username, brand_name, coffee_name, notes")
@@ -590,6 +747,10 @@ async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
       )
       .not("hidden_at", "is", null),
     supabase.from("list_feed").select("list_id, username, title").eq("is_hidden", true),
+    supabase
+      .from("cafe_visit_feed")
+      .select("visit_id, username, cafe_name, city_code, district, notes")
+      .eq("is_hidden", true),
   ]);
   const rows = [
     ...(tastings.data ?? []).flatMap((row) =>
@@ -618,6 +779,18 @@ async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
               id: row.list_id,
               username: row.username,
               summary: row.title ?? "",
+            },
+          ]
+        : [],
+    ),
+    ...(visits.data ?? []).flatMap((row) =>
+      row.visit_id
+        ? [
+            {
+              type: "cafe_visit" as const,
+              id: row.visit_id,
+              username: row.username,
+              summary: `${cafeLabel(row)}${row.notes ? `: ${excerpt(row.notes)}` : ""}`,
             },
           ]
         : [],
@@ -770,7 +943,9 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
       <SectionHeading index={4} title={a.restrictedTitle} />
       <Restricted supabase={supabase} />
       <Catalog supabase={supabase} />
-      <SectionHeading index={7} title={a.logTitle} />
+      <SectionHeading index={7} title={a.cafesTitle} />
+      <Cafes supabase={supabase} />
+      <SectionHeading index={8} title={a.logTitle} />
       <Log supabase={supabase} />
     </>
   );

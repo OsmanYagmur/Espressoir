@@ -19,3 +19,7 @@ export function listPath(username: string, listSlug: string): Route {
 export function tastingPath(tastingId: string): Route {
   return `/tadim/${tastingId}` as Route;
 }
+
+export function cafePath(citySlug: string, cafeSlug: string): Route {
+  return `/kafe/${citySlug}/${cafeSlug}` as Route;
+}

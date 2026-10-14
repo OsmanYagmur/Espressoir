@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getArchive } from "@/lib/data/archive";
+import { cafeHref } from "@/lib/data/cafes";
 import { brandSummaries } from "@/lib/data/selectors";
 import { brandPath, coffeePath, listPath, profilePath } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/site-url";
@@ -20,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url("/istatistik"), lastModified: latest, changeFrequency: "weekly", priority: 0.6 },
     { url: url("/hakkinda"), changeFrequency: "yearly", priority: 0.4 },
     { url: url("/akis"), lastModified: latest, changeFrequency: "daily", priority: 0.7 },
+    { url: url("/kafeler"), changeFrequency: "weekly", priority: 0.7 },
     // A coffee a member added is listed once an admin has checked it.
     ...archive.coffees
       .filter((coffee) => coffee.isReviewed)
@@ -28,6 +30,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: coffee.stats.lastTastedAt ?? coffee.createdAt.slice(0, 10),
         changeFrequency: "monthly" as const,
         priority: 0.8,
+      })),
+    // Cafés too: listed once an admin has checked them.
+    ...archive.cafes
+      .filter((cafe) => cafe.isReviewed)
+      .map((cafe) => ({
+        url: url(cafeHref(cafe)),
+        lastModified: cafe.lastVisitedOn ?? cafe.createdAt.slice(0, 10),
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
       })),
     ...brandSummaries(archive).map((brand) => ({
       url: url(brandPath(brand.slug)),

@@ -21,6 +21,7 @@ const KNOWN_ERRORS = [
   "admin_cannot_be_restricted",
   "merge_same_target",
   "target_has_no_photo",
+  "cafe_has_visits",
 ] as const;
 
 const id = z.uuid();
@@ -148,6 +149,20 @@ export async function mergeCoffee(formData: FormData): Promise<void> {
   if (!parsed.success) back("invalid");
   await run((supabase) =>
     supabase.rpc("admin_merge_coffees_v1", { p_from: parsed.data.from, p_into: parsed.data.into }),
+  );
+}
+
+export async function reviewCafe(formData: FormData): Promise<void> {
+  const parsed = id.safeParse(formData.get("cafeId"));
+  if (!parsed.success) back("invalid");
+  await run((supabase) => supabase.rpc("admin_review_cafe_v1", { p_cafe_id: parsed.data }));
+}
+
+export async function mergeCafe(formData: FormData): Promise<void> {
+  const parsed = readMerge(formData);
+  if (!parsed.success) back("invalid");
+  await run((supabase) =>
+    supabase.rpc("admin_merge_cafes_v1", { p_from: parsed.data.from, p_into: parsed.data.into }),
   );
 }
 

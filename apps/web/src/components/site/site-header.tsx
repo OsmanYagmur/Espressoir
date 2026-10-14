@@ -34,7 +34,8 @@ export function SiteHeader() {
         </div>
         {/* Small screens: links get their own row under a hairline instead of a menu button. */}
         <nav aria-label={t.nav.label} className="w-full border-t py-2 sm:hidden">
-          <NavLinks />
+          {/* Five links fit one row of a phone when they share it out evenly. */}
+          <NavLinks className="justify-between gap-x-3" />
         </nav>
       </div>
     </header>

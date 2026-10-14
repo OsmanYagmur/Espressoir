@@ -35,6 +35,7 @@ export const legalTr = {
           "Hesap: e-posta adresin. Google ile giriş yaparsan Google'ın ilettiği ad, e-posta ve profil fotoğrafı adresi kimlik doğrulama kaydında saklanır; sitede gösterilmez.",
           "Profil: kullanıcı adın, görünen adın ve hakkında yazdığın metin. Bunlar herkese açıktır.",
           "İçerik: tadımların (puan, not, tarih, demleme yöntemi, cihaz, görünürlük ayarı), takip ettiklerin ve seni takip edenler, kataloğa eklediğin kahve ve markalar.",
+          "Kafe ziyaretleri: eklediğin kafeler (ad, şehir, semt, harita bağlantısı) ve oradaki ziyaretlerin (içecek, puan, not, tarih, ödediğin fiyat, görünürlük ayarı).",
           "Fotoğraflar: tadımlarına ve profiline eklediğin fotoğraflar. Gönderilmeden önce cihazında küçültülür ve yeniden kaydedilir; bu sırada konum, cihaz ve çekim zamanı gibi bilgiler silinir, bize yalnızca görüntü ulaşır.",
           "Kayıtlar: kabul ettiğin koşulların sürümü ve tarihi, kullanıcı adı değişikliğinin tarihi, varsa hesabına uygulanan kısıtlama.",
           "İşlem güvenliği: oturum çerezi, giriş zamanları ve altyapı sağlayıcılarının günlüklerinde yer alan IP adresi ile tarayıcı bilgisi.",
@@ -64,8 +65,8 @@ export const legalTr = {
       {
         title: "Saklama süresi",
         paragraphs: [
-          "Verilerin hesabın açık olduğu sürece saklanır. Hesabını sildiğinde profilin, tadımların ve takip ilişkilerin veritabanından hemen silinir. Şifreli haftalık yedeklerde en fazla 90 gün daha kalabilir; bu süre sonunda yedekler de silinir.",
-          "Kataloğa eklediğin kahve ve marka kayıtları, kim tarafından eklendiği bilgisi silinerek yerinde kalır.",
+          "Verilerin hesabın açık olduğu sürece saklanır. Hesabını sildiğinde profilin, tadımların, kafe ziyaretlerin ve takip ilişkilerin veritabanından hemen silinir. Şifreli haftalık yedeklerde en fazla 90 gün daha kalabilir; bu süre sonunda yedekler de silinir.",
+          "Kataloğa eklediğin kahve, marka ve kafe kayıtları, kim tarafından eklendiği bilgisi silinerek yerinde kalır.",
         ],
         items: [],
       },
@@ -113,6 +114,7 @@ export const legalTr = {
           "Herkese açık: herkes görür; kahvenin sayfasında, profilinde ve arama motorlarında yer alabilir.",
           "Takipçiler: yalnızca seni takip eden üyeler görür.",
           "Yalnız ben: yalnızca sen görürsün.",
+          "Kafe ziyaretlerin için de aynı üç seçenek geçerlidir. Herkese açık bir ziyaret, o tarihte o kafede bulunduğunu gösterir; bunu göstermek istemediğin ziyaretleri takipçilere ya da yalnız kendine açık ekle.",
           "Fotoğraflar: profil resmin herkese açıktır. Tadım fotoğrafı tadımla birlikte görünür; ancak fotoğraf dosyası tahmin edilemeyen bir adreste durur ve o adresi bilen herkes açabilir. Yalnızca takipçilere ya da yalnız sana açık bir tadımın fotoğrafını, adresinin paylaşılmasını istemiyorsan ekleme.",
         ],
       },

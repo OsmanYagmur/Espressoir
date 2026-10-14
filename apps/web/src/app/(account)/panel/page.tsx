@@ -1,4 +1,4 @@
-import { tastingRowSchema } from "@espressoir/db";
+import { cafeVisitRowSchema, tastingRowSchema } from "@espressoir/db";
 import type { Metadata } from "next";
 import type { Route } from "next";
 import Link from "next/link";
@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 
 import { ScoreBadge } from "@/components/coffee/score-badge";
+import { drinkLabel } from "@/components/cafe/visit-item";
 import { brewLabel } from "@/components/coffee/tasting-item";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
@@ -13,6 +14,7 @@ import { SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
+import { byVisitDay, cafeHref } from "@/lib/data/cafes";
 import { byRecency } from "@/lib/data/selectors";
 import { formatDay, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
@@ -47,6 +49,12 @@ async function MyTastings() {
   const { data, error } = await supabase.from("tasting_feed").select("*").eq("user_id", user.id);
   if (error) throw new Error(error.message);
   const tastings = z.array(tastingRowSchema).parse(data).sort(byRecency);
+  // Café visits come from a newer view: a database without it simply shows none.
+  const cafeRows = await supabase.from("cafe_visit_feed").select("*").eq("user_id", user.id);
+  const visits = z
+    .array(cafeVisitRowSchema)
+    .parse(cafeRows.error ? [] : cafeRows.data)
+    .sort(byVisitDay);
 
   // A restriction is the member's to know about: until when, and why.
   const { data: state } = await supabase
@@ -84,9 +92,12 @@ async function MyTastings() {
             </Link>
           ) : null}
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button asChild className="h-11 font-mono text-xs uppercase">
             <Link href="/panel/tadim/yeni">{t.panel.newTasting}</Link>
+          </Button>
+          <Button asChild variant="outline" className="h-11 font-mono text-xs uppercase">
+            <Link href="/panel/kafe/yeni">{t.panel.newCafeVisit}</Link>
           </Button>
           <form action={signOut}>
             <Button type="submit" variant="outline" className="h-11 font-mono text-xs uppercase">
@@ -154,6 +165,46 @@ async function MyTastings() {
                 {t.panel.edit}
               </Link>
               <ScoreBadge score={tasting.score} size="sm" />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <SectionHeading index={2} title={t.cafes.panel.title} aside={visits.length} />
+      {visits.length === 0 ? (
+        <p className="border-b border-border py-8 text-muted-foreground">{t.cafes.panel.empty}</p>
+      ) : (
+        <ul aria-label={t.cafes.panel.title}>
+          {visits.map((visit) => (
+            <li
+              key={visit.id}
+              className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-border py-3"
+            >
+              <div className="min-w-0">
+                <p className="font-mono text-xs text-muted-foreground">
+                  {[
+                    formatDay(visit.visitedOn),
+                    drinkLabel(visit),
+                    visit.visibility === "public" ? null : t.panel.visibility[visit.visibility],
+                    visit.isHidden ? t.panel.hidden : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                <p className="font-semiwide text-lg leading-snug font-bold [overflow-wrap:anywhere]">
+                  {/* Not fetched ahead: the café's page changes with every save made here. */}
+                  <Link href={cafeHref(visit.cafe)} prefetch={false} className={linkFocus}>
+                    {visit.cafe.name}
+                  </Link>
+                </p>
+              </div>
+              <Link
+                href={`/panel/kafe/${visit.id}` as Route}
+                className={`font-mono text-xs uppercase ${linkFocus}`}
+              >
+                {t.panel.edit}
+              </Link>
+              <ScoreBadge score={visit.score} size="sm" />
             </li>
           ))}
         </ul>

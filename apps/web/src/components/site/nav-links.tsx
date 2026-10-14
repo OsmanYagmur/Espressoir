@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
   { href: "/kahveler", label: t.nav.coffees },
+  { href: "/kafeler", label: t.nav.cafes },
   { href: "/akis", label: t.nav.feed },
   { href: "/istatistik", label: t.nav.stats },
   { href: "/hakkinda", label: t.nav.about },
@@ -25,7 +26,8 @@ function NavLinkList({ pathname, className }: { pathname: string | null; classNa
   // of it (see lib/data/refresh-archive.ts). So these links wait to be clicked there.
   const prefetch = pathname !== null && SIGNED_IN_AREA.test(pathname) ? false : undefined;
   return (
-    <ul className={cn("flex items-center gap-5", className)}>
+    // Wraps on a narrow phone rather than pushing the page sideways.
+    <ul className={cn("flex flex-wrap items-center gap-x-5 gap-y-2", className)}>
       {NAV_ITEMS.map(({ href, label }) => {
         const active = pathname !== null && (pathname === href || pathname.startsWith(`${href}/`));
         return (
