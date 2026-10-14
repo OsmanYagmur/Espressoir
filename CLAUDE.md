@@ -344,6 +344,32 @@ Notifications (Phase 3C):
   from a client effect (`MarkRead`), never during rendering: a page fetched ahead must not
   swallow notifications.
 
+Photos (Phase 3D):
+
+- **Files in Storage, paths in Postgres.** Bucket `media` (public read, 600 KB, WebP/JPEG
+  only); paths are `<kind>/<member id>/<file id>.<ext>` (`MEDIA_PATH_PATTERN`), kinds
+  `tastings` and `avatars`. A tasting's picture has a small twin beside it (`…-s.<ext>`, 480 px
+  edge) for lists; the full one is 1600 px, an avatar a 400 px square.
+- **Prepared in the browser** (`lib/image-resize.ts`): decoded, drawn on a canvas, re-encoded
+  (WebP, JPEG where WebP cannot be written) until it fits. Re-encoding drops all EXIF — location,
+  camera, time; an e2e test uploads a fixture with a GPS position and checks the stored bytes.
+  Uploads go straight from the browser to Storage (`components/social/media-data.ts`).
+- **Storage rules are RLS on `storage.objects`:** members insert into their own folders (with
+  `can_post()`), see and delete their own rows; admins see and delete all. No secret key.
+- **Attaching is a database call:** `set_tasting_photo_v1` / `set_avatar_v1` check the row is
+  the caller's, the file is in their folder and exists, and return the previous path; the
+  caller then removes that file (`lib/media-server.ts`). Members cannot write the columns.
+  `admin_remove_photo_v1` takes one down (logged). `profiles.avatar_url` is no longer writable.
+- **A deleted row does not delete its file.** The actions remove files after replacing,
+  deleting a tasting, or before deleting an account; whatever is left is found by
+  `pnpm media:sweep` (files older than a day that no row points at; `--apply` removes them).
+- **Public files, even for private tastings:** the URL is unguessable but not secret. The
+  privacy draft says so.
+- Plain `<img>` with width/height, never `next/image` (the host's optimisation quota). The
+  test database has a stand-in for Storage's tables (`supabase/tests/local-shim.sql`); policy
+  tests that write to `storage.objects` as a member run only there.
+- Pictures are not in the `pg_dump` backup (docs/backup.md).
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -376,7 +402,9 @@ Notifications (Phase 3C):
         and one-click "Denemek istiyorum" on a coffee's page, list reports in the admin panel.
   - [x] 3C notifications: likes, comments, replies and new followers; the unread count in the
         header; `/bildirimler`.
-  - [ ] 3D photos (one per tasting + avatar) · 3E PWA and the quick form.
+  - [x] 3D photos: one per tasting (with a small twin for lists) and a profile picture,
+        prepared in the browser without EXIF; admins can take them down; `pnpm media:sweep`.
+  - [ ] 3E PWA and the quick form.
   - [ ] 3F cafés (owner's addition, 2026-10-13): adding cafés and rating their drinks. Not
         in the brief; the open design questions are in the plan file and are asked before it
         starts (model, location detail and cost, who adds, where the ratings show).
@@ -423,8 +451,8 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 3C's is `20261014120000_notifications`: without it `/bildirimler` fails and
-  the bell stays empty (everything else works). After any branch switch, look for iCloud's
+  `db:push:prod`). 3D's is `20261015090000_media`: without it adding a picture fails (pages
+  and the rest of the forms keep working). After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

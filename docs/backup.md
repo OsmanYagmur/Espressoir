@@ -8,6 +8,8 @@ Supabase Free planda otomatik yedek yok ve 7 gün hareketsiz kalan proje durakla
 
 Her pazartesi 03:17 UTC'de prod veritabanının `pg_dump` dökümünü alır, **runner'dan çıkmadan önce** `gpg` (AES-256) ile şifreler ve iş akışı artifact'ı olarak 90 gün saklar. Döküm `public` ve `auth` şemalarını içerir (tadımlar, kahveler, hesaplar).
 
+**Fotoğraflar bu yedeğe girmez.** Dosyalar Supabase Storage'da durur (`media` kovası); veritabanında yalnızca adresleri vardır. Döküm geri yüklenirse tadımlar fotoğraflarını adresleriyle hatırlar, ama Storage kaybolduysa dosyalar geri gelmez. Fotoğraf yedeği şimdilik yok; ücretsiz katmanda en sade yol Supabase panelinden kovayı ara sıra indirmek. Ayrı bir yedek komutu istenirse eklenir.
+
 GitHub → repo → **Settings → Secrets and variables → Actions → Secrets → New repository secret:**
 
 | Secret              | Değer                                                                                                    |
