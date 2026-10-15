@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Body, Button, Heading, Mono } from "@/components/ui";
 import { env } from "@/lib/env";
 import { format, t } from "@/lib/i18n";
+import { useNotifications } from "@/lib/notifications";
 import { useSession } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 import { useColors } from "@/lib/theme";
@@ -16,6 +17,7 @@ const m = t.mobile.account;
 export default function AccountScreen() {
   const colors = useColors();
   const { session, member } = useSession();
+  const { unread } = useNotifications();
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
@@ -39,6 +41,13 @@ export default function AccountScreen() {
                 }
               />
             ) : null}
+            <Button
+              title={
+                unread > 0 ? format(m.notificationsUnread, { count: unread }) : m.notifications
+              }
+              variant={unread > 0 ? "solid" : "outline"}
+              onPress={() => router.push("/bildirimler")}
+            />
             <Button
               title={m.suggestions}
               variant="outline"

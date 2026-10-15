@@ -337,6 +337,7 @@ export const tr = {
     captchaTitle: "Doğrulama",
     captcha: "Bir saniye: robot olmadığını doğruluyoruz. Çoğu zaman kendiliğinden geçer.",
     tabs: {
+      feed: "Akış",
       coffees: "Kahveler",
       cafes: "Kafeler",
       suggestions: "Öneriler",
@@ -356,7 +357,10 @@ export const tr = {
       signedInAs: "@{username} olarak giriş yaptın",
       myProfile: "Profilim",
       suggestions: "Öneriler",
-      siteNote: "Hesap ayarları, listeler ve yönetim şimdilik sitede.",
+      siteNote:
+        "Hesap ayarları, tadım ve liste düzenleme, yönetim sitede: aşağıdaki düğme siteyi açar.",
+      notifications: "Bildirimler",
+      notificationsUnread: "Bildirimler · {count} yeni",
       openSite: "Siteyi aç",
       signInNote: "Tadım eklemek ve önerilerini görmek için giriş yap.",
       onboarding: "Hesabını kullanmaya başlamadan önce sitede bir kullanıcı adı seç.",
@@ -364,6 +368,32 @@ export const tr = {
     suggestions: {
       signInFirst: "Önerilerini görmek için giriş yap.",
     },
+    feed: {
+      tabsLabel: "Akış seçimi",
+    },
+    tasting: {
+      notFound: "Bu tadım bulunamadı ya da görme iznin yok.",
+      visibility: "Görünürlük: {visibility}",
+      editOnSite: "Sitede düzenle",
+      deleteFailed: "Silinemedi. Biraz sonra tekrar dene.",
+      likeSignIn: "Beğenmek ve yorum yazmak için giriş yap.",
+    },
+    notifications: {
+      signInFirst: "Bildirimlerini görmek için giriş yap.",
+    },
+    profile: {
+      mine: "Bu senin defterin: gizli ve yalnızca takipçilere açık tadımların da burada, yanlarında görünürlükleriyle. Başkaları yalnızca herkese açık olanları görür.",
+      lists: "{count} kahve",
+    },
+    lists: {
+      editOnSite: "Sitede düzenle",
+      removeConfirm: "Bu kahve listeden çıkarılsın mı?",
+    },
+    report: {
+      cancel: "Vazgeç",
+    },
+    close: "Kapat",
+    loadFailed: "Yüklenemedi. Bağlantını kontrol edip tekrar dene.",
     add: {
       tab: "Ekle",
       title: "Ekle",

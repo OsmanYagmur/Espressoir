@@ -140,7 +140,7 @@ export default function SuggestionsScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }}
         refreshControl={

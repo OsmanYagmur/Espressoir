@@ -1,10 +1,11 @@
 import type { CafeVisit, Tasting } from "@espressoir/db";
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { Link, router } from "expo-router";
+import { Image, Pressable, Text, View } from "react-native";
 
 import { drinkLabel } from "@/lib/cafes";
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
+import { smallMediaUrl } from "@/lib/media";
 import { fonts, useColors } from "@/lib/theme";
 
 import { Body, Mono, ScoreBadge } from "./ui";
@@ -37,36 +38,53 @@ function brewLabel(tasting: Tasting): string | null {
   return tasting.brewMethod?.name ?? tasting.device;
 }
 
+/** The small twin of a tasting's picture, at a fixed height and its own proportions. */
+function Thumbnail({ tasting }: { tasting: Tasting }) {
+  if (!tasting.photo) return null;
+  const { path, width, height, alt } = tasting.photo;
+  const shown = 96;
+  return (
+    <Image
+      source={{ uri: smallMediaUrl(path) }}
+      accessibilityLabel={
+        alt ??
+        format(t.photo.defaultAlt, { coffee: `${tasting.brand.name} ${tasting.coffee.name}` })
+      }
+      style={{ width: Math.min(220, (shown * width) / height), height: shown, marginTop: 4 }}
+    />
+  );
+}
+
 /**
  * One tasting as a form entry, like on the site: who and when, the coffee (in lists that
- * mix coffees), the note, the tags as a sentence, the score boxed on the right.
+ * mix coffees), the note, the tags as a sentence, the score boxed on the right. With
+ * `open`, the entry leads to the tasting's own page (likes and comments are there).
  */
 export function TastingEntry({
   tasting,
   showAuthor = false,
   showCoffee = false,
+  showVisibility = false,
+  open = false,
 }: {
   tasting: Tasting;
   showAuthor?: boolean;
   showCoffee?: boolean;
+  /** On the member's own pages: who can see it. */
+  showVisibility?: boolean;
+  open?: boolean;
 }) {
   const colors = useColors();
   const meta = [
     tasting.tastedAt ? formatDay(tasting.tastedAt) : t.coffee.undated,
     brewLabel(tasting),
+    showVisibility ? t.panel.visibility[tasting.visibility] : null,
+    tasting.isHidden ? t.panel.hidden : null,
   ]
     .filter(Boolean)
     .join(" · ");
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        gap: 14,
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-        borderColor: colors.border,
-      }}
-    >
+  const body = (
+    <>
       <View style={{ flex: 1, gap: 4 }}>
         <Text>
           {showAuthor ? (
@@ -97,9 +115,33 @@ export function TastingEntry({
             {t.taste.tagsLabel}: {tasting.tags.map((tag) => tag.name).join(", ")}
           </Mono>
         ) : null}
+        <Thumbnail tasting={tasting} />
+        {open && tasting.status === "logged" ? (
+          <Mono style={{ textDecorationLine: "underline", marginTop: 2 }}>
+            {format(t.social.counts, { likes: tasting.likeCount, comments: tasting.commentCount })}
+          </Mono>
+        ) : null}
       </View>
       <ScoreBadge score={tasting.score} />
-    </View>
+    </>
+  );
+  const row = {
+    flexDirection: "row" as const,
+    gap: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+  };
+  if (!open) return <View style={row}>{body}</View>;
+  return (
+    <Pressable
+      accessibilityRole="link"
+      accessibilityHint={t.social.openTasting}
+      onPress={() => router.push({ pathname: "/tadim/[id]", params: { id: tasting.id } })}
+      style={({ pressed }) => [row, pressed ? { backgroundColor: colors.muted } : null]}
+    >
+      {body}
+    </Pressable>
   );
 }
 

@@ -2,6 +2,7 @@ import { findCoffee, tastingsOf } from "@espressoir/db";
 import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
+import { CoffeeShelfButtons } from "@/components/coffee-shelf";
 import { DetailScreen } from "@/components/detail-screen";
 import { TastingEntry } from "@/components/entries";
 import { Body, Button, Heading, Label, Mono, ScoreBadge, SectionHeading } from "@/components/ui";
@@ -61,13 +62,14 @@ export default function CoffeeScreen() {
                 <Body muted>{t.coffee.unreviewedNote}</Body>
               </View>
             )}
-            <View style={{ marginTop: 16 }}>
+            <View style={{ marginTop: 16, gap: 10 }}>
               <Button
                 title={t.mobile.add.tastedThis}
                 onPress={() =>
                   router.push({ pathname: "/tadim/yeni", params: { kahve: coffee.id } })
                 }
               />
+              <CoffeeShelfButtons coffeeId={coffee.id} />
             </View>
             <SectionHeading index={1}>{t.coffeeDetail.tastingsTitle}</SectionHeading>
             {logged.length === 0 ? (
@@ -76,7 +78,7 @@ export default function CoffeeScreen() {
               </Body>
             ) : (
               logged.map((tasting) => (
-                <TastingEntry key={tasting.id} tasting={tasting} showAuthor />
+                <TastingEntry key={tasting.id} tasting={tasting} showAuthor open />
               ))
             )}
             {wanting > 0 ? (

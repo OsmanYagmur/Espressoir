@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import type { ColorValue } from "react-native";
 
 import { t } from "@/lib/i18n";
+import { useNotifications } from "@/lib/notifications";
 import { fonts, useColors } from "@/lib/theme";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -15,8 +16,11 @@ const icon =
 
 export default function TabsLayout() {
   const colors = useColors();
+  const { unread, refreshUnread } = useNotifications();
   return (
     <Tabs
+      // A tab coming into view (also on the way back from a page) counts the unread again.
+      screenListeners={{ focus: () => void refreshUnread() }}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.foreground,
@@ -28,6 +32,10 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
+        options={{ title: t.mobile.tabs.feed, tabBarIcon: icon("newspaper-outline") }}
+      />
+      <Tabs.Screen
+        name="kahveler"
         options={{ title: t.mobile.tabs.coffees, tabBarIcon: icon("cafe-outline") }}
       />
       <Tabs.Screen
@@ -39,12 +47,14 @@ export default function TabsLayout() {
         options={{ title: t.mobile.add.tab, tabBarIcon: icon("add-circle-outline") }}
       />
       <Tabs.Screen
-        name="oneriler"
-        options={{ title: t.mobile.tabs.suggestions, tabBarIcon: icon("sparkles-outline") }}
-      />
-      <Tabs.Screen
         name="hesap"
-        options={{ title: t.mobile.tabs.account, tabBarIcon: icon("person-outline") }}
+        options={{
+          title: t.mobile.tabs.account,
+          tabBarIcon: icon("person-outline"),
+          // The unread notifications, as the website's bell shows them.
+          tabBarBadge: unread > 0 ? unread : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.brand, color: colors.brandForeground },
+        }}
       />
     </Tabs>
   );
