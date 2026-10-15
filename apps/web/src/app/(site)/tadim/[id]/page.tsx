@@ -74,7 +74,8 @@ export default function TastingPage({ params }: Props) {
 
 async function TastingDetail({ params }: Pick<Props, "params">) {
   const { id } = await params;
-  const tasting = findTasting(await getArchive(), id);
+  const archive = await getArchive();
+  const tasting = findTasting(archive, id);
   if (!tasting) notFound();
 
   const axes = profileAxes(tasting.profile);
@@ -158,7 +159,16 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
 
       <section aria-labelledby="yorumlar">
         <SectionHeading id="yorumlar" index={1} title={t.social.commentsTitle} />
-        <CommentThread tastingId={tasting.id} />
+        <CommentThread
+          tastingId={tasting.id}
+          officialIds={archive.profiles
+            .filter((member) =>
+              member.officialFor.some(
+                (business) => business.kind === "brand" && business.id === tasting.brand.id,
+              ),
+            )
+            .map((member) => member.id)}
+        />
       </section>
     </>
   );

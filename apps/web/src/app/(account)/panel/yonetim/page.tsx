@@ -21,7 +21,7 @@ import { cafeHref } from "@/lib/data/cafes";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { mediaUrl, smallMediaUrl } from "@/lib/media";
-import { coffeePath, listPath, profilePath, tastingPath } from "@/lib/routes";
+import { brandPath, coffeePath, listPath, profilePath, tastingPath } from "@/lib/routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
@@ -33,7 +33,9 @@ import {
   mergeCoffee,
   removeContent,
   resolveReport,
+  resolveVerification,
   restrictMember,
+  revokeOfficial,
   reviewCafe,
   reviewCoffee,
   setHidden,
@@ -551,7 +553,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
 
   return (
     <>
-      <SectionHeading index={5} title={a.catalogTitle} aside={pending.length} />
+      <SectionHeading index={6} title={a.catalogTitle} aside={pending.length} />
       {pending.length === 0 ? (
         <Empty>{a.catalogEmpty}</Empty>
       ) : (
@@ -611,7 +613,7 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
         </ul>
       )}
 
-      <SectionHeading index={6} title={a.brandsTitle} />
+      <SectionHeading index={7} title={a.brandsTitle} />
       <form action={mergeBrand} className="grid max-w-2xl gap-3 border-b border-border py-4">
         <p className="max-w-[62ch] text-sm text-muted-foreground">{a.brandsHint}</p>
         <div className="flex flex-wrap items-center gap-2">
@@ -731,6 +733,145 @@ async function Cafes({ supabase }: { supabase: TypedSupabaseClient }) {
         ))}
       </ul>
     </>
+  );
+}
+
+/** Members asking to speak for a brand or café: approve or reject, with a note. */
+async function Verifications({ supabase }: { supabase: TypedSupabaseClient }) {
+  const { data, error } = await supabase
+    .from("verification_requests")
+    .select(
+      "id, message, website, created_at, applicant:profiles!verification_requests_profile_id_fkey(username), brand:brands(name, slug), cafe:cafes(name, slug, city_code, district)",
+    )
+    .eq("status", "open")
+    .order("created_at");
+  if (error || data.length === 0) return <Empty>{a.verificationsEmpty}</Empty>;
+
+  return (
+    <ul aria-label={a.verificationsTitle}>
+      {data.map((request) => {
+        const brand = one(request.brand);
+        const cafe = one(request.cafe);
+        const applicant = one(request.applicant)?.username;
+        const href = brand
+          ? brandPath(brand.slug)
+          : cafe
+            ? cafeHref({ cityCode: cafe.city_code, slug: cafe.slug })
+            : null;
+        return (
+          <li key={request.id} className="grid gap-3 border-b border-border py-4">
+            <div>
+              <p className="font-mono text-xs text-muted-foreground">
+                <span className="mr-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
+                  {brand ? t.business.panel.kinds.brand : t.business.panel.kinds.cafe}
+                </span>
+                {applicant ? (
+                  <Link href={profilePath(applicant)} prefetch={false} className={linkFocus}>
+                    {format(a.applicant, { username: applicant })}
+                  </Link>
+                ) : null}{" "}
+                · {day(request.created_at)}
+              </p>
+              <p className="mt-1.5 [overflow-wrap:anywhere]">
+                {href ? (
+                  <Link
+                    href={href}
+                    prefetch={false}
+                    className={`font-semiwide font-bold ${linkFocus}`}
+                  >
+                    {brand?.name ?? cafe?.name}
+                  </Link>
+                ) : null}
+                {request.website ? (
+                  <>
+                    {" · "}
+                    <a
+                      href={request.website}
+                      target="_blank"
+                      rel="nofollow ugc noopener noreferrer"
+                      className={`font-mono text-xs ${linkFocus}`}
+                    >
+                      {request.website}
+                    </a>
+                  </>
+                ) : null}
+              </p>
+              <p className="mt-1 max-w-[62ch] border-l-2 border-rule pl-3 text-sm [overflow-wrap:anywhere] whitespace-pre-line">
+                {request.message}
+              </p>
+            </div>
+            <form action={resolveVerification} className="flex flex-wrap items-center gap-2">
+              <input type="hidden" name="requestId" value={request.id} />
+              <Input
+                name="note"
+                aria-label={a.note}
+                placeholder={a.note}
+                maxLength={MODERATION_NOTE_MAX_LENGTH}
+                className={`${field} w-56`}
+              />
+              <Button type="submit" name="answer" value="approve" className={small}>
+                {a.approve}
+              </Button>
+              <Button
+                type="submit"
+                name="answer"
+                value="reject"
+                variant="outline"
+                className={small}
+              >
+                {a.reject}
+              </Button>
+            </form>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Every verified business account, with a way to take it back. */
+async function Officials({ supabase }: { supabase: TypedSupabaseClient }) {
+  const { data, error } = await supabase
+    .from("official_accounts")
+    .select(
+      "id, created_at, member:profiles!official_accounts_profile_id_fkey(username), brand:brands(name), cafe:cafes(name)",
+    )
+    .order("created_at");
+  if (error || data.length === 0) return <Empty>{a.officialsEmpty}</Empty>;
+
+  return (
+    <ul aria-label={a.officialsTitle}>
+      {data.map((row) => (
+        <li
+          key={row.id}
+          className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+        >
+          <p className="min-w-0 [overflow-wrap:anywhere]">
+            <span className="font-semibold">{one(row.brand)?.name ?? one(row.cafe)?.name}</span>{" "}
+            <span className="font-mono text-xs text-muted-foreground">
+              @{one(row.member)?.username} · {day(row.created_at)}
+            </span>
+          </p>
+          <form action={revokeOfficial} className="flex flex-wrap items-center gap-2">
+            <input type="hidden" name="officialId" value={row.id} />
+            <Input
+              name="note"
+              aria-label={a.note}
+              placeholder={a.note}
+              maxLength={MODERATION_NOTE_MAX_LENGTH}
+              className={`${field} w-44`}
+            />
+            <label className="flex items-center gap-1.5 font-mono text-xs">
+              <input type="checkbox" name="sure" required className="accent-foreground" />
+              {a.sure}
+            </label>
+            <Button type="submit" variant="outline" className={small}>
+              {a.revoke}
+            </Button>
+          </form>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -938,14 +1079,18 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
       <Invitations />
       <SectionHeading index={2} title={a.reportsTitle} />
       <Reports supabase={supabase} />
-      <SectionHeading index={3} title={a.hiddenTitle} />
+      <SectionHeading index={3} title={a.verificationsTitle} />
+      <Verifications supabase={supabase} />
+      <SectionHeading index={4} title={a.hiddenTitle} />
       <Hidden supabase={supabase} />
-      <SectionHeading index={4} title={a.restrictedTitle} />
+      <SectionHeading index={5} title={a.restrictedTitle} />
       <Restricted supabase={supabase} />
       <Catalog supabase={supabase} />
-      <SectionHeading index={7} title={a.cafesTitle} />
+      <SectionHeading index={8} title={a.cafesTitle} />
       <Cafes supabase={supabase} />
-      <SectionHeading index={8} title={a.logTitle} />
+      <SectionHeading index={9} title={a.officialsTitle} />
+      <Officials supabase={supabase} />
+      <SectionHeading index={10} title={a.logTitle} />
       <Log supabase={supabase} />
     </>
   );

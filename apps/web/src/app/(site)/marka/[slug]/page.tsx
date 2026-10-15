@@ -1,9 +1,10 @@
 import { DEFAULT_COFFEE_FILTER, filterCoffees } from "@espressoir/core";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { BusinessBlock } from "@/components/business/business-block";
 import { CoffeeList } from "@/components/coffee/coffee-list";
 import { FieldStrip } from "@/components/site/field-strip";
 import { PageHeading } from "@/components/site/page-heading";
@@ -67,6 +68,7 @@ async function BrandDetail({ params }: Pick<Props, "params">) {
   const { archive, brand } = await findBrand(slug);
   if (!brand) notFound();
 
+  const page = archive.brandPages.find((candidate) => candidate.slug === brand.slug);
   const coffees = toCoffeeCards(
     filterCoffees(toListItems({ ...archive, coffees: brand.coffees }), {
       ...DEFAULT_COFFEE_FILTER,
@@ -90,6 +92,14 @@ async function BrandDetail({ params }: Pick<Props, "params">) {
           </nav>
         }
       />
+      {page ? (
+        <BusinessBlock
+          description={page.description}
+          website={page.website}
+          officialUsername={page.official?.username ?? null}
+          claimHref={`/panel/isletme/basvuru/marka/${page.id}` as Route}
+        />
+      ) : null}
       <FieldStrip
         fields={[
           { label: t.brand.fields.coffees, value: brand.coffees.length },

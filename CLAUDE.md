@@ -58,7 +58,7 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
                              /u/[username]/liste/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
-apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*,
+apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
                              /panel/yonetim (admin), /hesap,
                              /hesap/kurulum, /bildirimler
                              (dynamic; session read behind <Suspense>)
@@ -443,6 +443,29 @@ Recommendations (Phase 4A):
   meaningless without the database. No usernames, notes, exact dates, prices or tasting ids
   (a tasting's page names its author). The export runs in a read-only transaction.
 
+Verified business accounts (Phase 4B):
+
+- **`official_accounts`**: one per brand or café (unique), a member may speak for several.
+  Public to read, written only by `admin_resolve_verification_v1` (approve or reject an
+  application; logged; tells the applicant with a `verification` notification) and
+  `admin_revoke_official_v1`.
+- **Applications** (`verification_requests`): a member applies from the brand's or café's
+  page (`/panel/isletme/basvuru/marka|kafe/<id>`; the choice in the path, not the query),
+  one open per business, 3 a day, `can_post()`; read by the applicant and admins, withdrawn
+  while open. A business that already has an official account takes no applications.
+- **Editing a business's page is `update_business_page_v1`**, not column grants: grants are
+  per role, so they would open the name and the city to official accounts too. Official
+  account or admin; description and website, for a café also district and map link; the
+  whole set is replaced (empty clears).
+- **An official account does not score its own** (trigger `refuse_official_self_score`):
+  a tasting of its brand's coffee without a score is fine, a café visit at its café is not
+  (visits always score). Scores given before the approval stay.
+- **Reads:** `brand_pages` (description, website, official account; `archive.brandPages`,
+  optional read), `profile_overview.official_for`, `cafe_overview` ends with description,
+  website and `official_username`. On a tasting's page, comments by the brand's official
+  account carry "Resmi yanıt" (`CommentThread`'s `officialIds`). Visits have no comments,
+  so cafés get the badge and the page, not replies.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -486,7 +509,7 @@ Recommendations (Phase 4A):
       steps, each its own branch + PR; the next one starts only with the owner's go:
   - [x] 4A recommendations: the site's own model on `/panel/oneriler`, `pnpm export:analytics`
         (pseudonymous CSVs for the owner's Python work), `pnpm import:recommendations`.
-  - [ ] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
+  - [x] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
         an admin approves; badge, editing the business page, a badge on their replies;
         an official account cannot score its own coffee or café.
   - [ ] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
@@ -550,8 +573,9 @@ Phase 4 decisions (owner-approved 2026-10-15):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 4A's is `20261017090000_recommendations`: without it `/panel/oneriler`
-  still works (the site's own model), but the export and the import fail. After any branch switch, look for iCloud's
+  `db:push:prod`). 4B's is `20261018090000_official_accounts`: without it the brand and café
+  pages lose nothing, but applying, `/panel/isletme` and the admin's new sections show
+  empty and applying fails. After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

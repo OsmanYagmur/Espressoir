@@ -131,6 +131,19 @@ test.describe("coffee page", () => {
   });
 });
 
+test("a brand's page without an official account invites one", async ({ page }) => {
+  await page.goto("/marka/nespresso");
+  await expect(page.getByRole("link", { name: /Bu işletme senin mi\?/ })).toHaveAttribute(
+    "href",
+    /^\/panel\/isletme\/basvuru\/marka\/[0-9a-f-]{36}$/,
+  );
+  await page.goto("/kafe/istanbul/ornek-kahve-atolyesi");
+  await expect(page.getByRole("link", { name: /Bu işletme senin mi\?/ })).toHaveAttribute(
+    "href",
+    /^\/panel\/isletme\/basvuru\/kafe\/[0-9a-f-]{36}$/,
+  );
+});
+
 test("brand page lists the brand's coffees with its average", async ({ page }) => {
   await page.goto("/marka/jacobs");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jacobs.");

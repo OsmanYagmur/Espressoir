@@ -18,6 +18,9 @@ export const notificationRowSchema = z
     coffee_name: z.string().nullable(),
     comment_id: z.uuid().nullable(),
     comment_excerpt: z.string().nullable(),
+    // Absent until the official accounts migration is applied.
+    request_status: z.enum(["open", "approved", "rejected"]).nullable().optional(),
+    business_name: z.string().nullable().optional(),
   })
   .transform((row) => ({
     id: row.notification_id,
@@ -32,6 +35,11 @@ export const notificationRowSchema = z
         : null,
     /** The first words of the comment or reply. */
     excerpt: row.comment_excerpt,
+    /** The answer to the member's application to speak for a business. */
+    verification:
+      row.type === "verification" && row.business_name && row.request_status
+        ? { businessName: row.business_name, approved: row.request_status === "approved" }
+        : null,
   }));
 
 export type Notification = z.infer<typeof notificationRowSchema>;

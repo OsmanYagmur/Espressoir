@@ -91,6 +91,7 @@ function databaseMessage(error: { code?: string; message: string }): string {
     return format(e.rateLimited, { cafes: CAFES_PER_DAY, visits: CAFE_VISITS_PER_DAY });
   }
   if (error.message.includes("cafes_map_url_format")) return e.mapUrlInvalid;
+  if (error.message.includes("official_cannot_score")) return e.officialCannotScore;
   if (error.message.includes("cafe_required")) return e.cafeRequired;
   if (error.code === "42501" || error.message.includes("row-level security")) return e.notAllowed;
   if (error.message.includes("not_authenticated")) return e.sessionExpired;

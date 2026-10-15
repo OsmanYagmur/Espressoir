@@ -158,6 +158,7 @@ function databaseMessage(error: { code?: string; message: string }): string {
   // The database keeps the limits (tastings, new coffees and brands per day).
   if (error.message.includes("rate_limited")) return t.panel.errors.rateLimited;
   if (error.message.includes("too_many_flavor_tags")) return tooManyTags;
+  if (error.message.includes("official_cannot_score")) return t.panel.errors.officialCannotScore;
   if (error.message.includes("tastings_one_wishlist_per_coffee_key")) {
     return t.panel.errors.wishlistDuplicate;
   }
