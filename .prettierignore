@@ -6,6 +6,9 @@ PROJECT_BRIEF.md
 **/.expo/
 apps/mobile/dist/
 apps/mobile/expo-env.d.ts
+# The native projects `expo prebuild` writes for a local Xcode build (git-ignored).
+apps/mobile/ios/
+apps/mobile/android/
 **/node_modules/
 **/playwright-report/
 **/test-results/

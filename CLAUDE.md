@@ -498,6 +498,14 @@ The mobile app (Phase 4C):
   `router.push` from a Pressable: `Link asChild` drops a style function.
 - **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle`, `expo export` for iOS;
   no Xcode) besides lint and typecheck.
+- **On the owner's iPhone the app is a local Xcode build** (owner's choice, 2026-10-15): Expo
+  Go 57 opens a project on a physical iPhone only with the same Expo account signed in on the
+  CLI and in Expo Go, and the owner preferred no Expo account. `pnpm --filter
+@espressoir/mobile ios:device` = `expo run:ios --configuration Release --device`: prebuild
+  (`ios/`, git-, lint-, tsc- and Prettier-ignored), `pod install`, a Release build with the JS
+  bundle inside, signed with the owner's free Apple ID (re-install every 7 days). No EAS, no
+  paid plan. CocoaPods on this Mac lives in a conda env (`cocoapods`) behind
+  `/opt/anaconda3/bin/pod`. Expo Go stays the quick path while developing.
 
 Writing from the app (Phase 4D):
 

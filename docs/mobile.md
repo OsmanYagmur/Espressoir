@@ -1,11 +1,58 @@
-# Mobil uygulama (Expo Go)
+# Mobil uygulama
 
 Uygulama `apps/mobile` klasöründe: Expo SDK 57, Expo Router, React Native. Sitedeki veritabanı
 kurallarını, okuma modellerini (`@espressoir/db`), öneri modelini (`@espressoir/core`) ve Türkçe
-metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Expo Go** ile açılır
-(ücretsiz).
+metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok. Telefona iki yoldan girer, ikisi de
+ücretsiz:
 
-## Telefonunda açmak
+- **Kendi iPhone'una gerçek uygulama olarak (önerilen):** Mac'te Xcode ile derlenir, kabloyla
+  kurulur; ana ekranda kendi simgesiyle durur, bilgisayar kapalıyken de çalışır, Expo hesabı
+  istemez. Ücretsiz Apple hesabıyla imza 7 gün geçerli: süre dolunca aynı komutla yeniden kur.
+- **Expo Go ile:** geliştirirken hızlı; bilgisayar açık ve aynı Wi-Fi'da olmalı, Expo hesabı
+  gerekir.
+
+Önce `apps/mobile/.env` dosyasını hazırla (iki yol için de): `apps/mobile/.env.example`
+dosyasını `apps/mobile/.env` olarak kopyala ve doldur (aşağıda, Expo Go adım 2).
+
+## Kendi iPhone'una kurmak (Xcode)
+
+Bir kez:
+
+1. **Xcode** kurulu olsun; Xcode → Settings → Accounts'ta Apple hesabın ekli olsun (ücretsiz
+   hesap yeter; bu Mac'te ekli).
+2. **CocoaPods** kurulu olsun (`pod --version`). Bu Mac'te Homebrew çalışmadığı için ayrı bir
+   conda ortamında (`cocoapods`) kurulu; `pod` komutu `/opt/anaconda3/bin/pod` üzerinden onu
+   çalıştırır.
+3. iPhone'u kabloyla Mac'e bağla, telefonda "Bu bilgisayara güven"i onayla.
+4. iPhone'da **Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu**'nu aç (telefon yeniden
+   başlar). Bu seçenek telefon Mac'e bir kez bağlandıktan sonra görünür.
+
+Her kurulumda:
+
+```bash
+pnpm --filter @espressoir/mobile ios:device
+```
+
+Komut bağlı telefonları listeler; iPhone'unu seç. Uygulamayı yayın modunda derler (ilk sefer
+10–20 dakika), JavaScript'i içine gömer ve telefona kurar. `ios/` klasörü yoksa önce onu üretir
+(`expo prebuild` + `pod install`); bu klasör git'e girmez.
+
+İlk açılışta "Güvenilmeyen Geliştirici" derse: **Ayarlar → Genel → VPN ve Aygıt Yönetimi**
+→ geliştirici uygulaması → **Güven**.
+
+Bilmen gerekenler:
+
+- **7 gün:** ücretsiz Apple hesabıyla kurulan uygulama 7 gün sonra açılmaz; telefonu bağlayıp
+  aynı komutu çalıştır (verilerin sende değil Supabase'de, hiçbir şey kaybolmaz). Bunu
+  kaldırmanın tek yolu Apple Developer Program (yılda 99 USD; bütçe dışı).
+- **`.env` derlemeye gömülür:** değerleri değiştirirsen yeniden kur.
+- **Kod değiştiyse** (yeni bir sürüm çektiysen) yeniden kur; telefondaki uygulama kendini
+  güncellemez.
+- **Paket kimliği** `com.espressoir.app`. Xcode "bundle identifier" alınamadı derse
+  `app.json`'daki `ios.bundleIdentifier`'ı kendine özgü bir şeyle değiştirip `ios/`
+  klasörünü silerek yeniden dene.
+
+## Expo Go ile açmak
 
 1. iPhone'una App Store'dan **Expo Go**'yu kur (Android'de Play Store'dan).
 2. `apps/mobile/.env.example` dosyasını `apps/mobile/.env` olarak kopyala ve doldur:
