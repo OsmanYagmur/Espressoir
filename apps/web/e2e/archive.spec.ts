@@ -596,7 +596,7 @@ test.describe("cafés", () => {
     // Visitors are sent to the login to add their own visit.
     await expect(page.getByRole("link", { name: "Burada ne içtin?" })).toHaveAttribute(
       "href",
-      /\/panel\/kafe\/yeni\?kafe=/,
+      /\/panel\/kafe\/yeni\/[0-9a-f-]{36}$/,
     );
     await expect(page.getByRole("button", { name: "Şikâyet et" })).toHaveCount(0);
   });

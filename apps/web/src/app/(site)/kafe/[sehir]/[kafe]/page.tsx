@@ -152,7 +152,7 @@ async function CafeDetail({ params }: Pick<Props, "params">) {
           ) : null}
         </p>
         <Button asChild variant="outline" className="h-11 font-mono text-xs uppercase">
-          <Link href={`/panel/kafe/yeni?kafe=${cafe.id}` as Route} prefetch={false}>
+          <Link href={`/panel/kafe/yeni/${cafe.id}` as Route} prefetch={false}>
             {c.wasHere}
           </Link>
         </Button>

@@ -409,6 +409,13 @@ Cafés (Phase 3F):
   the same city) and adds the visit in one transaction; edits and deletes are table calls.
 - **Visits have no page, likes or comments** (each one carries its own report button), and
   the feed's "Kafeler" tab is one server-rendered page of the latest visits.
+- **Panel forms submit through `submitWithoutReset`** (`lib/form-submit.ts`). React resets a
+  form after its action runs, back to the values the controls had when they mounted: a
+  controlled radio or select then shows one choice and sends another ("Yeni kafe" on screen,
+  "Kayıtlı kafe" in the request). A new form with controlled choices does the same.
+- **A choice handed to a signed-in page goes in the path, not the query**
+  (`/panel/kafe/yeni/<café id>`). With partial prefetching the router may answer a
+  navigation with a copy of the same path it fetched ahead, and `?kafe=` was lost (CI).
 
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is

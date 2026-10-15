@@ -73,6 +73,7 @@ test("a member adds a visit at a new café, then another one there", async ({ pa
 
   // From the café's page the form starts with the café chosen.
   await page.getByRole("link", { name: "Burada ne içtin?" }).click();
+  await expect(page).toHaveURL(/\/panel\/kafe\/yeni\/[0-9a-f-]{36}$/);
   await expect(seen(page, label, { exact: true })).toBeVisible();
   await chooseDrink(page, "Espresso", 6);
   await page.getByRole("button", { name: "Kaydet" }).click();
