@@ -66,3 +66,47 @@ export function centredSquare(
   const size = Math.min(width, height);
   return { x: Math.round((width - size) / 2), y: Math.round((height - size) / 2), size };
 }
+
+const ascii = (bytes: Uint8Array, at: number, text: string) =>
+  [...text].every((char, index) => bytes[at + index] === char.charCodeAt(0));
+
+/**
+ * Whether an encoded picture still carries what a camera writes beside the pixels: EXIF
+ * (place, time, device) or XMP. A re-encoded picture must not; an app can check its own
+ * output with this before it uploads anything. Reads JPEG markers up to the image data,
+ * and WebP chunks (and the VP8X flags that announce them). Other formats count as carrying
+ * metadata, so nothing unexpected gets through.
+ */
+export function hasCameraMetadata(bytes: Uint8Array): boolean {
+  // JPEG: FF D8, then marker segments until the scan (FF DA).
+  if (bytes[0] === 0xff && bytes[1] === 0xd8) {
+    let at = 2;
+    while (at + 4 <= bytes.length && bytes[at] === 0xff) {
+      const marker = bytes[at + 1]!;
+      if (marker === 0xda || marker === 0xd9) return false;
+      const length = (bytes[at + 2]! << 8) | bytes[at + 3]!;
+      if (
+        marker === 0xe1 &&
+        (ascii(bytes, at + 4, "Exif") || ascii(bytes, at + 4, "http://ns.adobe.com/xap"))
+      ) {
+        return true;
+      }
+      at += 2 + length;
+    }
+    return false;
+  }
+  // WebP: "RIFF" size "WEBP", then chunks of FourCC + little-endian size (+ padding).
+  if (ascii(bytes, 0, "RIFF") && ascii(bytes, 8, "WEBP")) {
+    let at = 12;
+    while (at + 8 <= bytes.length) {
+      if (ascii(bytes, at, "EXIF") || ascii(bytes, at, "XMP ")) return true;
+      // VP8X announces EXIF (0x08) and XMP (0x04) in its flags byte.
+      if (ascii(bytes, at, "VP8X") && (bytes[at + 8]! & 0x0c) !== 0) return true;
+      const size =
+        bytes[at + 4]! | (bytes[at + 5]! << 8) | (bytes[at + 6]! << 16) | (bytes[at + 7]! << 24);
+      at += 8 + size + (size % 2);
+    }
+    return false;
+  }
+  return true;
+}
