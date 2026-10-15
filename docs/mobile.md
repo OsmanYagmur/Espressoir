@@ -14,13 +14,26 @@ metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Exp
      Denemek için dev projesi, gerçek kullanım için prod.
    - `EXPO_PUBLIC_SITE_URL`: girişteki güvenlik doğrulaması bu sitenin
      `/uygulama/dogrulama` sayfasından gelir. Prod için `https://espressoir.com`.
-3. Bilgisayarında:
+3. **Bir kez: Expo hesabıyla iki yerde de oturum aç.** Expo Go 57'den beri gerçek bir
+   iPhone, geliştirme sunucusundaki projeyi ancak bilgisayardaki Expo CLI ile telefondaki
+   Expo Go **aynı** Expo hesabında oturum açmışken açar; yoksa "You need to be signed in to
+   Expo Go and Expo CLI" hatası çıkar (Simülatör ve Android etkilenmez). Hesap ücretsizdir
+   (expo.dev/signup). Bilgisayarda, `apps/mobile` klasöründe:
+
+   ```bash
+   pnpm exec expo login
+   ```
+
+   Sonra telefonda Expo Go → sağ üstteki hesap simgesi → aynı hesapla giriş. Hangi hesapta
+   olduğunu `pnpm exec expo whoami` gösterir. Sunucu açıkken giriş yaptıysan onu kapatıp
+   yeniden başlat (Expo CLI hesabı açılışta okur).
+4. Bilgisayarında:
 
    ```bash
    pnpm --filter @espressoir/mobile start
    ```
 
-4. Ekranda çıkan QR kodunu iPhone'un kamerasıyla okut; Expo Go uygulamayı açar. Telefon ve
+5. Ekranda çıkan QR kodunu iPhone'un kamerasıyla okut; Expo Go uygulamayı açar. Telefon ve
    bilgisayar aynı Wi-Fi'da olmalı.
 
 `.env` git'e girmez. Değiştirdikten sonra `start` komutunu `--clear` ile yeniden başlat.
