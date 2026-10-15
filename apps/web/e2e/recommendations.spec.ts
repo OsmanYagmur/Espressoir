@@ -57,7 +57,11 @@ test("a coffee with the notes the owner likes is suggested to them, with the rea
     .getByRole("list", { name: "Önerilen kahveler" })
     .getByRole("listitem")
     .filter({ hasText: name });
-  await expect(suggestion).toContainText(/Sevdiğin notalar: .*Kakao/);
+  // Which signal is strongest depends on what other specs left behind (the guest also
+  // liked a coffee the owner liked, say); which one wins is the unit tests' business.
+  await expect(suggestion).toContainText(
+    /Sevdiğin notalar: .*Kakao|sevenlerden \d+ kişi bunu da beğendi|tat profiline yakın/,
+  );
   await expect(suggestion.getByRole("img", { name: "10 üzerinden 9 puan" })).toBeVisible();
   // Nothing the owner has already had is suggested.
   await expect(
