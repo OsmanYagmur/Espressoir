@@ -23,6 +23,19 @@ const ECHO_MS = 2000;
  */
 export function refreshArchive(): void {
   updateTag(ARCHIVE_TAG);
+  expireAgainSoon();
+}
+
+/**
+ * The same from a Route Handler, where `updateTag` is not available: the tag expires at
+ * once (the next read is a fresh one) and once more a moment later.
+ */
+export function expireArchive(): void {
+  revalidateTag(ARCHIVE_TAG, { expire: 0 });
+  expireAgainSoon();
+}
+
+function expireAgainSoon(): void {
   after(async () => {
     await new Promise((resolve) => setTimeout(resolve, ECHO_MS));
     try {

@@ -308,6 +308,14 @@ test("the mobile app's CAPTCHA page shows only the check, over the site", async 
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
 
+test("only a signed-in member may ask the site to refresh its archive", async ({ request }) => {
+  expect((await request.post("/api/arsiv-tazele")).status()).toBe(401);
+  const forged = await request.post("/api/arsiv-tazele", {
+    headers: { Authorization: "Bearer not-a-real-token" },
+  });
+  expect(forged.status()).toBe(401);
+});
+
 test("the signed-in area sends visitors to the login page", async ({ page }) => {
   await page.goto("/panel/oneriler");
   await expect(page).toHaveURL(/\/giris$/);
