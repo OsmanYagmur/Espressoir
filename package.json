@@ -25,6 +25,8 @@
     "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",
     "user:invite": "tsx scripts/user-invite.ts",
     "media:sweep": "tsx scripts/media-sweep.ts",
+    "export:analytics": "tsx scripts/export-analytics.ts",
+    "import:recommendations": "tsx scripts/import-recommendations.ts",
     "snapshot:offline": "tsx scripts/offline-snapshot.ts",
     "dev:offline": "pnpm snapshot:offline && ARCHIVE_SNAPSHOT=1 turbo run dev --filter=@espressoir/web"
   },

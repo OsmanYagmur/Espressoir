@@ -5,6 +5,25 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      analytics_salt: {
+        Row: {
+          created_at: string;
+          id: boolean;
+          salt: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: boolean;
+          salt?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: boolean;
+          salt?: string;
+        };
+        Relationships: [];
+      };
       brands: {
         Row: {
           aliases: string[];
@@ -1494,6 +1513,112 @@ export type Database = {
         };
         Relationships: [];
       };
+      recommendations: {
+        Row: {
+          coffee_id: string;
+          created_at: string;
+          model: string;
+          reason: string | null;
+          score: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          coffee_id: string;
+          created_at?: string;
+          model: string;
+          reason?: string | null;
+          score: number;
+          user_id: string;
+        };
+        Update: {
+          coffee_id?: string;
+          created_at?: string;
+          model?: string;
+          reason?: string | null;
+          score?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffee_overview";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "recommendations_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffee_stats";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "recommendations_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "coffees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recommendations_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "recommendations_coffee_id_fkey";
+            columns: ["coffee_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["coffee_id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recommendations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
       reports: {
         Row: {
           created_at: string;
@@ -2198,6 +2323,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      analytics_member_key: { Args: { p_user_id: string }; Returns: string };
       can_post: { Args: Record<PropertyKey, never>; Returns: boolean };
       coffee_search_text: { Args: { p_brand_id: string; p_name: string }; Returns: string };
       complete_onboarding_v1: {

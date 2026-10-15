@@ -48,6 +48,7 @@ export {
 } from "./taste";
 export * from "./media";
 export * from "./cafe";
+export * from "./recommend";
 export {
   COFFEE_SORTS,
   DEFAULT_COFFEE_FILTER,
