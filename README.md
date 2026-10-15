@@ -115,9 +115,9 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
   - [x] 3E Ana ekran ve hızlı form: telefonda ana ekrana eklenir, uygulama gibi açılır; son içtiğin kahveler tek dokunuşta, yöntem ve cihaz son tadımdan dolu gelir.
   - [x] 3F Kafeler: her üye kafe ekleyip orada içtiğine puan verir (şehir, semt, isteğe bağlı harita bağlantısı); `/kafeler`, kafe sayfası, profilde ve akışta kafe ziyaretleri; kopya uyarısı, yönetimden doğrulama ve birleştirme. Kahve ortalamalarına karışmaz.
-- [ ] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
+- [x] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
   - [x] 4A Öneriler: tadımlarına göre henüz denemediğin kahveler, gerekçeleriyle (`/panel/oneriler`); Python'da model kurman için takma adlı veri dışa aktarma ve modelinin sonuçlarını geri yükleme.
   - [x] 4B Doğrulanmış kavurucu ve kafe hesapları: marka ya da kafe sayfasından başvuru, yönetimden onay; rozet, işletmenin tanıtımını düzenleme, yorumlarda "Resmi yanıt"; resmi hesap kendi kahvesine ya da kafesine puan veremez.
   - [x] 4C Uygulama: telefonda Expo Go ile açılır; kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. Kurulum: [docs/mobile.md](./docs/mobile.md)
   - [x] 4D Uygulama: "Ekle" sekmesinden ya da kahve/kafe sayfasından tadım ve kafe ziyareti ekleme; fotoğraf telefonda küçültülür, konum bilgisi silinir; kaydedilen sitede hemen görünür.
-  - [ ] 4E Uygulama: akış, beğeni, yorum, bildirimler, profil ve listeler
+  - [x] 4E Uygulama: akış (herkes, takip ettiklerim, kafeler), tadım sayfasında beğeni, yorum ve şikâyet; bildirimler ve okunmamış sayısı; takip; kendi profilin (gizli tadımlar, denenecekler, listeler); kahve sayfasından "Denemek istiyorum" ve "Listeye ekle".

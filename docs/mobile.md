@@ -27,11 +27,12 @@ metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Exp
 
 ## Neler var (4C)
 
-- **Sekmeler:** Kahveler (arama), Kafeler (arama), Öneriler, Hesap.
+- **Sekmeler (4E'den beri):** Akış, Kahveler (arama), Kafeler (arama), Ekle, Hesap. Öneriler
+  Hesap'tan açılır.
 - **Sayfalar:** kahve, kafe, üye profili; aşağı çekince arşiv yenilenir.
 - **Giriş:** e-posta kodu ya da parola. Kayıt kapalı; davet sitede. Her istekten önce bir
   sayfa açılır ve güvenlik doğrulamasını (Turnstile) yapar.
-- Akış ve yorumlar 4E'de gelecek; hesap ayarları sitede kalır.
+- Hesap ayarları (kullanıcı adı, profil resmi, veri indirme, silme) sitede kalır.
 
 ## Ekleme (4D)
 
@@ -51,6 +52,24 @@ metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Exp
   bağlandığı Supabase projesinin sitesi olmalı (prod için `https://espressoir.com`); öyle
   değilse kayıt yine yapılır, site en geç bir saat içinde gösterir.
 - Kullanıcı adını seçmemiş bir hesap ekleme yapamaz; uygulama sitedeki kurulum sayfasını açar.
+
+## Sosyal (4E)
+
+- **Akış:** "Herkes" (son herkese açık tadımlar), "Takip ettiklerim" (takip ettiklerinin,
+  yalnızca takipçilere açık olanlar dahil) ve "Kafeler" (son kafe ziyaretleri). Aşağı
+  kaydırdıkça eski sayfalar yüklenir, aşağı çekince yenilenir.
+- **Tadım sayfası:** bir tadıma dokununca açılır: not, tat profili, etiketler, fotoğraf;
+  beğeni (kendi tadımında yalnızca sayı), yorumlar ve tek seviye yanıt, kendi yorumunu
+  düzenleme ve silme, başkasınınkini şikâyet etme. Kendi tadımında "Sitede düzenle" ve
+  "Tadımı sil".
+- **Bildirimler:** Hesap sekmesinin üstündeki kırmızı sayı okunmamışları gösterir; bir sekme
+  açıldığında ve uygulama öne geldiğinde yeniden sayılır. Bildirimler ekranı açılınca
+  gösterilenler okundu sayılır (açıkken gelen yeni kalır). Anlık bildirim (push) yok.
+- **Profil:** başkasının profilinde "Takip et" ve şikâyet; kendi profilinde gizli ve yalnızca
+  takipçilere açık tadımların da görünürlükleriyle, denenecekler ve gizli listelerin.
+- **Listeler:** kahve sayfasında "Denemek istiyorum" ve "Listeye ekle" (var olan listeye
+  ekle/çıkar ya da yeni liste aç). Liste sayfasında sahibi bir kahveyi çıkarabilir ya da
+  listeyi silebilir; başlık, not ve sıra sitede düzenlenir.
 
 ## Bilinen sınırlar
 
