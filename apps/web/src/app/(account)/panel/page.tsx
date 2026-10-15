@@ -80,6 +80,9 @@ async function MyTastings() {
           <Link href="/panel/listeler" className={`uppercase ${linkFocus}`}>
             {t.lists.panel.title}
           </Link>
+          <Link href="/panel/oneriler" className={`uppercase ${linkFocus}`}>
+            {t.panel.recommendations}
+          </Link>
           <Link href="/bildirimler" prefetch={false} className={`uppercase ${linkFocus}`}>
             {t.notifications.title}
           </Link>
