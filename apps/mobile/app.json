@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Espressoir",
+    "slug": "espressoir",
+    "scheme": "espressoir",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#F4F4F1",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.espressoir.app"
+    },
+    "android": {
+      "package": "com.espressoir.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F4F4F1"
+      }
+    },
+    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
