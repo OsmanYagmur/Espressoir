@@ -5,6 +5,7 @@ PROJECT_BRIEF.md
 # Expo writes these (route types, the exported bundle); both are git-ignored.
 **/.expo/
 apps/mobile/dist/
+apps/mobile/expo-env.d.ts
 **/node_modules/
 **/playwright-report/
 **/test-results/
