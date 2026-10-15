@@ -27,6 +27,7 @@ metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Exp
    Sonra telefonda Expo Go → sağ üstteki hesap simgesi → aynı hesapla giriş. Hangi hesapta
    olduğunu `pnpm exec expo whoami` gösterir. Sunucu açıkken giriş yaptıysan onu kapatıp
    yeniden başlat (Expo CLI hesabı açılışta okur).
+
 4. Bilgisayarında:
 
    ```bash
