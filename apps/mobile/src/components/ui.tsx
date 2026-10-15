@@ -270,6 +270,7 @@ export function Button({
 export function Field({
   label,
   hint,
+  style,
   ...input
 }: TextInputProps & { label: string; hint?: string }) {
   const colors = useColors();
@@ -279,17 +280,21 @@ export function Field({
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={colors.mutedForeground}
-        style={{
-          minHeight: 46,
-          borderWidth: 1,
-          borderColor: colors.input,
-          paddingHorizontal: 12,
-          fontFamily: fonts.mono,
-          fontSize: 16,
-          color: colors.foreground,
-          backgroundColor: colors.background,
-        }}
         {...input}
+        // The caller's style adds to the box (a taller note field), never replaces it.
+        style={[
+          {
+            minHeight: 46,
+            borderWidth: 1,
+            borderColor: colors.input,
+            paddingHorizontal: 12,
+            fontFamily: fonts.mono,
+            fontSize: 16,
+            color: colors.foreground,
+            backgroundColor: colors.background,
+          },
+          style,
+        ]}
       />
       {hint ? (
         <Mono muted style={{ fontSize: 11 }}>

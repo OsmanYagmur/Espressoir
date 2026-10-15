@@ -1,10 +1,10 @@
 import { findCafe, visitsAt } from "@espressoir/db";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { DetailScreen } from "@/components/detail-screen";
 import { VisitEntry } from "@/components/entries";
-import { Body, Heading, Label, Mono, ScoreBadge, SectionHeading } from "@/components/ui";
+import { Body, Button, Heading, Label, Mono, ScoreBadge, SectionHeading } from "@/components/ui";
 import { placeOf } from "@/lib/cafes";
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
@@ -53,6 +53,14 @@ export default function CafeScreen() {
                 <Body muted>{t.cafes.unreviewedNote}</Body>
               </View>
             )}
+            <View style={{ marginTop: 16 }}>
+              <Button
+                title={t.cafes.wasHere}
+                onPress={() =>
+                  router.push({ pathname: "/ziyaret/yeni", params: { kafe: cafe.id } })
+                }
+              />
+            </View>
             <SectionHeading index={1}>{t.cafes.visitsTitle}</SectionHeading>
             {visits.length === 0 ? (
               <Body muted style={{ paddingVertical: 16 }}>
