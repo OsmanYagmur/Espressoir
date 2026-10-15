@@ -35,6 +35,10 @@ export const cafeRowSchema = z
     // Postgres `numeric` arrives as a JSON number from the API, as text from a raw driver.
     avg_score: z.coerce.number().nullable(),
     last_visited_on: day.nullable(),
+    // Absent until the official accounts migration is applied.
+    description: z.string().nullable().optional(),
+    website: z.string().nullable().optional(),
+    official_username: z.string().nullable().optional(),
   })
   .transform((row) => ({
     id: row.cafe_id,
@@ -49,6 +53,10 @@ export const cafeRowSchema = z
     visitCount: row.visit_count,
     avgScore: row.avg_score,
     lastVisitedOn: row.last_visited_on,
+    description: row.description ?? null,
+    website: row.website ?? null,
+    /** The member who speaks for the café, if an admin has verified one. */
+    officialUsername: row.official_username ?? null,
   }));
 
 export type Cafe = z.infer<typeof cafeRowSchema>;

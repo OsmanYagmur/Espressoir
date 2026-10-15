@@ -32,6 +32,7 @@ export async function readArchiveRowsAsVisitor(db: Queryable): Promise<ArchiveRo
       cafeVisits: await rows(
         "select * from public.cafe_visit_feed where visibility = 'public' order by visit_id",
       ),
+      brandPages: await rows("select * from public.brand_pages order by brand_id"),
     };
   } finally {
     await db.query("rollback");

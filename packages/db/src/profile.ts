@@ -10,6 +10,8 @@ import {
 } from "@espressoir/core";
 import { z } from "zod";
 
+import { officialForSchema } from "./business";
+
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const count = z.number().int().nonnegative();
 
@@ -32,6 +34,8 @@ export const profileRowSchema = z
     following_count: count,
     // Absent until the media migration is applied.
     avatar_path: z.string().nullable().optional(),
+    // Absent until the official accounts migration is applied.
+    official_for: z.array(officialForSchema).optional(),
   })
   .transform((row) => ({
     id: row.user_id,
@@ -40,6 +44,14 @@ export const profileRowSchema = z
     bio: row.bio,
     /** Where the profile picture is in the "media" bucket; null without one. */
     avatarPath: row.avatar_path ?? null,
+    /** The brands and cafés this member is the verified account of. */
+    officialFor: (row.official_for ?? []).map((business) => ({
+      kind: business.kind,
+      id: business.id,
+      slug: business.slug,
+      name: business.name,
+      cityCode: business.city_code,
+    })),
     joinedAt: row.joined_at,
     stats: {
       tastingCount: row.tasting_count,

@@ -97,6 +97,7 @@ describe("database ↔ app contract", () => {
         lists: await json("select * from public.list_feed"),
         cafes: await json("select * from public.cafe_overview"),
         cafeVisits: await json("select * from public.cafe_visit_feed"),
+        brandPages: await json("select * from public.brand_pages"),
       };
       const archive = parseArchive(rows);
 
@@ -110,6 +111,10 @@ describe("database ↔ app contract", () => {
       expect(archive.coffees).toHaveLength(20);
       expect(archive.tastings).toHaveLength(19);
       expect(archive.brewMethods).toHaveLength(10);
+      expect(archive.brandPages).toContainEqual(
+        expect.objectContaining({ slug: "nespresso", name: "Nespresso", official: null }),
+      );
+      expect(archive.profiles[0]!.officialFor).toEqual([]);
       // The sample cafés, applied twice above: nothing is added the second time.
       expect(archive.cafes).toHaveLength(2);
       expect(archive.cafeVisits).toHaveLength(4);
