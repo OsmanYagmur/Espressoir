@@ -96,6 +96,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [Giriş kurulumu: e-posta kodu, Google, Turnstile, davet](./docs/setup-auth.md)
 - [Vercel yayını ve espressoir.com DNS](./docs/deploy-vercel.md)
 - [Yedek ve uyandırma iş akışları](./docs/backup.md)
+- [Mobil uygulama: Expo Go ile telefonda açmak](./docs/mobile.md)
 
 ## Durum
 
@@ -117,6 +118,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [ ] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
   - [x] 4A Öneriler: tadımlarına göre henüz denemediğin kahveler, gerekçeleriyle (`/panel/oneriler`); Python'da model kurman için takma adlı veri dışa aktarma ve modelinin sonuçlarını geri yükleme.
   - [x] 4B Doğrulanmış kavurucu ve kafe hesapları: marka ya da kafe sayfasından başvuru, yönetimden onay; rozet, işletmenin tanıtımını düzenleme, yorumlarda "Resmi yanıt"; resmi hesap kendi kahvesine ya da kafesine puan veremez.
-  - [ ] 4C Uygulama: giriş ve arşivi gezme (Expo Go)
+  - [x] 4C Uygulama: telefonda Expo Go ile açılır; kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. Kurulum: [docs/mobile.md](./docs/mobile.md)
   - [ ] 4D Uygulama: tadım ve kafe ziyareti ekleme, fotoğraf
   - [ ] 4E Uygulama: akış, beğeni, yorum, bildirimler, profil ve listeler

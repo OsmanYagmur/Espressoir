@@ -298,7 +298,14 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
 
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /panel");
+  expect(robots).toContain("Disallow: /uygulama");
   expect(robots).toContain("Sitemap:");
+});
+
+test("the mobile app's CAPTCHA page shows only the check, over the site", async ({ page }) => {
+  await page.goto("/uygulama/dogrulama");
+  await expect(page.getByText(/robot olmadığını doğruluyoruz/)).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
 });
 
 test("the signed-in area sends visitors to the login page", async ({ page }) => {

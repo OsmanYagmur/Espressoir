@@ -1,6 +1,7 @@
 /**
- * Pure views over the archive's cafés and visits, like `selectors.ts` for coffees.
- * Only public, visible visits are in the archive, so every number here is a public one.
+ * Cafés on the website: places in words, links, cards. The pure views (find, visits by
+ * café or member) are in @espressoir/db. Only public, visible visits are in the archive,
+ * so every number here is a public one.
  */
 import {
   cityByCode,
@@ -9,12 +10,23 @@ import {
   type CafeDrink,
   type GroupSummary,
 } from "@espressoir/core";
-import type { Archive, Cafe, CafeVisit } from "@espressoir/db";
+import {
+  byVisitDay,
+  findCafe,
+  latestVisits,
+  visitsAt,
+  visitsBy,
+  type Cafe,
+  type CafeVisit,
+} from "@espressoir/db";
 import type { Route } from "next";
 
 import { formatDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cafePath } from "@/lib/routes";
+
+// The pure views are shared with the mobile app; re-exported so pages import from one place.
+export { byVisitDay, findCafe, latestVisits, visitsAt, visitsBy };
 
 export function cityName(code: number): string {
   return cityByCode(code)?.name ?? "";
@@ -27,36 +39,6 @@ export function placeOf(cafe: Pick<Cafe, "cityCode" | "district">): string {
 
 export function cafeHref(cafe: Pick<Cafe, "cityCode" | "slug">): Route {
   return cafePath(cityByCode(cafe.cityCode)?.slug ?? "-", cafe.slug);
-}
-
-export function findCafe(archive: Archive, citySlug: string, cafeSlug: string): Cafe | undefined {
-  return archive.cafes.find(
-    (cafe) => cityByCode(cafe.cityCode)?.slug === citySlug && cafe.slug === cafeSlug,
-  );
-}
-
-/** The day of the visit first, newest first; among the same day, the newest entry. */
-export function byVisitDay(a: CafeVisit, b: CafeVisit): number {
-  return (
-    b.visitedOn.localeCompare(a.visitedOn) ||
-    b.createdAt.localeCompare(a.createdAt) ||
-    a.id.localeCompare(b.id)
-  );
-}
-
-export function visitsAt(archive: Archive, cafeId: string): CafeVisit[] {
-  return archive.cafeVisits.filter((visit) => visit.cafe.id === cafeId).sort(byVisitDay);
-}
-
-export function visitsBy(archive: Archive, userId: string): CafeVisit[] {
-  return archive.cafeVisits.filter((visit) => visit.author.id === userId).sort(byVisitDay);
-}
-
-/** What was just added, whenever it was drunk: the order of a feed. */
-export function latestVisits(archive: Archive, limit: number): CafeVisit[] {
-  return [...archive.cafeVisits]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
-    .slice(0, limit);
 }
 
 /** The average score per kind of drink, best first, each with its n. */
