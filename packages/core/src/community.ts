@@ -5,7 +5,15 @@
 export const COMMENT_MAX_LENGTH = 2000;
 
 /** What a report can be about. */
-export const REPORT_TARGETS = ["tasting", "comment", "profile", "coffee", "list"] as const;
+export const REPORT_TARGETS = [
+  "tasting",
+  "comment",
+  "profile",
+  "coffee",
+  "list",
+  "cafe",
+  "cafe_visit",
+] as const;
 export type ReportTarget = (typeof REPORT_TARGETS)[number];
 
 export const REPORT_REASONS = ["spam", "abuse", "wrong_info", "other"] as const;

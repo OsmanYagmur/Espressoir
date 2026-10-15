@@ -16,7 +16,7 @@ import type { FeedCursor, FeedSource } from "./feed-data";
 
 const f = t.feed;
 
-type Tab = "everyone" | "following";
+type Tab = "everyone" | "following" | "cafes";
 
 interface Older {
   items: Tasting[];
@@ -184,28 +184,58 @@ function FollowingFeed() {
   );
 }
 
+/** "Cafés": the latest visits, rendered on the server; the café list holds the rest. */
+function CafesFeed({ cafes }: { cafes: React.ReactNode }) {
+  if (cafes === null) {
+    return <p className="border-b border-border py-8 text-muted-foreground">{f.cafesEmpty}</p>;
+  }
+  return (
+    <>
+      {cafes}
+      <p className="py-5 font-mono text-xs">
+        <Link
+          href="/kafeler"
+          className="underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          {f.cafesMore} →
+        </Link>
+      </p>
+    </>
+  );
+}
+
+const TAB_PARAM: Record<string, Tab> = { takip: "following", kafeler: "cafes" };
+
 /**
- * The feed with its two tabs. Which tab is open lives in the URL (`?sekme=takip`), so a
- * link to "people I follow" can be bookmarked. `first` is the public first page, rendered
- * on the server and passed through untouched.
+ * The feed with its three tabs. Which tab is open lives in the URL (`?sekme=takip`,
+ * `?sekme=kafeler`), so a tab can be bookmarked. `first` is the public first page and
+ * `cafes` the latest café visits, both rendered on the server and passed through untouched.
  */
 export function Feed({
   first,
+  cafes,
   cursor,
   complete,
 }: {
   first: React.ReactNode;
+  /** Null when there are no visits yet. */
+  cafes: React.ReactNode;
   /** The last entry of the first page; null when there are no entries at all. */
   cursor: FeedCursor | null;
   /** The first page already holds everything. */
   complete: boolean;
 }) {
   const router = useRouter();
-  const tab: Tab = useSearchParams().get("sekme") === "takip" ? "following" : "everyone";
+  const tab: Tab = TAB_PARAM[useSearchParams().get("sekme") ?? ""] ?? "everyone";
 
-  const tabs: { id: Tab; label: string; href: "/akis" | "/akis?sekme=takip" }[] = [
+  const tabs: {
+    id: Tab;
+    label: string;
+    href: "/akis" | "/akis?sekme=takip" | "/akis?sekme=kafeler";
+  }[] = [
     { id: "everyone", label: f.everyone, href: "/akis" },
     { id: "following", label: f.following, href: "/akis?sekme=takip" },
+    { id: "cafes", label: f.cafes, href: "/akis?sekme=kafeler" },
   ];
 
   return (
@@ -234,8 +264,10 @@ export function Feed({
       <div role="tabpanel" id="akis-paneli" aria-labelledby={`sekme-${tab}`}>
         {tab === "everyone" ? (
           <EveryoneFeed first={first} cursor={cursor} complete={complete} />
-        ) : (
+        ) : tab === "following" ? (
           <FollowingFeed />
+        ) : (
+          <CafesFeed cafes={cafes} />
         )}
       </div>
     </>

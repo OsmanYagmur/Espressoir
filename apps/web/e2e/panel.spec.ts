@@ -135,6 +135,8 @@ test("the form explains what is wrong instead of losing what was typed", async (
 
   await expect(page.getByText("Formda eksik ya da hatalı alanlar var.")).toBeVisible();
   await expect(page.getByLabel("Not", { exact: true })).toHaveValue("Kahvesi seçilmemiş bir not.");
+  // The choice made before the error stays made (React's reset after an action would undo it).
+  await expect(page.getByRole("radio", { name: "Yeni kahve" })).toBeChecked();
 });
 
 test("another user cannot open the owner's tasting for editing", async ({ page, request }) => {

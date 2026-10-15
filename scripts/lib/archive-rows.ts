@@ -28,6 +28,10 @@ export async function readArchiveRowsAsVisitor(db: Queryable): Promise<ArchiveRo
       profiles: await rows("select * from public.profile_overview order by user_id"),
       flavorTags: await rows("select * from public.flavor_tags order by sort_order"),
       lists: await rows("select * from public.list_feed where is_public order by list_id"),
+      cafes: await rows("select * from public.cafe_overview order by cafe_id"),
+      cafeVisits: await rows(
+        "select * from public.cafe_visit_feed where visibility = 'public' order by visit_id",
+      ),
     };
   } finally {
     await db.query("rollback");

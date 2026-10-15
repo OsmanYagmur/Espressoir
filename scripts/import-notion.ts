@@ -25,7 +25,7 @@ import {
   createEmbeddedPostgres,
   type Queryable,
 } from "./lib/postgres";
-import { applySampleLists, applySampleTaste } from "./lib/sample-taste";
+import { applySampleCafes, applySampleLists, applySampleTaste } from "./lib/sample-taste";
 import {
   assertTarget,
   ENV_FILES,
@@ -92,6 +92,7 @@ async function main(): Promise<void> {
     if (sample) {
       await applySampleTaste(db as Queryable);
       await applySampleLists(db as Queryable, ownerUsername);
+      await applySampleCafes(db as Queryable, ownerUsername);
     }
     await db.close();
     context = { target: "yok (geçici, boş veritabanı)", mode: "offline", ownerUsername };
@@ -114,6 +115,7 @@ async function main(): Promise<void> {
       if (sample) {
         await applySampleTaste(client);
         await applySampleLists(client, ownerUsername);
+        await applySampleCafes(client, ownerUsername);
       }
       await client.query(dryRun ? "rollback" : "commit");
     } catch (error) {

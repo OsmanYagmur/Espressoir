@@ -67,22 +67,24 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 ## Sayfalar
 
-| Adres                             | İçerik                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| `/`                               | Sayılar, son tadımlar, en yüksek puanlılar, demleme yöntemleri                 |
-| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)            |
-| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                    |
-| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                               |
-| `/istatistik`                     | Dağılım, marka/form/yöntem ortalamaları (n ile), saçılım, zaman çizgisi        |
-| `/hakkinda`                       | Site ve puanlama hakkında                                                      |
-| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin                                    |
-| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                    |
-| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip    |
-| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                  |
-| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ekleme, düzenleme            |
-| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                        |
-| `/panel/yonetim`                  | Yönetici: şikâyetler, gizle/sil, üye kısıtlama, kahve doğrulama ve birleştirme |
-| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                              |
+| Adres                             | İçerik                                                                              |
+| --------------------------------- | ----------------------------------------------------------------------------------- |
+| `/`                               | Sayılar, son tadımlar, en yüksek puanlılar, demleme yöntemleri                      |
+| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)                 |
+| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                         |
+| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                                    |
+| `/istatistik`                     | Dağılım, marka/form/yöntem ortalamaları (n ile), saçılım, zaman çizgisi             |
+| `/hakkinda`                       | Site ve puanlama hakkında                                                           |
+| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin; son kafe ziyaretleri                   |
+| `/kafeler`                        | Kafeler; şehre ve ada göre süzme (durum URL'de)                                     |
+| `/kafe/[sehir]/[kafe]`            | Kafenin ziyaretleri, ortalaması, içecek türüne göre ortalama (n ile)                |
+| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                         |
+| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip         |
+| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                       |
+| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme           |
+| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                             |
+| `/panel/yonetim`                  | Yönetici: şikâyetler, gizle/sil, üye kısıtlama, kahve ve kafe doğrulama/birleştirme |
+| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                   |
 
 ## Rehberler
 
@@ -101,11 +103,11 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, hız sınırları, takip, akış, profil grafikleri.
   - [x] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
   - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
-- [ ] **Faz 3: Sosyal derinlik.** Beş adımda:
+- [ ] **Faz 3: Sosyal derinlik.** Altı adımda:
   - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
   - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
   - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
   - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
   - [x] 3E Ana ekran ve hızlı form: telefonda ana ekrana eklenir, uygulama gibi açılır; son içtiğin kahveler tek dokunuşta, yöntem ve cihaz son tadımdan dolu gelir.
-  - [ ] 3F Kafeler ve kafe içecekleri
+  - [x] 3F Kafeler: her üye kafe ekleyip orada içtiğine puan verir (şehir, semt, isteğe bağlı harita bağlantısı); `/kafeler`, kafe sayfası, profilde ve akışta kafe ziyaretleri; kopya uyarısı, yönetimden doğrulama ve birleştirme. Kahve ortalamalarına karışmaz.
 - [ ] Faz 4+: Mobil (Expo)

@@ -17,6 +17,7 @@ import { archiveSize, parseArchive } from "@espressoir/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { readArchiveRowsAsVisitor } from "../lib/archive-rows";
+import { applySampleCafes } from "../lib/sample-taste";
 import { createTestDb, createUser, type TestDb } from "../lib/test-db";
 import { applyImportPlan } from "../notion/apply";
 import { parseCsvRecords } from "../notion/csv";
@@ -76,6 +77,8 @@ describe("database ↔ app contract", () => {
       await db.sql(
         "update public.tastings set visibility = 'private' where source_ref = 'nescafe/gold-filtre-kahve@2025-03-14'",
       );
+      await applySampleCafes(db, "owner_test");
+      await applySampleCafes(db, "owner_test");
 
       // Read inside the test transaction, as an anonymous visitor would through the API.
       const visitor = db.as(null);
@@ -92,6 +95,8 @@ describe("database ↔ app contract", () => {
         profiles: await json("select * from public.profile_overview"),
         flavorTags: await json("select * from public.flavor_tags"),
         lists: await json("select * from public.list_feed"),
+        cafes: await json("select * from public.cafe_overview"),
+        cafeVisits: await json("select * from public.cafe_visit_feed"),
       };
       const archive = parseArchive(rows);
 
@@ -105,6 +110,17 @@ describe("database ↔ app contract", () => {
       expect(archive.coffees).toHaveLength(20);
       expect(archive.tastings).toHaveLength(19);
       expect(archive.brewMethods).toHaveLength(10);
+      // The sample cafés, applied twice above: nothing is added the second time.
+      expect(archive.cafes).toHaveLength(2);
+      expect(archive.cafeVisits).toHaveLength(4);
+      expect(archive.cafes.find((cafe) => cafe.cityCode === 34)).toMatchObject({
+        slug: "ornek-kahve-atolyesi",
+        district: "Kadıköy",
+        isReviewed: true,
+        visitCount: 3,
+        avgScore: 8,
+        lastVisitedOn: "2025-07-01",
+      });
       // One member, counted from public tastings only (one of the imported ones is private).
       expect(archive.profiles).toHaveLength(1);
       expect(archive.profiles[0]).toMatchObject({ username: "owner_test" });

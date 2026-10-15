@@ -14,7 +14,7 @@ import { parseArchive } from "@espressoir/db";
 
 import { readArchiveRowsAsVisitor } from "./lib/archive-rows";
 import { applyMigrations, createEmbeddedPostgres } from "./lib/postgres";
-import { applySampleLists, applySampleTaste } from "./lib/sample-taste";
+import { applySampleCafes, applySampleLists, applySampleTaste } from "./lib/sample-taste";
 import { ENV_FILES, repoRoot } from "./lib/target-env";
 import { applyImportPlan } from "./notion/apply";
 import { parseCsvRecords } from "./notion/csv";
@@ -52,6 +52,7 @@ await applyImportPlan(db, plan, { ownerUsername });
 if (csvFile === SAMPLE) {
   await applySampleTaste(db);
   await applySampleLists(db, ownerUsername);
+  await applySampleCafes(db, ownerUsername);
 }
 
 const rows = await readArchiveRowsAsVisitor(db);

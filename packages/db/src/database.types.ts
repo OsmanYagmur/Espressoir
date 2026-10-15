@@ -48,6 +48,13 @@ export type Database = {
             foreignKeyName: "brands_created_by_fkey";
             columns: ["created_by"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "brands_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -105,6 +112,298 @@ export type Database = {
           sort_order?: number;
         };
         Relationships: [];
+      };
+      cafe_visits: {
+        Row: {
+          cafe_id: string;
+          created_at: string;
+          drink: string;
+          drink_name: string | null;
+          hidden_at: string | null;
+          hidden_by: string | null;
+          hidden_reason: string | null;
+          id: string;
+          notes: string | null;
+          price_paid: number | null;
+          score: number;
+          updated_at: string;
+          user_id: string;
+          visibility: Database["public"]["Enums"]["tasting_visibility"];
+          visited_on: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cafe_id: string;
+          created_at?: string;
+          drink: string;
+          drink_name?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
+          id?: string;
+          notes?: string | null;
+          price_paid?: number | null;
+          score: number;
+          updated_at?: string;
+          user_id: string;
+          visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          visited_on?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          created_at?: string;
+          drink?: string;
+          drink_name?: string | null;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          hidden_reason?: string | null;
+          id?: string;
+          notes?: string | null;
+          price_paid?: number | null;
+          score?: number;
+          updated_at?: string;
+          user_id?: string;
+          visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          visited_on?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafe_visits_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_overview";
+            referencedColumns: ["cafe_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["cafe_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafe_visits_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
+      };
+      cafes: {
+        Row: {
+          city_code: number;
+          created_at: string;
+          created_by: string | null;
+          district: string | null;
+          id: string;
+          map_url: string | null;
+          name: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          search_text: string;
+          slug: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          city_code: number;
+          created_at?: string;
+          created_by?: string | null;
+          district?: string | null;
+          id?: string;
+          map_url?: string | null;
+          name: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          search_text?: string;
+          slug?: string;
+          updated_at?: string;
+        };
+        Update: {
+          city_code?: number;
+          created_at?: string;
+          created_by?: string | null;
+          district?: string | null;
+          id?: string;
+          map_url?: string | null;
+          name?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          search_text?: string;
+          slug?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafes_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "following_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "list_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profile_overview";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafes_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+        ];
       };
       coffees: {
         Row: {
@@ -207,6 +506,13 @@ export type Database = {
             foreignKeyName: "coffees_created_by_fkey";
             columns: ["created_by"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "coffees_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -236,6 +542,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "coffees_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
             referencedColumns: ["user_id"];
           },
           {
@@ -321,6 +634,13 @@ export type Database = {
             foreignKeyName: "comments_hidden_by_fkey";
             columns: ["hidden_by"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "comments_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -379,6 +699,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tastings";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
           },
           {
             foreignKeyName: "comments_user_id_fkey";
@@ -464,6 +791,13 @@ export type Database = {
             foreignKeyName: "follows_follower_id_fkey";
             columns: ["follower_id"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey";
+            columns: ["follower_id"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -493,6 +827,13 @@ export type Database = {
             columns: ["follower_id"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey";
+            columns: ["following_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
             referencedColumns: ["user_id"];
           },
           {
@@ -570,6 +911,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tastings";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
           },
           {
             foreignKeyName: "likes_user_id_fkey";
@@ -729,6 +1077,13 @@ export type Database = {
             foreignKeyName: "lists_hidden_by_fkey";
             columns: ["hidden_by"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "lists_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -758,6 +1113,13 @@ export type Database = {
             columns: ["hidden_by"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "lists_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
             referencedColumns: ["user_id"];
           },
           {
@@ -827,6 +1189,13 @@ export type Database = {
           target_type?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "moderation_log_admin_id_fkey";
+            columns: ["admin_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
           {
             foreignKeyName: "moderation_log_admin_id_fkey";
             columns: ["admin_id"];
@@ -901,6 +1270,13 @@ export type Database = {
             foreignKeyName: "notifications_actor_id_fkey";
             columns: ["actor_id"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -959,6 +1335,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "tastings";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
           },
           {
             foreignKeyName: "notifications_user_id_fkey";
@@ -1027,6 +1410,13 @@ export type Database = {
           username_changed_at?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "profile_private_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
           {
             foreignKeyName: "profile_private_profile_id_fkey";
             columns: ["profile_id"];
@@ -1150,6 +1540,13 @@ export type Database = {
             foreignKeyName: "reports_reporter_id_fkey";
             columns: ["reporter_id"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -1179,6 +1576,13 @@ export type Database = {
             columns: ["reporter_id"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
             referencedColumns: ["user_id"];
           },
           {
@@ -1402,6 +1806,13 @@ export type Database = {
             foreignKeyName: "tastings_hidden_by_fkey";
             columns: ["hidden_by"];
             isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "tastings_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
             referencedRelation: "following_feed";
             referencedColumns: ["user_id"];
           },
@@ -1431,6 +1842,13 @@ export type Database = {
             columns: ["hidden_by"];
             isOneToOne: false;
             referencedRelation: "tasting_feed";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "tastings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_visit_feed";
             referencedColumns: ["user_id"];
           },
           {
@@ -1472,6 +1890,46 @@ export type Database = {
       };
     };
     Views: {
+      cafe_overview: {
+        Row: {
+          avg_score: number | null;
+          cafe_id: string | null;
+          cafe_name: string | null;
+          cafe_slug: string | null;
+          city_code: number | null;
+          created_at: string | null;
+          district: string | null;
+          is_reviewed: boolean | null;
+          last_visited_on: string | null;
+          map_url: string | null;
+          visit_count: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
+      cafe_visit_feed: {
+        Row: {
+          cafe_id: string | null;
+          cafe_name: string | null;
+          cafe_slug: string | null;
+          city_code: number | null;
+          created_at: string | null;
+          display_name: string | null;
+          district: string | null;
+          drink: string | null;
+          drink_name: string | null;
+          is_hidden: boolean | null;
+          notes: string | null;
+          score: number | null;
+          user_id: string | null;
+          username: string | null;
+          visibility: Database["public"]["Enums"]["tasting_visibility"] | null;
+          visit_id: string | null;
+          visited_on: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       coffee_overview: {
         Row: {
           avg_score: number | null;
@@ -1701,6 +2159,7 @@ export type Database = {
         Returns: undefined;
       };
       admin_merge_brands_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
+      admin_merge_cafes_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
       admin_merge_coffees_v1: { Args: { p_from: string; p_into: string }; Returns: undefined };
       admin_remove_photo_v1: {
         Args: {
@@ -1721,6 +2180,10 @@ export type Database = {
       admin_restrict_user_v1: {
         Args: { p_days?: number; p_reason?: string; p_user_id: string };
         Returns: string;
+      };
+      admin_review_cafe_v1: {
+        Args: { p_cafe_id: string; p_reviewed?: boolean };
+        Returns: undefined;
       };
       admin_review_coffee_v1: {
         Args: { p_coffee_id: string; p_reviewed?: boolean };
@@ -1753,6 +2216,28 @@ export type Database = {
       log_admin_action: {
         Args: { p_action: string; p_note?: string; p_target_id: string; p_target_type: string };
         Returns: undefined;
+      };
+      log_cafe_visit_v1: {
+        Args: {
+          p_cafe_id?: string;
+          p_cafe_name?: string;
+          p_city_code?: number;
+          p_district?: string;
+          p_drink?: string;
+          p_drink_name?: string;
+          p_map_url?: string;
+          p_notes?: string;
+          p_price_paid?: number;
+          p_score?: number;
+          p_visibility?: Database["public"]["Enums"]["tasting_visibility"];
+          p_visited_on?: string;
+        };
+        Returns: {
+          cafe_id: string;
+          cafe_slug: string;
+          city_code: number;
+          visit_id: string;
+        }[];
       };
       log_tasting_v1: {
         Args: {
@@ -1828,6 +2313,18 @@ export type Database = {
       merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
       reorder_list_v1: { Args: { p_coffee_ids: string[]; p_list_id: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
+      search_cafes_v1: {
+        Args: { p_city_code?: number; p_limit?: number; p_query: string };
+        Returns: {
+          cafe_id: string;
+          cafe_name: string;
+          cafe_slug: string;
+          city_code: number;
+          district: string;
+          is_reviewed: boolean;
+          similarity: number;
+        }[];
+      };
       search_coffees_v1: {
         Args: { p_limit?: number; p_query: string };
         Returns: {
@@ -1867,7 +2364,7 @@ export type Database = {
       flavor_group: "fruity" | "floral" | "chocolate" | "nutty" | "spice" | "sweet" | "other";
       report_reason: "spam" | "abuse" | "wrong_info" | "other";
       report_status: "open" | "resolved" | "dismissed";
-      report_target: "tasting" | "comment" | "profile" | "coffee" | "list";
+      report_target: "tasting" | "comment" | "profile" | "coffee" | "list" | "cafe" | "cafe_visit";
       roast_level: "light" | "medium_light" | "medium" | "medium_dark" | "dark";
       tasting_source: "web" | "notion_import";
       tasting_status: "logged" | "wishlist";
@@ -1991,7 +2488,7 @@ export const Constants = {
       flavor_group: ["fruity", "floral", "chocolate", "nutty", "spice", "sweet", "other"],
       report_reason: ["spam", "abuse", "wrong_info", "other"],
       report_status: ["open", "resolved", "dismissed"],
-      report_target: ["tasting", "comment", "profile", "coffee", "list"],
+      report_target: ["tasting", "comment", "profile", "coffee", "list", "cafe", "cafe_visit"],
       roast_level: ["light", "medium_light", "medium", "medium_dark", "dark"],
       tasting_source: ["web", "notion_import"],
       tasting_status: ["logged", "wishlist"],

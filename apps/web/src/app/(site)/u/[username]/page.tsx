@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { VisitItem } from "@/components/cafe/visit-item";
 import { TastingItem } from "@/components/coffee/tasting-item";
 import { FieldStrip } from "@/components/site/field-strip";
 import { PageHeading } from "@/components/site/page-heading";
@@ -18,6 +19,7 @@ import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { TagCounts } from "@/components/stats/tag-counts";
 import { getArchive } from "@/lib/data/archive";
+import { visitsBy } from "@/lib/data/cafes";
 import { findProfile, listsBy, scoresOf, tastingsBy } from "@/lib/data/selectors";
 import { tasteSummary } from "@/lib/data/taste-summary";
 import { formatAverage, formatLongDay } from "@/lib/format";
@@ -97,6 +99,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
   ).map((group) => ({ ...group, label: methodNames.get(group.key) ?? group.key }));
   const taste = tasteSummary(archive, tastings);
   const lists = listsBy(archive, profile.id);
+  const visits = visitsBy(archive, profile.id);
   const avatar = profile.avatarPath ? mediaUrl(profile.avatarPath) : null;
   let section = 0;
 
@@ -256,6 +259,17 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
                   {format(t.lists.itemCount, { count: list.items.length })}
                 </span>
               </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      {visits.length > 0 ? (
+        <>
+          <SectionHeading index={++section} title={p.cafesTitle} aside={visits.length} />
+          <ul aria-label={p.cafesTitle}>
+            {visits.map((visit) => (
+              <VisitItem key={visit.id} visit={visit} showCafe />
             ))}
           </ul>
         </>

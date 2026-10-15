@@ -56,6 +56,21 @@ export {
   type MemberList,
 } from "./list";
 
+export {
+  CAFE_VISIT_INPUT_ERRORS,
+  cafeRowSchema,
+  cafeVisitInputSchema,
+  cafeVisitRowSchema,
+  cafeVisitUpdateSchema,
+  toCafeVisitUpdate,
+  toLogCafeVisitArgs,
+  type Cafe,
+  type CafeVisit,
+  type CafeVisitInput,
+  type CafeVisitInputError,
+  type CafeVisitUpdateInput,
+} from "./cafe";
+
 export { notificationRowSchema, type Notification } from "./notification";
 
 export {
