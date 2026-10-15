@@ -258,6 +258,7 @@ export function Button({
           fontFamily: fonts.mono,
           fontSize: 13,
           letterSpacing: 0.6,
+          textAlign: "center",
           color: solid ? colors.background : colors.foreground,
         }}
       >
@@ -330,5 +331,41 @@ export function StateView({
         <Button title={t.mobile.retry} variant="outline" onPress={onRetry} />
       ) : null}
     </View>
+  );
+}
+
+/** A small underlined action in the mono face (reply, edit, report): quieter than a button. */
+export function QuietButton({
+  title,
+  onPress,
+  disabled,
+  muted,
+}: {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  muted?: boolean;
+}) {
+  const colors = useColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      disabled={disabled}
+      onPress={onPress}
+      hitSlop={8}
+      style={{ minHeight: 32, justifyContent: "center", opacity: disabled ? 0.5 : 1 }}
+    >
+      <Text
+        style={{
+          fontFamily: fonts.mono,
+          fontSize: 12,
+          textDecorationLine: "underline",
+          color: muted ? colors.mutedForeground : colors.foreground,
+        }}
+      >
+        {title}
+      </Text>
+    </Pressable>
   );
 }

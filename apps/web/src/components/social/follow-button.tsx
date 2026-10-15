@@ -36,14 +36,9 @@ export function FollowButton({ userId }: { userId: string }) {
       if (!viewer || cancelled) return;
       if (viewer === userId) return setRelation({ viewer, value: "self" });
 
-      const { data: rows } = await supabase
-        .from("follows")
-        .select("follower_id")
-        .eq("follower_id", viewer)
-        .eq("following_id", userId);
-      if (!cancelled) {
-        setRelation({ viewer, value: rows && rows.length > 0 ? "following" : "not-following" });
-      }
+      const { isFollowing } = await import("@espressoir/db");
+      const follows = await isFollowing(supabase, viewer, userId).catch(() => false);
+      if (!cancelled) setRelation({ viewer, value: follows ? "following" : "not-following" });
     })();
     return () => {
       cancelled = true;
@@ -68,24 +63,17 @@ export function FollowButton({ userId }: { userId: string }) {
     setPending(true);
     setError(null);
     try {
-      const { getBrowserSupabase } = await import("@/lib/supabase/browser");
-      const follows = getBrowserSupabase().from("follows");
-      const { error: failure } = following
-        ? await follows.delete().eq("follower_id", relation.viewer).eq("following_id", userId)
-        : await follows.insert({ follower_id: relation.viewer, following_id: userId });
-      if (failure) {
-        setError(
-          failure.message.includes("rate_limited")
-            ? f.rateLimited
-            : failure.message.includes("row-level security")
-              ? f.restricted
-              : f.failed,
-        );
-      } else {
-        setRelation({ ...relation, value: following ? "not-following" : "following" });
-      }
-    } catch {
-      setError(f.failed);
+      const [{ getBrowserSupabase }, { setFollowing }] = await Promise.all([
+        import("@/lib/supabase/browser"),
+        import("@espressoir/db"),
+      ]);
+      await setFollowing(getBrowserSupabase(), relation.viewer, userId, !following);
+      setRelation({ ...relation, value: following ? "not-following" : "following" });
+    } catch (failure) {
+      const kind = (failure as { kind?: string }).kind;
+      setError(
+        kind === "rateLimited" ? f.rateLimited : kind === "restricted" ? f.restricted : f.failed,
+      );
     } finally {
       setPending(false);
     }

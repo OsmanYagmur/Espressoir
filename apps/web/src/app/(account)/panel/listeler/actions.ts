@@ -7,7 +7,15 @@ import {
   LIST_NOTE_MAX_LENGTH,
   LIST_TITLE_MAX_LENGTH,
 } from "@espressoir/core";
-import { LIST_INPUT_ERRORS, listInputSchema, listNoteSchema } from "@espressoir/db";
+import {
+  LIST_INPUT_ERRORS,
+  SocialFailure,
+  createList as insertList,
+  listInputSchema,
+  listNoteSchema,
+  setListItem,
+  setWantToTry as writeWantToTry,
+} from "@espressoir/db";
 import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -55,6 +63,17 @@ function databaseMessage(error: { code?: string; message: string }): string {
   if (message.includes("list_full")) return format(l.add.full, { max: LIST_ITEMS_MAX });
   if (code === "23505") return l.errors.duplicate;
   if (code === "42501" || message.includes("row-level security")) return l.add.restricted;
+  return l.errors.failed;
+}
+
+/** The same for a refusal that came back through the shared helpers (`@espressoir/db`). */
+function shelfMessage(failure: unknown): string {
+  const kind = failure instanceof SocialFailure ? failure.kind : "failed";
+  if (kind === "rateLimited") return l.add.rateLimited;
+  if (kind === "tooManyLists") return format(l.add.tooMany, { max: LISTS_PER_MEMBER_MAX });
+  if (kind === "listFull") return format(l.add.full, { max: LIST_ITEMS_MAX });
+  if (kind === "duplicate") return l.errors.duplicate;
+  if (kind === "restricted") return l.add.restricted;
   return l.errors.failed;
 }
 
@@ -235,13 +254,10 @@ export async function toggleListItem(
   if (!id.safeParse(listId).success || !id.safeParse(coffeeId).success) {
     return { ok: false, message: l.errors.failed };
   }
-  const items = supabase.from("list_items");
-  const { error } = on
-    ? await items.insert({ list_id: listId, coffee_id: coffeeId })
-    : await items.delete().eq("list_id", listId).eq("coffee_id", coffeeId);
-  // Already there: what was asked for is true.
-  if (error && !(on && error.code === "23505")) {
-    return { ok: false, message: databaseMessage(error) };
+  try {
+    await setListItem(supabase, listId, coffeeId, on);
+  } catch (failure) {
+    return { ok: false, message: shelfMessage(failure) };
   }
   refreshArchive();
   return { ok: true };
@@ -258,16 +274,19 @@ export async function createListWith(
   }
   if (!id.safeParse(coffeeId).success) return { ok: false, message: l.errors.failed };
 
-  const { data: list, error } = await supabase
-    .from("lists")
-    .insert({ user_id: user.id, title: parsed.data.title, is_public: true })
-    .select("id, title")
-    .single();
-  if (error) return { ok: false, message: databaseMessage(error) };
-
-  const added = await supabase.from("list_items").insert({ list_id: list.id, coffee_id: coffeeId });
+  let list: { id: string; title: string };
+  try {
+    list = await insertList(supabase, user.id, parsed.data);
+  } catch (failure) {
+    return { ok: false, message: shelfMessage(failure) };
+  }
+  try {
+    await setListItem(supabase, list.id, coffeeId, true);
+  } catch (failure) {
+    refreshArchive();
+    return { ok: false, message: shelfMessage(failure) };
+  }
   refreshArchive();
-  if (added.error) return { ok: false, message: databaseMessage(added.error) };
   return { ok: true, list };
 }
 
@@ -279,28 +298,17 @@ export async function setWantToTry(coffeeId: string, on: boolean): Promise<ListA
   const { user, supabase } = await requireUser();
   if (!id.safeParse(coffeeId).success) return { ok: false, message: l.want.failed };
 
-  if (on) {
-    const { error } = await supabase.rpc("log_tasting_v1", {
-      p_coffee_id: coffeeId,
-      p_status: "wishlist",
-    });
-    if (error && !error.message.includes("tastings_one_wishlist_per_coffee_key")) {
-      const refused =
-        error.code === "42501" || error.message.includes("row-level security")
-          ? l.add.restricted
-          : error.message.includes("rate_limited")
-            ? t.panel.errors.rateLimited
-            : l.want.failed;
-      return { ok: false, message: refused };
-    }
-  } else {
-    const { error } = await supabase
-      .from("tastings")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("coffee_id", coffeeId)
-      .eq("status", "wishlist");
-    if (error) return { ok: false, message: l.want.failed };
+  try {
+    await writeWantToTry(supabase, user.id, coffeeId, on);
+  } catch (failure) {
+    const kind = failure instanceof SocialFailure ? failure.kind : "failed";
+    const refused =
+      on && kind === "restricted"
+        ? l.add.restricted
+        : on && kind === "rateLimited"
+          ? t.panel.errors.rateLimited
+          : l.want.failed;
+    return { ok: false, message: refused };
   }
   refreshArchive();
   return { ok: true };

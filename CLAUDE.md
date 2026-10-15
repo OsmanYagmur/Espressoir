@@ -74,8 +74,10 @@ apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.t
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
                              pure views from @espressoir/db)
-apps/mobile/                 Expo app: src/app (routes), src/components, src/lib (supabase,
-                             archive, session, theme); docs/mobile.md
+apps/mobile/                 Expo app: src/app (routes: tabs Akış/Kahveler/Kafeler/Ekle/Hesap,
+                             tadim/[id], tadim/yeni, ziyaret/yeni, bildirimler, oneriler, u/…),
+                             src/components, src/lib (supabase, archive, session, theme,
+                             notifications, photo, site); docs/mobile.md
 apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
                              community.spec, moderation.spec (need Supabase + its mail catcher)
                              · helpers.ts
@@ -528,6 +530,35 @@ Writing from the app (Phase 4D):
   the phone is the same day the website would say.
 - Expo's generated files (`.expo/`, the `dist/` of `bundle`) are git- and Prettier-ignored.
 
+Social in the app (Phase 4E):
+
+- **One set of social queries for both apps:** `@espressoir/db`'s `social.ts` holds what the
+  website's islands used to do inline — comments, likes, follows, reports, feed pages
+  (keyset), one tasting as the viewer may see it, the member's own tastings and lists,
+  notifications (count, list, mark read), the coffee shelf ("want to try", list entries,
+  new list), deleting a tasting with its picture files. Each takes a client; the website
+  binds them to the browser's (`components/social/*-data.ts`, Server Actions for lists),
+  the app to its own. Refusals come back as `SocialFailure` with a kind
+  (`socialErrorKind`); each app words them (`lib/errors.ts` in the app).
+- **Tabs:** Akış (index: everyone / following / cafés), Kahveler, Kafeler, Ekle, Hesap.
+  Öneriler moved out of the tabs (a stack screen opened from Hesap).
+- **A tasting's page** (`app/tadim/[id].tsx`) reads the row with the viewer's session
+  (`loadTasting`), so followers-only and own private tastings open for those allowed.
+  Likes, comments (one reply level, edit, delete via `delete_comment_v1`), reports and the
+  "official reply" badge (members whose `officialFor` includes the tasting's brand) work
+  as on the website; the owner deletes it there or edits it on the site.
+- **The unread count** (`lib/notifications.tsx`) is read when a tab gains focus
+  (`screenListeners`) and when the app returns to the foreground; no connection stays
+  open, as on the website. The notifications screen marks read "up to" when it was shown.
+  (While the count still followed `usePathname` in the root layout, pushes stopped working
+  in Expo Go after a Fast Refresh and worked again after a full reload; it was moved to
+  the tabs anyway. If navigation freezes while developing, reload before suspecting code.)
+- **Own profile:** the profile screen reads the member's own tastings and lists with their
+  session (all visibilities, wishlist included) and re-reads them whenever the archive
+  is refreshed; everyone else sees the public archive.
+- **Writes that show on the website** (lists, want-to-try, deleting a tasting) call
+  `refreshSite()` afterwards; likes, comments and follows do not, as on the website.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -566,7 +597,7 @@ Writing from the app (Phase 4D):
   - [x] 3F cafés (owner's addition, 2026-10-13; decided 2026-10-14): members add cafés (city,
         district, pasted map link) and rate what they drank there; `/kafeler`, a café's page
         with an average per drink, visits on profiles and in the feed; review and merge.
-- [ ] Phase 4 — recommendations, verified accounts, the Expo app. Plan approved 2026-10-15
+- [x] Phase 4 — recommendations, verified accounts, the Expo app. Plan approved 2026-10-15
       (`~/.claude/plans/soft-hatching-comet.md` on the owner's machine; decisions below). Five
       steps, each its own branch + PR; the next one starts only with the owner's go:
   - [x] 4A recommendations: the site's own model on `/panel/oneriler`, `pnpm export:analytics`
@@ -578,7 +609,7 @@ Writing from the app (Phase 4D):
         Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
   - [x] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
-  - [ ] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
+  - [x] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an

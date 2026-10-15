@@ -96,3 +96,36 @@ export {
 
 export * from "./selectors";
 export * from "./suggestions";
+
+export {
+  SocialFailure,
+  addComment,
+  countUnreadNotifications,
+  createList,
+  deleteList,
+  deleteTasting,
+  editComment,
+  feedCursorOf,
+  fileReport,
+  isFollowing,
+  loadCoffeeShelf,
+  loadComments,
+  loadFeedPage,
+  loadLikes,
+  loadMemberLists,
+  loadNotifications,
+  loadOwnTastings,
+  loadTasting,
+  markNotificationsRead,
+  removeComment,
+  setFollowing,
+  setListItem,
+  setLiked,
+  setWantToTry,
+  socialErrorKind,
+  type CoffeeShelf,
+  type FeedCursor,
+  type FeedSource,
+  type ShelfList,
+  type SocialError,
+} from "./social";
