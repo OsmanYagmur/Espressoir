@@ -38,6 +38,8 @@ pnpm db:new <name> | db:push:dev | db:push:prod
 pnpm types:gen [--db-url <url>]               # default: from supabase/migrations via PGlite
 pnpm admin:bootstrap [--env prod]             # owner account (signup is closed)
 pnpm user:invite [--env prod] <email>…        # invitation e-mail (the only way in for now)
+pnpm export:analytics [--env prod|--offline]  # public tastings under pseudonyms → data/analytics/
+pnpm import:recommendations --file <csv> --model <name> [--dry-run|--clear] [--env prod]
 pnpm import:notion [--offline|--dry-run|--env prod]   # report: data/import-report.md
 pnpm seed:dev                                 # sample archive into dev; refuses prod
 scripts/verify-migrations.sh <db-url>         # rollback + re-apply every migration (CI)
@@ -56,7 +58,8 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
                              /u/[username]/liste/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
-apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/yonetim (admin), /hesap,
+apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*,
+                             /panel/yonetim (admin), /hesap,
                              /hesap/kurulum, /bildirimler
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
@@ -77,7 +80,8 @@ packages/core                siteConfig, fold/slug, score tiers, catalog enums, 
 packages/db                  generated types, read models (archive, profile; Zod), input schemas
 packages/i18n | config       UI copy (tr.ts, legal-tr.ts) · shared tsconfig/eslint
 scripts/                     db-push, gen-types, import-notion (+ notion/), admin-bootstrap,
-                             user-invite, offline-snapshot, e2e-setup, db/*.test.ts (RLS, RPC,
+                             user-invite, offline-snapshot, e2e-setup, media-sweep,
+                             export-analytics, import-recommendations, db/*.test.ts (RLS, RPC,
                              accounts, contract)
 supabase/                    migrations/, rollbacks/, templates/ (auth e-mails),
                              tests/local-shim.sql
@@ -417,6 +421,28 @@ Cafés (Phase 3F):
   (`/panel/kafe/yeni/<café id>`). With partial prefetching the router may answer a
   navigation with a copy of the same path it fetched ahead, and `?kafe=` was lost (CI).
 
+Recommendations (Phase 4A):
+
+- **The site's own model is a pure function,** `recommendCoffees` in `@espressoir/core`
+  (`recommend.ts`), so the app can use it too. Signals: taste profile closeness to what the
+  member liked (scored ≥ their own mean), flavour-tag overlap (cosine), and "people who liked
+  X also liked Y"; weights `RECOMMEND_WEIGHTS`, signals from few tastings count less, the
+  community's shrunken mean nudges the order. Each suggestion carries its strongest signal as
+  its reason. Fewer than `RECOMMEND_MIN_SCORED` (3) scored tastings: the page shows the
+  community's favourites and says why.
+- **`/panel/oneriler`** (signed-in, under `/panel` so the proxy refreshes the session) feeds
+  it the member's own tastings, private ones included, and everyone else's public ones from
+  the archive. Only the member sees the page.
+- **A model trained elsewhere** goes into `recommendations` (member, coffee, model, score,
+  reason): no write grants, the member reads their own rows. Its latest import wins for the
+  members it covers; `--clear --model <name>` falls back to the site's model. An import with
+  any problem (unknown member or coffee, a duplicate, a bad score) is refused as a whole.
+- **The analysis export holds what the site already shows, minus who wrote it:** public,
+  logged, visible tastings; members as `analytics_member_key(id)`, 16 hex characters derived
+  from a per-database secret (`analytics_salt`, no grants), the same on every export and
+  meaningless without the database. No usernames, notes, exact dates, prices or tasting ids
+  (a tasting's page names its author). The export runs in a read-only transaction.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -440,9 +466,8 @@ Cafés (Phase 3F):
         admin panel (hide, delete, restrict, review, merge).
   - [x] 2D (owner's addition): invitation screen in the admin panel; the plainer `sade` look
         as default with the original `form` look one menu click away.
-- [ ] Phase 3 — social depth. Plan approved 2026-10-13 (`~/.claude/plans/soft-hatching-comet.md`
-      on the owner's machine; decisions below). Five steps, each its own branch + PR; the next
-      one starts only with the owner's go:
+- [x] Phase 3 — social depth. Plan approved 2026-10-13; decisions below. Six steps, each its
+      own branch + PR:
   - [x] 3A taste: tag picker in the form, radar chart on a tasting, community profile and most
         used tags on a coffee, a member's palate on their profile.
   - [x] 3B lists: public or private lists of coffees with notes and an order, "Listeye ekle"
@@ -456,7 +481,19 @@ Cafés (Phase 3F):
   - [x] 3F cafés (owner's addition, 2026-10-13; decided 2026-10-14): members add cafés (city,
         district, pasted map link) and rate what they drank there; `/kafeler`, a café's page
         with an average per drink, visits on profiles and in the feed; review and merge.
-- [ ] Phase 4+ Expo app.
+- [ ] Phase 4 — recommendations, verified accounts, the Expo app. Plan approved 2026-10-15
+      (`~/.claude/plans/soft-hatching-comet.md` on the owner's machine; decisions below). Five
+      steps, each its own branch + PR; the next one starts only with the owner's go:
+  - [x] 4A recommendations: the site's own model on `/panel/oneriler`, `pnpm export:analytics`
+        (pseudonymous CSVs for the owner's Python work), `pnpm import:recommendations`.
+  - [ ] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
+        an admin approves; badge, editing the business page, a badge on their replies;
+        an official account cannot score its own coffee or café.
+  - [ ] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
+        Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
+  - [ ] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
+        `POST /api/arsiv-tazele` so the site shows them at once.
+  - [ ] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
@@ -499,11 +536,22 @@ Phase 3 decisions (owner-approved 2026-10-13):
 - **Notifications are made by database triggers**, read on page change; no realtime, no e-mail.
 - **The single archive read is still not split** in Phase 3; see the size warning above.
 
+Phase 4 decisions (owner-approved 2026-10-15):
+
+- **Order:** the brief's Phase 4 first (recommendations + export, verified accounts), then the
+  Expo app. **No English UI** in this phase.
+- **Recommendations:** an explainable model on the site, a pseudonymous export, and an import
+  for the owner's own model. **Verified accounts:** badge and link, editing the business page,
+  a badge on replies, members apply and the owner approves.
+- **The app runs in Expo Go** (free; no store, no push, no Google sign-in there). First
+  version: adding tastings and café visits, browsing, feed/likes/comments/notifications,
+  profile and lists.
+
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 3F's is `20261016090000_cafes`: without it the café pages are empty and
-  adding a visit fails (everything else works). After any branch switch, look for iCloud's
+  `db:push:prod`). 4A's is `20261017090000_recommendations`: without it `/panel/oneriler`
+  still works (the site's own model), but the export and the import fail. After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

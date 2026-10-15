@@ -45,23 +45,25 @@ pnpm dev                       # http://localhost:3000
 
 ## Komutlar
 
-| Komut                               | Ne yapar                                                                      |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `pnpm dev`                          | Web uygulamasını dev Supabase'e karşı başlatır                                |
-| `pnpm dev:offline`                  | Aynısı, veriyi yerel bir anlık görüntüden okuyarak (Supabase gerekmez)        |
-| `pnpm build`                        | Tüm paketleri derler (web: production build)                                  |
-| `pnpm check`                        | lint + typecheck + testler (RLS ve import testleri dahil, gömülü Postgres'te) |
-| `pnpm test:e2e:offline`             | Örnek veriyle derler ve Playwright testlerini çalıştırır                      |
-| `pnpm test:e2e`                     | Playwright testleri, hazır bir derlemeye karşı (CI'da gerçek Supabase ile)    |
-| `pnpm format`                       | Prettier ile biçimlendirir                                                    |
-| `pnpm db:new <ad>`                  | Yeni migration dosyası (geri alma dosyasını da yaz: `supabase/rollbacks/`)    |
-| `pnpm db:push:dev` / `db:push:prod` | Migration'ları dev/prod'a uygular (prod onay ister)                           |
-| `pnpm types:gen`                    | `packages/db` tiplerini migration'lardan yeniden üretir                       |
-| `pnpm admin:bootstrap`              | Hesabını oluşturur ve admin yapar (`--env prod` ile canlıda)                  |
-| `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (sitede: Panel → Yönetim → Davetler)          |
-| `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)          |
-| `pnpm seed:dev`                     | Dev'e örnek arşivi yükler (prod'u reddeder)                                   |
-| `pnpm media:sweep`                  | Hiçbir kaydın göstermediği fotoğraf dosyalarını listeler (`--apply` siler)    |
+| Komut                               | Ne yapar                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm dev`                          | Web uygulamasını dev Supabase'e karşı başlatır                                              |
+| `pnpm dev:offline`                  | Aynısı, veriyi yerel bir anlık görüntüden okuyarak (Supabase gerekmez)                      |
+| `pnpm build`                        | Tüm paketleri derler (web: production build)                                                |
+| `pnpm check`                        | lint + typecheck + testler (RLS ve import testleri dahil, gömülü Postgres'te)               |
+| `pnpm test:e2e:offline`             | Örnek veriyle derler ve Playwright testlerini çalıştırır                                    |
+| `pnpm test:e2e`                     | Playwright testleri, hazır bir derlemeye karşı (CI'da gerçek Supabase ile)                  |
+| `pnpm format`                       | Prettier ile biçimlendirir                                                                  |
+| `pnpm db:new <ad>`                  | Yeni migration dosyası (geri alma dosyasını da yaz: `supabase/rollbacks/`)                  |
+| `pnpm db:push:dev` / `db:push:prod` | Migration'ları dev/prod'a uygular (prod onay ister)                                         |
+| `pnpm types:gen`                    | `packages/db` tiplerini migration'lardan yeniden üretir                                     |
+| `pnpm admin:bootstrap`              | Hesabını oluşturur ve admin yapar (`--env prod` ile canlıda)                                |
+| `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (sitede: Panel → Yönetim → Davetler)                        |
+| `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)                        |
+| `pnpm seed:dev`                     | Dev'e örnek arşivi yükler (prod'u reddeder)                                                 |
+| `pnpm media:sweep`                  | Hiçbir kaydın göstermediği fotoğraf dosyalarını listeler (`--apply` siler)                  |
+| `pnpm export:analytics`             | Herkese açık tadımları takma adla CSV'ye döker: `data/analytics/` (yalnızca okur)           |
+| `pnpm import:recommendations`       | Python'da kurduğun modelin önerilerini yükler (`--file`, `--model`, `--dry-run`, `--clear`) |
 
 Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec playwright install chromium`, ya da kurulu Chrome'u göster: `PLAYWRIGHT_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`.
 
@@ -82,6 +84,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 | `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip         |
 | `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                       |
 | `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme           |
+| `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)            |
 | `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                             |
 | `/panel/yonetim`                  | Yönetici: şikâyetler, gizle/sil, üye kısıtlama, kahve ve kafe doğrulama/birleştirme |
 | `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                   |
@@ -103,11 +106,16 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, hız sınırları, takip, akış, profil grafikleri.
   - [x] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
   - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
-- [ ] **Faz 3: Sosyal derinlik.** Altı adımda:
+- [x] **Faz 3: Sosyal derinlik.** Altı adımda:
   - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
   - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
   - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
   - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
   - [x] 3E Ana ekran ve hızlı form: telefonda ana ekrana eklenir, uygulama gibi açılır; son içtiğin kahveler tek dokunuşta, yöntem ve cihaz son tadımdan dolu gelir.
   - [x] 3F Kafeler: her üye kafe ekleyip orada içtiğine puan verir (şehir, semt, isteğe bağlı harita bağlantısı); `/kafeler`, kafe sayfası, profilde ve akışta kafe ziyaretleri; kopya uyarısı, yönetimden doğrulama ve birleştirme. Kahve ortalamalarına karışmaz.
-- [ ] Faz 4+: Mobil (Expo)
+- [ ] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
+  - [x] 4A Öneriler: tadımlarına göre henüz denemediğin kahveler, gerekçeleriyle (`/panel/oneriler`); Python'da model kurman için takma adlı veri dışa aktarma ve modelinin sonuçlarını geri yükleme.
+  - [ ] 4B Doğrulanmış kavurucu ve kafe hesapları
+  - [ ] 4C Uygulama: giriş ve arşivi gezme (Expo Go)
+  - [ ] 4D Uygulama: tadım ve kafe ziyareti ekleme, fotoğraf
+  - [ ] 4E Uygulama: akış, beğeni, yorum, bildirimler, profil ve listeler

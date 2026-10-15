@@ -44,7 +44,8 @@ export const legalTr = {
       {
         title: "İşleme amaçları ve hukuki sebepler",
         paragraphs: [
-          "Verilerin; hesabını oluşturmak ve giriş yapmanı sağlamak, tadımlarını seçtiğin görünürlükle yayınlamak, topluluk özelliklerini (takip, profil) çalıştırmak, kötüye kullanımı ve spam'i önlemek ve yasal yükümlülükleri yerine getirmek için işlenir.",
+          "Verilerin; hesabını oluşturmak ve giriş yapmanı sağlamak, tadımlarını seçtiğin görünürlükle yayınlamak, topluluk özelliklerini (takip, profil) çalıştırmak, sana kahve önerisi hazırlamak, kötüye kullanımı ve spam'i önlemek ve yasal yükümlülükleri yerine getirmek için işlenir.",
+          "Öneriler: sana gösterilen öneriler kendi tadımlarından (gizli olanlar dahil) ve diğer üyelerin herkese açık tadımlarından hesaplanır; öneri sayfanı yalnızca sen görürsün. Öneri modelini geliştirmek için herkese açık tadımlar, yazanın kimliği yerine bir takma adla (kullanıcı adı, not, tam tarih ve fiyat olmadan) site sahibinin bilgisayarına aktarılabilir; bu veri başkasıyla paylaşılmaz.",
           "Hukuki sebepler: seninle kurulan kullanım sözleşmesinin ifası (KVKK md. 5/2-c), hukuki yükümlülüklerin yerine getirilmesi (md. 5/2-ç) ve temel hak ve özgürlüklerine zarar vermemek kaydıyla sitenin güvenliğine ilişkin meşru menfaat (md. 5/2-f).",
         ],
         items: [],
