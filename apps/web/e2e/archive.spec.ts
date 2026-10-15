@@ -289,6 +289,8 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
 });
 
 test("the signed-in area sends visitors to the login page", async ({ page }) => {
+  await page.goto("/panel/oneriler");
+  await expect(page).toHaveURL(/\/giris$/);
   await page.goto("/panel/tadim/yeni");
   await expect(page).toHaveURL(/\/giris$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
