@@ -1,10 +1,10 @@
 import { findCoffee, tastingsOf } from "@espressoir/db";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { DetailScreen } from "@/components/detail-screen";
 import { TastingEntry } from "@/components/entries";
-import { Body, Heading, Label, Mono, ScoreBadge, SectionHeading } from "@/components/ui";
+import { Body, Button, Heading, Label, Mono, ScoreBadge, SectionHeading } from "@/components/ui";
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 
@@ -61,6 +61,14 @@ export default function CoffeeScreen() {
                 <Body muted>{t.coffee.unreviewedNote}</Body>
               </View>
             )}
+            <View style={{ marginTop: 16 }}>
+              <Button
+                title={t.mobile.add.tastedThis}
+                onPress={() =>
+                  router.push({ pathname: "/tadim/yeni", params: { kahve: coffee.id } })
+                }
+              />
+            </View>
             <SectionHeading index={1}>{t.coffeeDetail.tastingsTitle}</SectionHeading>
             {logged.length === 0 ? (
               <Body muted style={{ paddingVertical: 16 }}>

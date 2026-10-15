@@ -41,6 +41,14 @@ export default function RootLayout() {
             name="giris"
             options={{ presentation: "modal", title: t.mobile.signInTitle }}
           />
+          <Stack.Screen
+            name="tadim/yeni"
+            options={{ presentation: "modal", title: t.mobile.add.newCoffeeTitle }}
+          />
+          <Stack.Screen
+            name="ziyaret/yeni"
+            options={{ presentation: "modal", title: t.mobile.add.newVisitTitle }}
+          />
         </Stack>
       </ArchiveProvider>
     </SessionProvider>

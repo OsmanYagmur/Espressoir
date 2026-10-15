@@ -19,7 +19,18 @@
         "backgroundColor": "#F4F4F1"
       }
     },
-    "plugins": ["expo-router", "expo-font", "expo-web-browser"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Tadımına fotoğraf eklemek için fotoğraflarına erişmek istiyoruz.",
+          "cameraPermission": "Tadımının fotoğrafını çekmek için kamerana erişmek istiyoruz."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

@@ -63,6 +63,7 @@ apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /
                              /hesap/kurulum, /bildirimler
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
+apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
 apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*,
                              /bildirimler, /giris only
@@ -496,6 +497,37 @@ The mobile app (Phase 4C):
 - **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle`, `expo export` for iOS;
   no Xcode) besides lint and typecheck.
 
+Writing from the app (Phase 4D):
+
+- **The app writes like the website, through the same RPCs and schemas:** `log_tasting_v2`
+  after `tastingInputSchema`, `log_cafe_visit_v1` after `cafeVisitInputSchema`,
+  `set_tasting_photo_v1` for the picture; error codes are worded in `src/lib/errors.ts`, the
+  same mapping as the panel. Forms are modals (`tadim/yeni`, `ziyaret/yeni`), reached from the
+  "Ekle" tab and from a coffee's or café's page (`?kahve=` / `?kafe=` prefills; in the app a
+  query is fine, there is no prefetching router). `MemberGate` asks signed-out visitors to
+  sign in and members without a username to finish on the site: the database would refuse
+  them anyway (`can_post()`).
+- **Duplicate check while typing something new** (`LookAlikes` in `components/pickers.tsx`):
+  the same trigram search as the website, a café only within its city.
+- **Photos are prepared on the phone** (`src/lib/photo.ts`): picked with `exif: false`,
+  resized with expo-image-manipulator (1600 px, twin 480 px, same format), re-encoded as WebP
+  (JPEG where WebP cannot be written) until under `PHOTO_MAX_BYTES`. Re-encoding drops the
+  metadata, and `hasCameraMetadata` (`@espressoir/core`; JPEG APP1 Exif/XMP, WebP EXIF/XMP
+  chunks) checks the bytes anyway: a picture that still carries any is refused, not uploaded.
+  Checked on the simulator: a 4288×2848 source with EXIF came out 1600 px, 105 KB, clean.
+- **`POST /api/arsiv-tazele`** (`app/api/arsiv-tazele/route.ts`) is how the app makes the
+  site show its writes at once: the member's access token as `Authorization: Bearer`, checked
+  with the auth server (`auth.getUser`), at most 20 calls a minute per member (in memory, per
+  instance), then `expireArchive()`. No secret, no data changed; anything else is a 401. The
+  app calls it best effort (`src/lib/site.ts`): a failure only means the site catches up
+  within the hour. `expireArchive()` is the Route Handler twin of `refreshArchive()`
+  (`revalidateTag(…, { expire: 0 })` now and again two seconds later; `updateTag` works only
+  in Server Actions). The app's `EXPO_PUBLIC_SITE_URL` must be the site of the same Supabase
+  project, or the token is not recognised there.
+- **Dates are the archive's day** (`src/lib/today.ts`, `siteConfig.timeZone`), so "today" on
+  the phone is the same day the website would say.
+- Expo's generated files (`.expo/`, the `dist/` of `bundle`) are git- and Prettier-ignored.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -544,7 +576,7 @@ The mobile app (Phase 4C):
         an official account cannot score its own coffee or café.
   - [x] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
         Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
-  - [ ] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
+  - [x] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
   - [ ] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
 

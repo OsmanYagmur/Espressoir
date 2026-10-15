@@ -35,6 +35,10 @@ export default function TabsLayout() {
         options={{ title: t.mobile.tabs.cafes, tabBarIcon: icon("storefront-outline") }}
       />
       <Tabs.Screen
+        name="ekle"
+        options={{ title: t.mobile.add.tab, tabBarIcon: icon("add-circle-outline") }}
+      />
+      <Tabs.Screen
         name="oneriler"
         options={{ title: t.mobile.tabs.suggestions, tabBarIcon: icon("sparkles-outline") }}
       />

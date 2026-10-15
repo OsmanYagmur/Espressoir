@@ -31,7 +31,26 @@ metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok: telefonunda **Exp
 - **Sayfalar:** kahve, kafe, üye profili; aşağı çekince arşiv yenilenir.
 - **Giriş:** e-posta kodu ya da parola. Kayıt kapalı; davet sitede. Her istekten önce bir
   sayfa açılır ve güvenlik doğrulamasını (Turnstile) yapar.
-- Tadım ekleme 4D'de, akış ve yorumlar 4E'de gelecek; hesap ayarları sitede kalır.
+- Akış ve yorumlar 4E'de gelecek; hesap ayarları sitede kalır.
+
+## Ekleme (4D)
+
+- **Ekle sekmesi:** "Tadım ekle" ya da "Kafe ziyareti ekle". Kahve sayfasındaki "Bu kahveyi
+  tattım" ve kafe sayfasındaki "Burada ne içtin?" aynı formu o kahve ya da kafe seçili açar.
+- **Tadım:** son içtiğin kahveler tek dokunuşta; ya ara ya da yeni marka + kahve yaz (benzer
+  bir kahve kayıtlıysa önce o önerilir). Puan, tarih (Bugün / Dün / Başka gün), demleme
+  yöntemi ve cihaz son tadımından dolu gelir. "Ayrıntılar"da tat profili, tat etiketleri,
+  fotoğraf, görünürlük, tekrar alır mıyım, fiyat.
+- **Kafe ziyareti:** kafeyi ara ya da yeni kafe ekle (şehir listeden, semt isteğe bağlı; aynı
+  şehirde benzer bir kafe varsa önce o önerilir), içecek türü, puan, tarih, not.
+- **Fotoğraf:** kameradan ya da galeriden. Gönderilmeden önce telefonda 1600 px'e küçültülür
+  ve yeniden kodlanır; bu konum, cihaz ve saat bilgisini siler. Yine de bilgi kalmışsa
+  fotoğraf yüklenmez, tadım fotoğrafsız kaydedilir ve uygulama bunu söyler.
+- **Sitede hemen görünür:** kaydedince uygulama siteye "arşivi tazele" der
+  (`/api/arsiv-tazele`, oturum jetonuyla). Bu yüzden `EXPO_PUBLIC_SITE_URL`, uygulamanın
+  bağlandığı Supabase projesinin sitesi olmalı (prod için `https://espressoir.com`); öyle
+  değilse kayıt yine yapılır, site en geç bir saat içinde gösterir.
+- Kullanıcı adını seçmemiş bir hesap ekleme yapamaz; uygulama sitedeki kurulum sayfasını açar.
 
 ## Bilinen sınırlar
 
