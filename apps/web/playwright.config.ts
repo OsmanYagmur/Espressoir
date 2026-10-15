@@ -6,7 +6,7 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 // Specs that sign in and write to the database.
 const SIGNED_IN =
-  /(panel|account|community|lists|moderation|notifications|photos|cafes|recommendations)\.spec/;
+  /(panel|account|community|lists|moderation|notifications|photos|cafes|recommendations|business)\.spec/;
 
 export default defineConfig({
   testDir: "./e2e",
