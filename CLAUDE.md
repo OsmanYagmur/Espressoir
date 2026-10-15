@@ -71,7 +71,10 @@ apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (c
                              form message), social/ (follow, feed, like, comments, report)
 apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
-apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (pure views)
+apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
+                             pure views from @espressoir/db)
+apps/mobile/                 Expo app: src/app (routes), src/components, src/lib (supabase,
+                             archive, session, theme); docs/mobile.md
 apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
                              community.spec, moderation.spec (need Supabase + its mail catcher)
                              · helpers.ts
@@ -466,6 +469,33 @@ Verified business accounts (Phase 4B):
   account carry "Resmi yanıt" (`CommentThread`'s `officialIds`). Visits have no comments,
   so cafés get the badge and the page, not replies.
 
+The mobile app (Phase 4C):
+
+- **`apps/mobile`: Expo SDK 57, Expo Router (`src/app`), runs in Expo Go** (no store, no
+  native build). React 19.2.3 and React Native 0.86 as the SDK pins them, and
+  `react-native-reanimated` / `react-native-worklets` / `react-dom` pinned to the versions
+  inside Expo Go (a newer JS copy of a native module crashes there). pnpm's isolated installs
+  work since SDK 54; Metro configures the monorepo itself (no `metro.config.js`).
+- **It shares, never copies, the rules:** the pure archive views moved to `@espressoir/db`
+  (`selectors.ts`; the web's `lib/data/selectors.ts` re-exports them), the suggestions
+  logic is `suggestCoffees` (`@espressoir/db`, `suggestions.ts`; each app only words the
+  reasons), copy is `t.mobile` and the rest of `@espressoir/i18n`. Keep `core`/`db`/`i18n`
+  free of Next and DOM APIs.
+- **Settings are `apps/mobile/.env`** (git-ignored; `.env.example`): the Supabase URL and
+  publishable key, and `EXPO_PUBLIC_SITE_URL`. Public values only. `docs/mobile.md` says how
+  to open the app on a phone.
+- **Sign-in CAPTCHA comes from the site:** the app opens `/uygulama/dogrulama` in a WebView
+  (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots) and
+  takes the Turnstile token it posts (`window.ReactNativeWebView`); without a site key the
+  page says "disabled" at once. One Turnstile widget serves both projects (hostnames
+  `espressoir.com`, `vercel.app`, `localhost`).
+- **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark),
+  Archivo and IBM Plex Mono from `@expo-google-fonts` (only the weights used). Names stay
+  as written (no uppercasing of brands, places, usernames). List rows navigate with
+  `router.push` from a Pressable: `Link asChild` drops a style function.
+- **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle`, `expo export` for iOS;
+  no Xcode) besides lint and typecheck.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -512,7 +542,7 @@ Verified business accounts (Phase 4B):
   - [x] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
         an admin approves; badge, editing the business page, a badge on their replies;
         an official account cannot score its own coffee or café.
-  - [ ] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
+  - [x] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
         Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
   - [ ] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
@@ -573,9 +603,7 @@ Phase 4 decisions (owner-approved 2026-10-15):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 4B's is `20261018090000_official_accounts`: without it the brand and café
-  pages lose nothing, but applying, `/panel/isletme` and the admin's new sections show
-  empty and applying fails. After any branch switch, look for iCloud's
+  `db:push:prod`). 4C has none. After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

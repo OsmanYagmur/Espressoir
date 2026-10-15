@@ -32,6 +32,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm turbo run lint typecheck test
+      # The mobile app's JavaScript bundles for iOS (Metro, no Xcode): a broken import or a
+      # workspace package Metro cannot resolve fails here, not on a phone.
+      - name: Mobile app bundles
+        run: pnpm --filter @espressoir/mobile bundle
+        env:
+          EXPO_NO_TELEMETRY: 1
 
   database:
     name: Migrations on a fresh Supabase Postgres
