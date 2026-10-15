@@ -12,6 +12,8 @@ import { profilePath } from "@/lib/routes";
 import { useHasSession } from "@/lib/session-cookie";
 import { cn } from "@/lib/utils";
 
+import { OfficialBadge } from "@/components/business/official-badge";
+
 import { ReportButton } from "./report-button";
 
 const s = t.social;
@@ -116,6 +118,8 @@ function CommentForm({
 
 interface Actions {
   viewer: string | null;
+  /** Members who speak for the tasting's brand: their comments carry a badge. */
+  officials: ReadonlySet<string>;
   reply: (parentId: string, body: string) => Promise<void>;
   edit: (commentId: string, body: string) => Promise<void>;
   remove: (commentId: string) => Promise<void>;
@@ -165,6 +169,9 @@ function CommentView({
         {" · "}
         <time dateTime={comment.createdAt}>{timeFormat.format(new Date(comment.createdAt))}</time>
         {comment.edited ? ` · ${s.edited}` : null}
+        {comment.author && actions.officials.has(comment.author.id) ? (
+          <OfficialBadge label={t.business.officialReply} className="ml-2" />
+        ) : null}
         {comment.hidden ? (
           <span className="ml-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
             {s.hidden}
@@ -254,7 +261,13 @@ type Loaded =
  * it. Read in the browser after the page has loaded (the page itself is static), so what
  * is shown is current, and writing goes straight to Supabase.
  */
-export function CommentThread({ tastingId }: { tastingId: string }) {
+export function CommentThread({
+  tastingId,
+  officialIds = [],
+}: {
+  tastingId: string;
+  officialIds?: readonly string[];
+}) {
   const signedIn = useHasSession();
   const [state, setState] = useState<Loaded>({ status: "loading" });
 
@@ -303,8 +316,10 @@ export function CommentThread({ tastingId }: { tastingId: string }) {
     update((current) => [...current, created]);
   }
 
+  const officials = new Set(officialIds);
   const actions: Actions = {
     viewer,
+    officials,
     reply: (parentId, body) => add(body, parentId),
     edit: async (commentId, body) => {
       const { editComment } = await import("./social-data");

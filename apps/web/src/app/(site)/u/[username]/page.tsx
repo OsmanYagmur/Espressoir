@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { OfficialBadge } from "@/components/business/official-badge";
 import { VisitItem } from "@/components/cafe/visit-item";
 import { TastingItem } from "@/components/coffee/tasting-item";
 import { FieldStrip } from "@/components/site/field-strip";
@@ -19,13 +20,13 @@ import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { TagCounts } from "@/components/stats/tag-counts";
 import { getArchive } from "@/lib/data/archive";
-import { visitsBy } from "@/lib/data/cafes";
+import { cafeHref, visitsBy } from "@/lib/data/cafes";
 import { findProfile, listsBy, scoresOf, tastingsBy } from "@/lib/data/selectors";
 import { tasteSummary } from "@/lib/data/taste-summary";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { mediaUrl } from "@/lib/media";
-import { listPath, profilePath } from "@/lib/routes";
+import { brandPath, listPath, profilePath } from "@/lib/routes";
 
 type Props = PageProps<"/u/[username]">;
 
@@ -140,6 +141,26 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
           </>
         }
       />
+      {profile.officialFor.length > 0 ? (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border py-3 font-mono text-xs">
+          <OfficialBadge />
+          {profile.officialFor.map((business, index) => (
+            <span key={business.id}>
+              {index > 0 ? "· " : null}
+              <Link
+                href={
+                  business.kind === "brand"
+                    ? brandPath(business.slug)
+                    : cafeHref({ cityCode: business.cityCode ?? 0, slug: business.slug })
+                }
+                className="underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+              >
+                {business.name}
+              </Link>
+            </span>
+          ))}
+        </p>
+      ) : null}
       <FieldStrip
         fields={[
           {

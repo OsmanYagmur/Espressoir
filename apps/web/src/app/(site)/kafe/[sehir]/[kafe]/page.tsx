@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { BusinessBlock } from "@/components/business/business-block";
 import { VisitItem } from "@/components/cafe/visit-item";
 import { ScoreBadge } from "@/components/coffee/score-badge";
 import { PageHeading } from "@/components/site/page-heading";
@@ -157,6 +158,12 @@ async function CafeDetail({ params }: Pick<Props, "params">) {
           </Link>
         </Button>
       </div>
+      <BusinessBlock
+        description={cafe.description}
+        website={cafe.website}
+        officialUsername={cafe.officialUsername}
+        claimHref={`/panel/isletme/basvuru/kafe/${cafe.id}` as Route}
+      />
       {/* A wrong name or place, a duplicate, a made-up café: members can point it out. */}
       <ReportButton target="cafe" targetId={cafe.id} className="border-b border-border py-2" />
 

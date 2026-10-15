@@ -36,6 +36,36 @@ const when = new Intl.DateTimeFormat(siteConfig.locale, {
 });
 
 function Item({ item }: { item: Notification }) {
+  if (item.verification) {
+    // The answer to an application: the business and the outcome, linking to where it is managed.
+    return (
+      <li
+        className={cn(
+          "grid gap-1 border-b border-border py-3.5",
+          !item.read && "border-l-2 border-l-brand pl-3",
+        )}
+      >
+        <p className="[overflow-wrap:anywhere]">
+          <Link href="/panel/isletme" prefetch={false} className={linkFocus}>
+            {format(
+              item.verification.approved ? n.verification.approved : n.verification.rejected,
+              {
+                business: item.verification.businessName,
+              },
+            )}
+          </Link>
+          {item.read ? null : (
+            <span className="ml-2 border border-foreground px-1.5 py-0.5 font-mono text-xs uppercase">
+              {n.unread}
+            </span>
+          )}
+        </p>
+        <time dateTime={item.createdAt} className="font-mono text-xs text-muted-foreground">
+          {when.format(new Date(item.createdAt))}
+        </time>
+      </li>
+    );
+  }
   return (
     <li
       className={cn(

@@ -22,6 +22,8 @@ const KNOWN_ERRORS = [
   "merge_same_target",
   "target_has_no_photo",
   "cafe_has_visits",
+  "request_not_open",
+  "already_official",
 ] as const;
 
 const id = z.uuid();
@@ -163,6 +165,33 @@ export async function mergeCafe(formData: FormData): Promise<void> {
   if (!parsed.success) back("invalid");
   await run((supabase) =>
     supabase.rpc("admin_merge_cafes_v1", { p_from: parsed.data.from, p_into: parsed.data.into }),
+  );
+}
+
+export async function resolveVerification(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ id, answer: z.enum(["approve", "reject"]) })
+    .safeParse({ id: formData.get("requestId"), answer: formData.get("answer") });
+  if (!parsed.success) back("invalid");
+  await run((supabase) =>
+    supabase.rpc("admin_resolve_verification_v1", {
+      p_request_id: parsed.data.id,
+      p_approve: parsed.data.answer === "approve",
+      p_note: text(formData, "note") || undefined,
+    }),
+  );
+}
+
+export async function revokeOfficial(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ id, sure: z.literal("on") })
+    .safeParse({ id: formData.get("officialId"), sure: formData.get("sure") });
+  if (!parsed.success) back("invalid");
+  await run((supabase) =>
+    supabase.rpc("admin_revoke_official_v1", {
+      p_official_id: parsed.data.id,
+      p_note: text(formData, "note") || undefined,
+    }),
   );
 }
 
