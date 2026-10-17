@@ -506,6 +506,15 @@ The mobile app (Phase 4C):
   bundle inside, signed with the owner's free Apple ID (re-install every 7 days). No EAS, no
   paid plan. CocoaPods on this Mac lives in a conda env (`cocoapods`) behind
   `/opt/anaconda3/bin/pod`. Expo Go stays the quick path while developing.
+- **iOS 27 needs the scene life cycle:** an app built with the iOS 27 SDK that still starts
+  from the app delegate is killed at launch (`NoSceneLifecycleAdoption` in the crash report;
+  the iOS 26 simulator did not show it). Expo 57 ships `ExpoAppSceneDelegate`, but its
+  prebuild template does not use it yet, so `apps/mobile/plugins/with-scene-lifecycle.js`
+  rewrites the generated AppDelegate and Info.plist on every prebuild; it fails loudly when
+  the template changes (then drop it). `expo-build-properties` pins the deployment target to
+  17.0 (what the Expo pod requires) and `ios.appleTeamId` is the owner's team. Never fix the
+  generated `ios/` by hand or with Xcode's suggestions: change app.json or the plugin, then
+  `ios:prebuild` (regenerates `ios/`) and `ios:device`.
 
 Writing from the app (Phase 4D):
 

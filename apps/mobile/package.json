@@ -5,9 +5,10 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "ios": "expo start --ios",
+    "ios": "expo run:ios",
+    "ios:prebuild": "expo prebuild --platform ios --clean",
     "ios:device": "expo run:ios --configuration Release --device",
-    "android": "expo start --android",
+    "android": "expo run:android",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "bundle": "expo export --platform ios --output-dir dist"
@@ -23,6 +24,7 @@
     "@react-native-community/datetimepicker": "9.1.0",
     "@supabase/supabase-js": "^2.117.3",
     "expo": "~57.0.29",
+    "expo-build-properties": "~57.0.22",
     "expo-constants": "~57.0.22",
     "expo-crypto": "~57.0.4",
     "expo-file-system": "~57.0.7",

@@ -10,7 +10,8 @@
     "backgroundColor": "#F4F4F1",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.espressoir.app"
+      "bundleIdentifier": "com.espressoir.app",
+      "appleTeamId": "X7AATGWM6G"
     },
     "android": {
       "package": "com.espressoir.app",
@@ -27,9 +28,19 @@
         "expo-image-picker",
         {
           "photosPermission": "Tadımına fotoğraf eklemek için fotoğraflarına erişmek istiyoruz.",
-          "cameraPermission": "Tadımının fotoğrafını çekmek için kamerana erişmek istiyoruz."
+          "cameraPermission": "Tadımının fotoğrafını çekmek için kamerana erişmek istiyoruz.",
+          "microphonePermission": false
         }
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "17.0"
+          }
+        }
+      ],
+      "./plugins/with-scene-lifecycle"
     ],
     "experiments": {
       "typedRoutes": true

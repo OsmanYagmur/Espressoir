@@ -33,6 +33,17 @@ Her kurulumda:
 pnpm --filter @espressoir/mobile ios:device
 ```
 
+Bir güncellemeden sonra (yeni kod çektiysen ya da `app.json` değiştiyse) önce iOS projesini
+yeniden üret, sonra kur:
+
+```bash
+pnpm --filter @espressoir/mobile ios:prebuild
+```
+
+Xcode'da ayar değiştirme ve Xcode'un "önerilen ayarlar" tekliflerini kabul etme: `ios/`
+klasörü her `ios:prebuild`'de baştan üretilir, elle yapılan değişiklik kaybolur ya da derlemeyi
+bozar. Gereken ayarlar `app.json`'da ve `apps/mobile/plugins/` altında.
+
 Komut bağlı telefonları listeler; iPhone'unu seç. Uygulamayı yayın modunda derler (ilk sefer
 10–20 dakika), JavaScript'i içine gömer ve telefona kurar. `ios/` klasörü yoksa önce onu üretir
 (`expo prebuild` + `pod install`); bu klasör git'e girmez.
