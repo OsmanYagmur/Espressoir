@@ -13,8 +13,9 @@ herkese açık değerler (sitenin tarayıcıya verdikleri); dosya git'e girmez.
 
 - `APP_SUPABASE_URL`, `APP_SUPABASE_PUBLISHABLE_KEY`: sitedeki `NEXT_PUBLIC_SUPABASE_URL` ve
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ile aynı. Gerçek kullanım için prod, denemek için dev.
-- `APP_SITE_URL`: `https://espressoir.com`. Girişteki güvenlik doğrulaması bu sitenin
-  `/uygulama/dogrulama` sayfasından gelir ve kayıttan sonra site buradan tazelenir.
+- `APP_SITE_URL`: `https://espressoir.com`. Girişteki güvenlik doğrulaması (Supabase'te
+  açıksa) bu sitenin `/uygulama/dogrulama` sayfasından gelir ve kayıttan sonra site buradan
+  tazelenir.
   **Asla `localhost` yazma:** telefonda localhost telefonun kendisidir.
 
 Değerler derlemenin içine yazılır (`scripts/write-env.mjs` → `src/lib/env.generated.ts`):
@@ -79,8 +80,9 @@ kod kaydedildikçe uygulama yenilenir.
   açılır. Alttaki çubuk iOS'un kendisi: iOS 26 ve sonrasında yuvarlak, şeffaf "cam" çubuk;
   liste aşağı kaydırılınca küçülür.
 - **Sayfalar:** kahve, kafe, üye profili; aşağı çekince arşiv yenilenir.
-- **Giriş:** e-posta kodu ya da parola. Kayıt kapalı; davet sitede. Her istekten önce bir
-  sayfa açılır ve güvenlik doğrulamasını (Turnstile) yapar.
+- **Giriş:** e-posta kodu ya da parola. Kayıt kapalı; davet sitede. Güvenlik doğrulaması
+  (Turnstile) yalnızca Supabase'te açıksa ve Supabase isterse açılır; kapalıysa hiç
+  görünmez. Kapatmak: `docs/setup-auth.md` §5.
 - Hesap ayarları (kullanıcı adı, profil resmi, veri indirme, silme) sitede kalır.
 
 ## Ekleme (4D)

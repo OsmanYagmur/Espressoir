@@ -191,8 +191,10 @@ Accounts (Phase 2A):
 - **The sign-in code's length is the Supabase project's setting** (8 digits on the cloud
   projects, 6 in the local stack): the form accepts 6–10 and no copy states a number.
 - **CAPTCHA:** when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set every auth call carries a Turnstile
-  token (single use: reset after each call). It must be set exactly when Supabase's CAPTCHA
-  protection is on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
+  token (single use: reset after each call). It must be set whenever Supabase's CAPTCHA
+  protection is on (set while protection is off is harmless: the token is ignored), so turn
+  protection off in Supabase first and remove the key after, and the other way round to turn
+  it on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
 - **`profiles` is public; `profile_private` is not** (accepted terms, username changes,
   restrictions): own row + admins may read, only SECURITY DEFINER functions write. Put nothing
   private on `profiles`.
@@ -515,11 +517,15 @@ The mobile app (Phase 4C; plain React Native since 2026-10-17):
   `EspressoirNative` pod (`ios/EspressoirNative`, linked in the Podfile): `ImageShrinker`,
   which resizes and re-encodes a picture as JPEG. The Podfile raises every pod to iOS 17
   (Xcode 27 refuses targets below 15; some resource bundles ask for 9.0).
-- **Sign-in CAPTCHA comes from the site:** the app opens `/uygulama/dogrulama` in a WebView
-  (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots) and
-  takes the Turnstile token it posts (`window.ReactNativeWebView`); without a site key the
-  page says "disabled" at once. One Turnstile widget serves both projects (hostnames
-  `espressoir.com`, `vercel.app`, `localhost`).
+- **Sign-in CAPTCHA comes from the site, and only when Supabase asks:** a sign-in request
+  goes out without a token; when Supabase refuses it with `captcha_failed` (protection on; a
+  refused request sends no mail), the app opens `/uygulama/dogrulama` in a WebView
+  (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots), takes
+  the Turnstile token it posts (`window.ReactNativeWebView`) and sends the request again.
+  With protection off the sheet never shows. Its WebView lets frames load any address
+  (Turnstile's own; the default list turns away everything but http, https and
+  about:blank, in every frame) and keeps the page itself on the site. One Turnstile widget
+  serves both projects (hostnames `espressoir.com`, `vercel.app`, `localhost`).
 - **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark);
   Archivo and IBM Plex Mono as files in `assets/fonts` (linked with `react-native-asset`,
   listed in Info.plist `UIAppFonts`, used by PostScript name). Names stay as written (no
@@ -716,6 +722,11 @@ Still open on the owner's side (remind, don't do for them):
   signup stays closed to the public until then.
 - `www.espressoir.com` serves the site instead of redirecting to the apex: set it to redirect
   in Vercel → Domains.
+- **CAPTCHA:** the owner asked (2026-10-17) to drop the robot check from the app, where it
+  hung. Protection is per Supabase project, so dropping it is the owner's switch on prod
+  (docs/setup-auth.md §5) and covers the website too. Acceptable while signup is closed (no
+  code goes to an address without an account; Supabase limits sign-ins per IP). **Turn it on
+  again before signup opens**, and try the app's sheet on a phone then.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to

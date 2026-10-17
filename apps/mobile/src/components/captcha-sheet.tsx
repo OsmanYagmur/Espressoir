@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
-import { Modal, View } from "react-native";
+import { Linking, Modal, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import { WebView, type WebViewMessageEvent, type WebViewNavigation } from "react-native-webview";
 
 import { env } from "@/lib/env";
 import { t } from "@/lib/i18n";
@@ -15,10 +15,25 @@ type Message = { type: "token"; token: string } | { type: "expired" } | { type: 
 /** The answer: a token, null when CAPTCHA is off, or "cancelled". */
 type Answer = string | null | "cancelled";
 
+const page = `${env.siteUrl}/uygulama/dogrulama`;
+
 /**
- * Supabase wants a Turnstile token with every sign-in request. The app cannot draw the
- * widget itself, so it opens the website's small CAPTCHA page in a WebView and takes the
- * token from there. `ask()` resolves once the check is passed (or turned off, or closed).
+ * Turnstile draws itself in frames of its own. The WebView's default address list (http,
+ * https, about:blank) is checked for every frame and turns away anything else, which can
+ * leave the check spinning: frames may load what they need, the page itself stays the site's
+ * and any other address opens in Safari.
+ */
+function allowNavigation(request: WebViewNavigation & { isTopFrame?: boolean }): boolean {
+  if (request.isTopFrame === false || request.url.startsWith(env.siteUrl)) return true;
+  void Linking.openURL(request.url).catch(() => undefined);
+  return false;
+}
+
+/**
+ * While Supabase's CAPTCHA protection is on it wants a Turnstile token with every sign-in
+ * request. The app cannot draw the widget itself, so it opens the website's small CAPTCHA
+ * page in a WebView and takes the token from there. `ask()` resolves once the check is
+ * passed (or turned off, or closed).
  */
 export function useCaptcha(): { ask: () => Promise<Answer>; sheet: React.ReactNode } {
   const colors = useColors();
@@ -61,7 +76,9 @@ export function useCaptcha(): { ask: () => Promise<Answer>; sheet: React.ReactNo
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <WebView
-          source={{ uri: `${env.siteUrl}/uygulama/dogrulama` }}
+          source={{ uri: page }}
+          originWhitelist={["*"]}
+          onShouldStartLoadWithRequest={allowNavigation}
           onMessage={onMessage}
           style={{ flex: 1, backgroundColor: colors.background }}
         />

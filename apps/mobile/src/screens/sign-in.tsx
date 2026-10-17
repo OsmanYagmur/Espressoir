@@ -10,8 +10,15 @@ import { useColors } from "@/lib/theme";
 
 const a = t.auth;
 
+type AuthError = { code?: string; status?: number; message: string };
+
+/** Supabase turned the request away for want of a CAPTCHA token (it then sends no e-mail). */
+function isCaptchaRefusal(error: AuthError): boolean {
+  return error.code === "captcha_failed" || /captcha/i.test(error.message);
+}
+
 /** What Supabase Auth's refusal means to a person (the website's login form says the same). */
-function messageFor(error: { code?: string; status?: number; message: string }): string {
+function messageFor(error: AuthError): string {
   if (
     error.status === 429 ||
     error.code === "over_request_rate_limit" ||
@@ -19,7 +26,7 @@ function messageFor(error: { code?: string; status?: number; message: string }):
   ) {
     return a.rateLimited;
   }
-  if (error.code === "captcha_failed" || /captcha/i.test(error.message)) return a.captchaFailed;
+  if (isCaptchaRefusal(error)) return a.captchaFailed;
   if (error.code === "otp_expired" || error.code === "invalid_otp") return a.codeInvalid;
   if (error.code === "invalid_credentials") return a.invalid;
   return a.failed;
@@ -27,8 +34,9 @@ function messageFor(error: { code?: string; status?: number; message: string }):
 
 /**
  * Signing in, as on the website: an e-mail code (no new accounts: signup is by
- * invitation), or a password for accounts that have one. Every request first passes the
- * CAPTCHA sheet.
+ * invitation), or a password for accounts that have one. A request goes out without a
+ * CAPTCHA token; only when Supabase's CAPTCHA protection is on and turns it away does the
+ * CAPTCHA sheet open, and the request is sent again with the token from there.
  */
 export default function SignInScreen() {
   const colors = useColors();
@@ -42,17 +50,18 @@ export default function SignInScreen() {
   const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string } | null>(null);
 
   async function run(
-    task: (
-      captchaToken: string | undefined,
-    ) => Promise<{ error: { code?: string; status?: number; message: string } | null }>,
+    task: (captchaToken: string | undefined) => Promise<{ error: AuthError | null }>,
     onDone: () => void,
   ) {
     setNotice(null);
-    const token = await captcha.ask();
-    if (token === "cancelled") return;
     setBusy(true);
     try {
-      const { error } = await task(token ?? undefined);
+      let { error } = await task(undefined);
+      if (error && isCaptchaRefusal(error)) {
+        const token = await captcha.ask();
+        if (token === "cancelled") return;
+        ({ error } = await task(token ?? undefined));
+      }
       if (error) setNotice({ tone: "error", text: messageFor(error) });
       else onDone();
     } catch {
