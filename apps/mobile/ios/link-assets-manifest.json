@@ -1,0 +1,21 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Archivo_400Regular.ttf",
+      "sha1": "6f8d7ccd854044d192abc1f84701d829f2325942"
+    },
+    {
+      "path": "assets/fonts/Archivo_700Bold.ttf",
+      "sha1": "846d48c4b894a5a4e6a26de02b603d0996ff41f8"
+    },
+    {
+      "path": "assets/fonts/Archivo_800ExtraBold.ttf",
+      "sha1": "0faac8db4851614255e39b75abc4e8fb7f8309d4"
+    },
+    {
+      "path": "assets/fonts/IBMPlexMono_500Medium.ttf",
+      "sha1": "edf16d6f8afa5e378fa8db6307826f9799cf890f"
+    }
+  ]
+}

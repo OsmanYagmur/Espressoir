@@ -8,7 +8,7 @@ import {
   setWantToTry,
   type CoffeeShelf,
 } from "@espressoir/db";
-import { router } from "expo-router";
+import { router } from "@/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -110,10 +110,18 @@ export function CoffeeShelfButtons({ coffeeId }: { coffeeId: string }) {
     return (
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <Button title={l.want.add} variant="outline" onPress={() => router.push("/giris")} />
+          <Button
+            title={l.want.add}
+            variant="outline"
+            onPress={() => router.push({ screen: "SignIn" })}
+          />
         </View>
         <View style={{ flex: 1 }}>
-          <Button title={l.add.open} variant="outline" onPress={() => router.push("/giris")} />
+          <Button
+            title={l.add.open}
+            variant="outline"
+            onPress={() => router.push({ screen: "SignIn" })}
+          />
         </View>
       </View>
     );

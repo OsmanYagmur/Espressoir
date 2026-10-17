@@ -1,9 +1,9 @@
 import type { Archive } from "@espressoir/db";
-import { Stack } from "expo-router";
 import { RefreshControl, ScrollView } from "react-native";
 
 import { useArchive } from "@/lib/archive";
 import { useColors } from "@/lib/theme";
+import { useScreenTitle } from "@/navigation";
 
 import { StateView } from "./ui";
 
@@ -21,13 +21,13 @@ export function DetailScreen({
   notFound: string;
 }) {
   const colors = useColors();
+  useScreenTitle(title);
   const { state, refresh } = useArchive();
   const archive = state.archive;
   const body = archive ? render(archive) : null;
 
   return (
     <>
-      <Stack.Screen options={{ title }} />
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }}

@@ -2,15 +2,12 @@
 import base from "@espressoir/config/eslint/base";
 
 export default [
-  { ignores: [".expo/**", "dist/**", "ios/**", "android/**", "expo-env.d.ts"] },
+  { ignores: ["dist/**", "ios/**", "android/**", "src/lib/env.generated.ts"] },
   ...base,
-  // Expo config plugins are CommonJS files that `expo prebuild` loads with require().
+  // Metro, Babel and the React Native CLI load these CommonJS files with require().
   {
-    files: ["plugins/**/*.js"],
-    languageOptions: {
-      sourceType: "commonjs",
-      globals: { require: "readonly", module: "writable" },
-    },
+    files: ["*.config.js"],
+    languageOptions: { sourceType: "commonjs" },
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
 ];

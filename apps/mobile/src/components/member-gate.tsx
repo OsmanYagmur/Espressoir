@@ -1,6 +1,5 @@
-import { router } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { View } from "react-native";
+import { router } from "@/navigation";
+import { Linking, View } from "react-native";
 
 import { env } from "@/lib/env";
 import { t } from "@/lib/i18n";
@@ -21,7 +20,7 @@ export function MemberGate({ children }: { children: (userId: string) => React.R
   const blocked = !session ? (
     <>
       <Body muted>{t.mobile.add.signInFirst}</Body>
-      <Button title={t.auth.submit} onPress={() => router.push("/giris")} />
+      <Button title={t.auth.submit} onPress={() => router.push({ screen: "SignIn" })} />
     </>
   ) : member && !member.onboarded ? (
     <>
@@ -29,7 +28,7 @@ export function MemberGate({ children }: { children: (userId: string) => React.R
       <Button
         title={t.mobile.account.openSite}
         variant="outline"
-        onPress={() => void WebBrowser.openBrowserAsync(`${env.siteUrl}/hesap/kurulum`)}
+        onPress={() => void Linking.openURL(`${env.siteUrl}/hesap/kurulum`)}
       />
     </>
   ) : null;

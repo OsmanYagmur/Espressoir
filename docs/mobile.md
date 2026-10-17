@@ -1,25 +1,31 @@
 # Mobil uygulama
 
-Uygulama `apps/mobile` klasöründe: Expo SDK 57, Expo Router, React Native. Sitedeki veritabanı
-kurallarını, okuma modellerini (`@espressoir/db`), öneri modelini (`@espressoir/core`) ve Türkçe
-metinleri (`@espressoir/i18n`) aynen kullanır. Mağazada yok. Telefona iki yoldan girer, ikisi de
-ücretsiz:
+Uygulama `apps/mobile` klasöründe: düz React Native 0.86 (Expo yok), gezinme için React
+Navigation, iOS projesi `apps/mobile/ios` (git'te). Sitedeki veritabanı kurallarını, okuma
+modellerini (`@espressoir/db`), öneri modelini (`@espressoir/core`) ve Türkçe metinleri
+(`@espressoir/i18n`) aynen kullanır. Mağazada yok: Mac'te Xcode ile derlenip kabloyla kendi
+iPhone'una kurulur, ücretsiz.
 
-- **Kendi iPhone'una gerçek uygulama olarak (önerilen):** Mac'te Xcode ile derlenir, kabloyla
-  kurulur; ana ekranda kendi simgesiyle durur, bilgisayar kapalıyken de çalışır, Expo hesabı
-  istemez. Ücretsiz Apple hesabıyla imza 7 gün geçerli: süre dolunca aynı komutla yeniden kur.
-- **Expo Go ile:** geliştirirken hızlı; bilgisayar açık ve aynı Wi-Fi'da olmalı, Expo hesabı
-  gerekir.
+## Ayarlar (`.env`)
 
-Önce `apps/mobile/.env` dosyasını hazırla (iki yol için de): `apps/mobile/.env.example`
-dosyasını `apps/mobile/.env` olarak kopyala ve doldur (aşağıda, Expo Go adım 2).
+`apps/mobile/.env.example` dosyasını `apps/mobile/.env` olarak kopyala ve doldur. Hepsi
+herkese açık değerler (sitenin tarayıcıya verdikleri); dosya git'e girmez.
 
-## Kendi iPhone'una kurmak (Xcode)
+- `APP_SUPABASE_URL`, `APP_SUPABASE_PUBLISHABLE_KEY`: sitedeki `NEXT_PUBLIC_SUPABASE_URL` ve
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ile aynı. Gerçek kullanım için prod, denemek için dev.
+- `APP_SITE_URL`: `https://espressoir.com`. Girişteki güvenlik doğrulaması bu sitenin
+  `/uygulama/dogrulama` sayfasından gelir ve kayıttan sonra site buradan tazelenir.
+  **Asla `localhost` yazma:** telefonda localhost telefonun kendisidir.
+
+Değerler derlemenin içine yazılır (`scripts/write-env.mjs` → `src/lib/env.generated.ts`):
+değiştirince yeniden kur.
+
+## Kendi iPhone'una kurmak
 
 Bir kez:
 
 1. **Xcode** kurulu olsun; Xcode → Settings → Accounts'ta Apple hesabın ekli olsun (ücretsiz
-   hesap yeter; bu Mac'te ekli).
+   hesap yeter; bu Mac'te ekli, imza ekibi projede: `X7AATGWM6G`).
 2. **CocoaPods** kurulu olsun (`pod --version`). Bu Mac'te Homebrew çalışmadığı için ayrı bir
    conda ortamında (`cocoapods`) kurulu; `pod` komutu `/opt/anaconda3/bin/pod` üzerinden onu
    çalıştırır.
@@ -27,26 +33,19 @@ Bir kez:
 4. iPhone'da **Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu**'nu aç (telefon yeniden
    başlar). Bu seçenek telefon Mac'e bir kez bağlandıktan sonra görünür.
 
-Her kurulumda:
+Her kurulumda (yeni kod çektikten sonra da):
 
 ```bash
 pnpm --filter @espressoir/mobile ios:device
 ```
 
-Bir güncellemeden sonra (yeni kod çektiysen ya da `app.json` değiştiyse) önce iOS projesini
-yeniden üret, sonra kur:
+Komut bağlı iPhone'u bulur, gerekiyorsa `pod install` çalıştırır, uygulamayı yayın modunda
+derler (ilk sefer 10–20 dakika), JavaScript'i içine gömer, telefona kurar ve açar. Birden çok
+telefon bağlıysa adını ver: `pnpm --filter @espressoir/mobile ios:device "Osman"`.
 
-```bash
-pnpm --filter @espressoir/mobile ios:prebuild
-```
-
-Xcode'da ayar değiştirme ve Xcode'un "önerilen ayarlar" tekliflerini kabul etme: `ios/`
-klasörü her `ios:prebuild`'de baştan üretilir, elle yapılan değişiklik kaybolur ya da derlemeyi
-bozar. Gereken ayarlar `app.json`'da ve `apps/mobile/plugins/` altında.
-
-Komut bağlı telefonları listeler; iPhone'unu seç. Uygulamayı yayın modunda derler (ilk sefer
-10–20 dakika), JavaScript'i içine gömer ve telefona kurar. `ios/` klasörü yoksa önce onu üretir
-(`expo prebuild` + `pod install`); bu klasör git'e girmez.
+**Xcode'dan da olur:** `apps/mobile/ios/Espressoir.xcworkspace`'i aç (`.xcodeproj`'u değil),
+üstten iPhone'unu seç, ▶'ye bas. Çalıştırma yayın modunda ayarlı; uygulama bilgisayarsız
+çalışır. Xcode'un "önerilen ayarlar" tekliflerini kabul etme.
 
 İlk açılışta "Güvenilmeyen Geliştirici" derse: **Ayarlar → Genel → VPN ve Aygıt Yönetimi**
 → geliştirici uygulaması → **Güven**.
@@ -54,53 +53,31 @@ Komut bağlı telefonları listeler; iPhone'unu seç. Uygulamayı yayın modunda
 Bilmen gerekenler:
 
 - **7 gün:** ücretsiz Apple hesabıyla kurulan uygulama 7 gün sonra açılmaz; telefonu bağlayıp
-  aynı komutu çalıştır (verilerin sende değil Supabase'de, hiçbir şey kaybolmaz). Bunu
-  kaldırmanın tek yolu Apple Developer Program (yılda 99 USD; bütçe dışı).
-- **`.env` derlemeye gömülür:** değerleri değiştirirsen yeniden kur.
-- **Kod değiştiyse** (yeni bir sürüm çektiysen) yeniden kur; telefondaki uygulama kendini
-  güncellemez.
-- **Paket kimliği** `com.espressoir.app`. Xcode "bundle identifier" alınamadı derse
-  `app.json`'daki `ios.bundleIdentifier`'ı kendine özgü bir şeyle değiştirip `ios/`
-  klasörünü silerek yeniden dene.
+  aynı komutu çalıştır (verilerin Supabase'de, hiçbir şey kaybolmaz). Bunu kaldırmanın tek
+  yolu Apple Developer Program (yılda 99 USD; bütçe dışı).
+- **Telefondaki uygulama kendini güncellemez:** yeni kod ya da `.env` değişikliğinden sonra
+  yeniden kur.
+- **iOS 27:** uygulama iOS'un yeni "sahne" açılışını kullanıyor (`AppDelegate.swift`'teki
+  `SceneDelegate`); kullanmayan bir uygulamayı iOS 27 açar açmaz kapatır.
 
-## Expo Go ile açmak
+## Geliştirirken (simülatör)
 
-1. iPhone'una App Store'dan **Expo Go**'yu kur (Android'de Play Store'dan).
-2. `apps/mobile/.env.example` dosyasını `apps/mobile/.env` olarak kopyala ve doldur:
-   - `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: sitedeki
-     `NEXT_PUBLIC_SUPABASE_URL` ve `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ile aynı (gizli değil).
-     Denemek için dev projesi, gerçek kullanım için prod.
-   - `EXPO_PUBLIC_SITE_URL`: girişteki güvenlik doğrulaması bu sitenin
-     `/uygulama/dogrulama` sayfasından gelir. Prod için `https://espressoir.com`.
-3. **Bir kez: Expo hesabıyla iki yerde de oturum aç.** Expo Go 57'den beri gerçek bir
-   iPhone, geliştirme sunucusundaki projeyi ancak bilgisayardaki Expo CLI ile telefondaki
-   Expo Go **aynı** Expo hesabında oturum açmışken açar; yoksa "You need to be signed in to
-   Expo Go and Expo CLI" hatası çıkar (Simülatör ve Android etkilenmez). Hesap ücretsizdir
-   (expo.dev/signup). Bilgisayarda, `apps/mobile` klasöründe:
+```bash
+pnpm --filter @espressoir/mobile start
+```
 
-   ```bash
-   pnpm exec expo login
-   ```
+```bash
+pnpm --filter @espressoir/mobile ios
+```
 
-   Sonra telefonda Expo Go → sağ üstteki hesap simgesi → aynı hesapla giriş. Hangi hesapta
-   olduğunu `pnpm exec expo whoami` gösterir. Sunucu açıkken giriş yaptıysan onu kapatıp
-   yeniden başlat (Expo CLI hesabı açılışta okur).
-
-4. Bilgisayarında:
-
-   ```bash
-   pnpm --filter @espressoir/mobile start
-   ```
-
-5. Ekranda çıkan QR kodunu iPhone'un kamerasıyla okut; Expo Go uygulamayı açar. Telefon ve
-   bilgisayar aynı Wi-Fi'da olmalı.
-
-`.env` git'e girmez. Değiştirdikten sonra `start` komutunu `--clear` ile yeniden başlat.
+İlki Metro'yu (JavaScript sunucusu) açar, ikincisi geliştirme sürümünü simülatörde başlatır;
+kod kaydedildikçe uygulama yenilenir.
 
 ## Neler var (4C)
 
-- **Sekmeler (4E'den beri):** Akış, Kahveler (arama), Kafeler (arama), Ekle, Hesap. Öneriler
-  Hesap'tan açılır.
+- **Sekmeler:** Akış, Kahveler (arama), Kafeler (arama), Ekle, Hesap. Öneriler Hesap'tan
+  açılır. Alttaki çubuk iOS'un kendisi: iOS 26 ve sonrasında yuvarlak, şeffaf "cam" çubuk;
+  liste aşağı kaydırılınca küçülür.
 - **Sayfalar:** kahve, kafe, üye profili; aşağı çekince arşiv yenilenir.
 - **Giriş:** e-posta kodu ya da parola. Kayıt kapalı; davet sitede. Her istekten önce bir
   sayfa açılır ve güvenlik doğrulamasını (Turnstile) yapar.
@@ -117,10 +94,11 @@ Bilmen gerekenler:
 - **Kafe ziyareti:** kafeyi ara ya da yeni kafe ekle (şehir listeden, semt isteğe bağlı; aynı
   şehirde benzer bir kafe varsa önce o önerilir), içecek türü, puan, tarih, not.
 - **Fotoğraf:** kameradan ya da galeriden. Gönderilmeden önce telefonda 1600 px'e küçültülür
-  ve yeniden kodlanır; bu konum, cihaz ve saat bilgisini siler. Yine de bilgi kalmışsa
+  ve JPEG olarak yeniden kodlanır (uygulamanın kendi küçük iOS modülü,
+  `ios/EspressoirNative`); bu konum, cihaz ve saat bilgisini siler. Yine de bilgi kalmışsa
   fotoğraf yüklenmez, tadım fotoğrafsız kaydedilir ve uygulama bunu söyler.
 - **Sitede hemen görünür:** kaydedince uygulama siteye "arşivi tazele" der
-  (`/api/arsiv-tazele`, oturum jetonuyla). Bu yüzden `EXPO_PUBLIC_SITE_URL`, uygulamanın
+  (`/api/arsiv-tazele`, oturum jetonuyla). Bu yüzden `APP_SITE_URL`, uygulamanın
   bağlandığı Supabase projesinin sitesi olmalı (prod için `https://espressoir.com`); öyle
   değilse kayıt yine yapılır, site en geç bir saat içinde gösterir.
 - Kullanıcı adını seçmemiş bir hesap ekleme yapamaz; uygulama sitedeki kurulum sayfasını açar.
@@ -145,6 +123,6 @@ Bilmen gerekenler:
 
 ## Bilinen sınırlar
 
-- Expo Go'da Google ile giriş ve anlık (push) bildirim yok.
+- Google ile giriş ve anlık (push) bildirim yok; Android sürümü yok (yalnızca iOS projesi var).
 - Başlıklar sitedeki geniş Archivo yerine normal genişlikte (telefon yazı tipleri genişlik
   eksenini desteklemiyor).

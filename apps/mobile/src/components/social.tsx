@@ -12,7 +12,7 @@ import {
   setFollowing,
   setLiked,
 } from "@espressoir/db";
-import { router } from "expo-router";
+import { router } from "@/navigation";
 import { useEffect, useState } from "react";
 import { Modal, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -114,7 +114,11 @@ export function FollowButton({ userId }: { userId: string }) {
   if (session === undefined || viewer === userId) return null;
   if (!viewer) {
     return (
-      <Button title={t.follow.follow} variant="outline" onPress={() => router.push("/giris")} />
+      <Button
+        title={t.follow.follow}
+        variant="outline"
+        onPress={() => router.push({ screen: "SignIn" })}
+      />
     );
   }
   if (following === null) return null;

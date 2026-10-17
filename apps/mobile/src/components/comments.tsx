@@ -8,7 +8,7 @@ import {
   threadComments,
   type Comment,
 } from "@espressoir/db";
-import { Link, router } from "expo-router";
+import { router } from "@/navigation";
 import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 
@@ -20,7 +20,7 @@ import { supabase } from "@/lib/supabase";
 import { useColors } from "@/lib/theme";
 
 import { ReportLink } from "./social";
-import { Body, Button, Field, Mono, QuietButton } from "./ui";
+import { Body, Button, Field, Mono, QuietButton, TextLink } from "./ui";
 
 const s = t.social;
 
@@ -158,12 +158,12 @@ function CommentView({
     <View style={{ paddingVertical: 10, gap: 4 }}>
       <Mono muted>
         {comment.author ? (
-          <Link
-            href={{ pathname: "/u/[username]", params: { username: comment.author.username } }}
+          <TextLink
+            to={{ screen: "Profile", params: { username: comment.author.username } }}
             style={{ color: colors.foreground, textDecorationLine: "underline" }}
           >
             @{comment.author.username}
-          </Link>
+          </TextLink>
         ) : null}
         {" · "}
         {meta}
@@ -320,7 +320,11 @@ export function Comments({
         ) : (
           <View style={{ gap: 10 }}>
             <Body muted>{s.signInToComment}</Body>
-            <Button title={s.signIn} variant="outline" onPress={() => router.push("/giris")} />
+            <Button
+              title={s.signIn}
+              variant="outline"
+              onPress={() => router.push({ screen: "SignIn" })}
+            />
           </View>
         )}
       </View>

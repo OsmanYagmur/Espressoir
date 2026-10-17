@@ -2,13 +2,11 @@ pnpm-lock.yaml
 PROJECT_BRIEF.md
 **/.next/
 **/.turbo/
-# Expo writes these (route types, the exported bundle); both are git-ignored.
-**/.expo/
+# The mobile app: its bundle output, the settings written from .env, and the native iOS
+# project (Xcode's and CocoaPods' formats, not ours).
 apps/mobile/dist/
-apps/mobile/expo-env.d.ts
-# The native projects `expo prebuild` writes for a local Xcode build (git-ignored).
+apps/mobile/src/lib/env.generated.ts
 apps/mobile/ios/
-apps/mobile/android/
 **/node_modules/
 **/playwright-report/
 **/test-results/

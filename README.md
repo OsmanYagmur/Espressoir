@@ -96,7 +96,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [Giriş kurulumu: e-posta kodu, Google, Turnstile, davet](./docs/setup-auth.md)
 - [Vercel yayını ve espressoir.com DNS](./docs/deploy-vercel.md)
 - [Yedek ve uyandırma iş akışları](./docs/backup.md)
-- [Mobil uygulama: Expo Go ile telefonda açmak](./docs/mobile.md)
+- [Mobil uygulama: iPhone'a kurmak](./docs/mobile.md)
 
 ## Durum
 
@@ -118,6 +118,6 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [x] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
   - [x] 4A Öneriler: tadımlarına göre henüz denemediğin kahveler, gerekçeleriyle (`/panel/oneriler`); Python'da model kurman için takma adlı veri dışa aktarma ve modelinin sonuçlarını geri yükleme.
   - [x] 4B Doğrulanmış kavurucu ve kafe hesapları: marka ya da kafe sayfasından başvuru, yönetimden onay; rozet, işletmenin tanıtımını düzenleme, yorumlarda "Resmi yanıt"; resmi hesap kendi kahvesine ya da kafesine puan veremez.
-  - [x] 4C Uygulama: telefonda Expo Go ile açılır; kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. Kurulum: [docs/mobile.md](./docs/mobile.md)
+  - [x] 4C Uygulama: kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. 2026-10-17'den beri Expo'suz, düz React Native; Mac'te Xcode ile derlenip kabloyla iPhone'a kurulur. Kurulum: [docs/mobile.md](./docs/mobile.md)
   - [x] 4D Uygulama: "Ekle" sekmesinden ya da kahve/kafe sayfasından tadım ve kafe ziyareti ekleme; fotoğraf telefonda küçültülür, konum bilgisi silinir; kaydedilen sitede hemen görünür.
   - [x] 4E Uygulama: akış (herkes, takip ettiklerim, kafeler), tadım sayfasında beğeni, yorum ve şikâyet; bildirimler ve okunmamış sayısı; takip; kendi profilin (gizli tadımlar, denenecekler, listeler); kahve sayfasından "Denemek istiyorum" ve "Listeye ekle".

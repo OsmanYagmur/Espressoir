@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Espressoir: a coffee-tasting archive (owner's Notion notes) growing into a coffee social network
-(web now, Expo/React Native app later). Full brief: `PROJECT_BRIEF.md` (Turkish).
+(web, and a React Native app for iOS). Full brief: `PROJECT_BRIEF.md` (Turkish).
 
 @AGENTS.md
 
@@ -74,10 +74,11 @@ apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.t
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
                              pure views from @espressoir/db)
-apps/mobile/                 Expo app: src/app (routes: tabs Akış/Kahveler/Kafeler/Ekle/Hesap,
-                             tadim/[id], tadim/yeni, ziyaret/yeni, bildirimler, oneriler, u/…),
-                             src/components, src/lib (supabase, archive, session, theme,
-                             notifications, photo, site); docs/mobile.md
+apps/mobile/                 React Native app (no Expo): index.js, src/App.tsx (navigators),
+                             src/navigation.ts (routes, router), src/screens, src/components,
+                             src/lib (supabase, archive, session, theme, notifications, photo,
+                             site, env), ios/ (Xcode project, scene delegate, EspressoirNative
+                             pod), scripts/ (write-env, ios-device); docs/mobile.md
 apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
                              community.spec, moderation.spec (need Supabase + its mail catcher)
                              · helpers.ts
@@ -148,7 +149,7 @@ data/                        owner's Notion export + reports (git-ignored)
   `opengraph-image` modules for every page's metadata, so a throw at their module scope breaks
   all on-demand pages, not just the image: keep such loads guarded (`lib/og.tsx`).
 - Workspace packages ship TS source (`transpilePackages`); keep `core`/`db`/`i18n` free of Next
-  and DOM APIs so Expo can reuse them.
+  and DOM APIs so the React Native app can reuse them.
 - `fold_tr()` (SQL) and `foldTurkish()` (TS) must stay identical; slugs use `slugify()`.
 - Notion import (`scripts/notion/`): pure plan (`plan.ts`) → transactional apply (`apply.ts`);
   insert-only and idempotent via `tastings.source_ref`; everything it "knows" lives in
@@ -472,49 +473,66 @@ Verified business accounts (Phase 4B):
   account carry "Resmi yanıt" (`CommentThread`'s `officialIds`). Visits have no comments,
   so cafés get the badge and the page, not replies.
 
-The mobile app (Phase 4C):
+The mobile app (Phase 4C; plain React Native since 2026-10-17):
 
-- **`apps/mobile`: Expo SDK 57, Expo Router (`src/app`), runs in Expo Go** (no store, no
-  native build). React 19.2.3 and React Native 0.86 as the SDK pins them, and
-  `react-native-reanimated` / `react-native-worklets` / `react-dom` pinned to the versions
-  inside Expo Go (a newer JS copy of a native module crashes there). pnpm's isolated installs
-  work since SDK 54; Metro configures the monorepo itself (no `metro.config.js`).
-- **It shares, never copies, the rules:** the pure archive views moved to `@espressoir/db`
+- **`apps/mobile` is plain React Native 0.86 with React Navigation** — no Expo. The owner
+  dropped Expo on 2026-10-17 after Expo Go 57 demanded an Expo account on a physical iPhone
+  and Expo's prebuild template lagged iOS 27. The iOS project lives in git (`ios/`); what
+  Xcode and CocoaPods produce from it does not (`ios/Pods`, `ios/build`, xcuserdata,
+  `.xcode.env.local`).
+- **Navigation:** `src/navigation.ts` types every screen (`RootStackParamList`,
+  `TabParamList`) and exports `router` (push/replace/back through a container ref, usable
+  from any component), `useParams` and `useScreenTitle`; `src/App.tsx` declares the native
+  stack (modals for sign-in and the two forms) and the tabs. Links are `RowLink` /
+  `TextLink` with a typed `to`. A route is `{ screen, params }`, never a path string.
+- **The tab bar is iOS's own** (`createNativeBottomTabNavigator` from
+  `@react-navigation/bottom-tabs/unstable`, on react-native-screens): the rounded,
+  translucent Liquid Glass bar on iOS 26+, SF Symbol icons (filled when selected), the
+  unread badge on Hesap, minimised while scrolling down. The owner asked for Apple's look
+  there (2026-10-17); the rest of the app keeps the tasting-form design.
+- **iOS 27 needs the scene life cycle:** an app built with the iOS 27 SDK that still makes
+  its window in the app delegate is killed at launch (`NoSceneLifecycleAdoption`; the iOS 26
+  simulator does not show it). `ios/Espressoir/AppDelegate.swift` creates the React Native
+  factory only; `SceneDelegate` creates the window and starts React Native in it;
+  Info.plist declares the scene manifest. React Native's own 0.86 template does not do this
+  either: keep it when upgrading.
+- **It shares, never copies, the rules:** the pure archive views live in `@espressoir/db`
   (`selectors.ts`; the web's `lib/data/selectors.ts` re-exports them), the suggestions
   logic is `suggestCoffees` (`@espressoir/db`, `suggestions.ts`; each app only words the
   reasons), copy is `t.mobile` and the rest of `@espressoir/i18n`. Keep `core`/`db`/`i18n`
   free of Next and DOM APIs.
-- **Settings are `apps/mobile/.env`** (git-ignored; `.env.example`): the Supabase URL and
-  publishable key, and `EXPO_PUBLIC_SITE_URL`. Public values only. `docs/mobile.md` says how
-  to open the app on a phone.
+- **Settings are `apps/mobile/.env`** (git-ignored; `.env.example`): `APP_SUPABASE_URL`,
+  `APP_SUPABASE_PUBLISHABLE_KEY`, `APP_SITE_URL`. Public values only.
+  `scripts/write-env.mjs` writes them into `src/lib/env.generated.ts` (git-ignored; from
+  `.env.example` when there is no `.env`, as in CI) before start, ios, bundle and
+  typecheck, so they are baked into the build. `APP_SITE_URL` is never localhost (on a
+  phone that is the phone): the CAPTCHA page failed to load once because of it.
+- **Monorepo plumbing:** `metro.config.js` watches the workspace root and resolves from the
+  app's and the root's node_modules; `babel.config.js` maps `@/` to `src/`
+  (module-resolver, same as tsconfig `paths`). Workspace packages ship TS source.
+- **Native modules** are autolinked from package.json (image picker, webview, date picker,
+  async storage, screens, safe area, get-random-values). Our own native code is the
+  `EspressoirNative` pod (`ios/EspressoirNative`, linked in the Podfile): `ImageShrinker`,
+  which resizes and re-encodes a picture as JPEG. The Podfile raises every pod to iOS 17
+  (Xcode 27 refuses targets below 15; some resource bundles ask for 9.0).
 - **Sign-in CAPTCHA comes from the site:** the app opens `/uygulama/dogrulama` in a WebView
   (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots) and
   takes the Turnstile token it posts (`window.ReactNativeWebView`); without a site key the
   page says "disabled" at once. One Turnstile widget serves both projects (hostnames
   `espressoir.com`, `vercel.app`, `localhost`).
-- **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark),
-  Archivo and IBM Plex Mono from `@expo-google-fonts` (only the weights used). Names stay
-  as written (no uppercasing of brands, places, usernames). List rows navigate with
-  `router.push` from a Pressable: `Link asChild` drops a style function.
-- **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle`, `expo export` for iOS;
-  no Xcode) besides lint and typecheck.
-- **On the owner's iPhone the app is a local Xcode build** (owner's choice, 2026-10-15): Expo
-  Go 57 opens a project on a physical iPhone only with the same Expo account signed in on the
-  CLI and in Expo Go, and the owner preferred no Expo account. `pnpm --filter
-@espressoir/mobile ios:device` = `expo run:ios --configuration Release --device`: prebuild
-  (`ios/`, git-, lint-, tsc- and Prettier-ignored), `pod install`, a Release build with the JS
-  bundle inside, signed with the owner's free Apple ID (re-install every 7 days). No EAS, no
-  paid plan. CocoaPods on this Mac lives in a conda env (`cocoapods`) behind
-  `/opt/anaconda3/bin/pod`. Expo Go stays the quick path while developing.
-- **iOS 27 needs the scene life cycle:** an app built with the iOS 27 SDK that still starts
-  from the app delegate is killed at launch (`NoSceneLifecycleAdoption` in the crash report;
-  the iOS 26 simulator did not show it). Expo 57 ships `ExpoAppSceneDelegate`, but its
-  prebuild template does not use it yet, so `apps/mobile/plugins/with-scene-lifecycle.js`
-  rewrites the generated AppDelegate and Info.plist on every prebuild; it fails loudly when
-  the template changes (then drop it). `expo-build-properties` pins the deployment target to
-  17.0 (what the Expo pod requires) and `ios.appleTeamId` is the owner's team. Never fix the
-  generated `ios/` by hand or with Xcode's suggestions: change app.json or the plugin, then
-  `ios:prebuild` (regenerates `ios/`) and `ios:device`.
+- **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark);
+  Archivo and IBM Plex Mono as files in `assets/fonts` (linked with `react-native-asset`,
+  listed in Info.plist `UIAppFonts`, used by PostScript name). Names stay as written (no
+  uppercasing of brands, places, usernames).
+- **Installing:** `pnpm --filter @espressoir/mobile ios:device` (`scripts/ios-device.mjs`)
+  finds the cabled iPhone with `devicectl`, runs `pod install` when the Podfile changed,
+  builds Release with `xcodebuild` (DerivedData outside the iCloud Desktop), installs and
+  launches. Signed with the owner's free Apple ID (team `X7AATGWM6G`): re-install every 7
+  days. The shared scheme's Run is Release, so ▶ in Xcode gives the same standalone app.
+  Development: `start` (Metro) + `ios` (Debug on the simulator). CocoaPods on this Mac
+  lives in a conda env (`cocoapods`) behind `/opt/anaconda3/bin/pod`.
+- **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle` = `react-native bundle`
+  for iOS; no Xcode) besides lint and typecheck.
 
 Writing from the app (Phase 4D):
 
@@ -522,15 +540,16 @@ Writing from the app (Phase 4D):
   after `tastingInputSchema`, `log_cafe_visit_v1` after `cafeVisitInputSchema`,
   `set_tasting_photo_v1` for the picture; error codes are worded in `src/lib/errors.ts`, the
   same mapping as the panel. Forms are modals (`tadim/yeni`, `ziyaret/yeni`), reached from the
-  "Ekle" tab and from a coffee's or café's page (`?kahve=` / `?kafe=` prefills; in the app a
-  query is fine, there is no prefetching router). `MemberGate` asks signed-out visitors to
+  "Ekle" tab and from a coffee's or café's page (`NewTasting { kahve }` / `NewVisit { kafe }`
+  prefill). `MemberGate` asks signed-out visitors to
   sign in and members without a username to finish on the site: the database would refuse
   them anyway (`can_post()`).
 - **Duplicate check while typing something new** (`LookAlikes` in `components/pickers.tsx`):
   the same trigram search as the website, a café only within its city.
-- **Photos are prepared on the phone** (`src/lib/photo.ts`): picked with `exif: false`,
-  resized with expo-image-manipulator (1600 px, twin 480 px, same format), re-encoded as WebP
-  (JPEG where WebP cannot be written) until under `PHOTO_MAX_BYTES`. Re-encoding drops the
+- **Photos are prepared on the phone** (`src/lib/photo.ts`): picked with
+  react-native-image-picker (`includeExtra: false`, HEIC handed over as JPEG), resized by
+  `ImageShrinker` (1600 px, twin 480 px), re-encoded as JPEG until under `PHOTO_MAX_BYTES`
+  (the Expo-era build wrote WebP; the iOS encoder here writes JPEG, which the site takes). Re-encoding drops the
   metadata, and `hasCameraMetadata` (`@espressoir/core`; JPEG APP1 Exif/XMP, WebP EXIF/XMP
   chunks) checks the bytes anyway: a picture that still carries any is refused, not uploaded.
   Checked on the simulator: a 4288×2848 source with EXIF came out 1600 px, 105 KB, clean.
@@ -541,11 +560,11 @@ Writing from the app (Phase 4D):
   app calls it best effort (`src/lib/site.ts`): a failure only means the site catches up
   within the hour. `expireArchive()` is the Route Handler twin of `refreshArchive()`
   (`revalidateTag(…, { expire: 0 })` now and again two seconds later; `updateTag` works only
-  in Server Actions). The app's `EXPO_PUBLIC_SITE_URL` must be the site of the same Supabase
+  in Server Actions). The app's `APP_SITE_URL` must be the site of the same Supabase
   project, or the token is not recognised there.
 - **Dates are the archive's day** (`src/lib/today.ts`, `siteConfig.timeZone`), so "today" on
   the phone is the same day the website would say.
-- Expo's generated files (`.expo/`, the `dist/` of `bundle`) are git- and Prettier-ignored.
+- The `dist/` of `bundle` and `src/lib/env.generated.ts` are git- and Prettier-ignored.
 
 Social in the app (Phase 4E):
 
@@ -559,7 +578,7 @@ Social in the app (Phase 4E):
   (`socialErrorKind`); each app words them (`lib/errors.ts` in the app).
 - **Tabs:** Akış (index: everyone / following / cafés), Kahveler, Kafeler, Ekle, Hesap.
   Öneriler moved out of the tabs (a stack screen opened from Hesap).
-- **A tasting's page** (`app/tadim/[id].tsx`) reads the row with the viewer's session
+- **A tasting's page** (`screens/tasting.tsx`) reads the row with the viewer's session
   (`loadTasting`), so followers-only and own private tastings open for those allowed.
   Likes, comments (one reply level, edit, delete via `delete_comment_v1`), reports and the
   "official reply" badge (members whose `officialFor` includes the tasting's brand) work
@@ -567,9 +586,6 @@ Social in the app (Phase 4E):
 - **The unread count** (`lib/notifications.tsx`) is read when a tab gains focus
   (`screenListeners`) and when the app returns to the foreground; no connection stays
   open, as on the website. The notifications screen marks read "up to" when it was shown.
-  (While the count still followed `usePathname` in the root layout, pushes stopped working
-  in Expo Go after a Fast Refresh and worked again after a full reload; it was moved to
-  the tabs anyway. If navigation freezes while developing, reload before suspecting code.)
 - **Own profile:** the profile screen reads the member's own tastings and lists with their
   session (all visibilities, wishlist included) and re-reads them whenever the archive
   is refreshed; everyone else sees the public archive.
@@ -614,7 +630,7 @@ Social in the app (Phase 4E):
   - [x] 3F cafés (owner's addition, 2026-10-13; decided 2026-10-14): members add cafés (city,
         district, pasted map link) and rate what they drank there; `/kafeler`, a café's page
         with an average per drink, visits on profiles and in the feed; review and merge.
-- [x] Phase 4 — recommendations, verified accounts, the Expo app. Plan approved 2026-10-15
+- [x] Phase 4 — recommendations, verified accounts, the mobile app. Plan approved 2026-10-15
       (`~/.claude/plans/soft-hatching-comet.md` on the owner's machine; decisions below). Five
       steps, each its own branch + PR; the next one starts only with the owner's go:
   - [x] 4A recommendations: the site's own model on `/panel/oneriler`, `pnpm export:analytics`
@@ -622,14 +638,14 @@ Social in the app (Phase 4E):
   - [x] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
         an admin approves; badge, editing the business page, a badge on their replies;
         an official account cannot score its own coffee or café.
-  - [x] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
+  - [x] 4C app foundation: `apps/mobile` (Expo at first, plain React Native since 2026-10-17), e-mail code sign-in through a
         Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
   - [x] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
   - [x] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
-email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
+email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
 ephemeral Supabase on the GitHub runner instead of the cloud dev project.
 
 Phase 2 decisions (owner-approved; they become conventions as each step lands):
@@ -672,11 +688,11 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Phase 4 decisions (owner-approved 2026-10-15):
 
 - **Order:** the brief's Phase 4 first (recommendations + export, verified accounts), then the
-  Expo app. **No English UI** in this phase.
+  mobile app. **No English UI** in this phase.
 - **Recommendations:** an explainable model on the site, a pseudonymous export, and an import
   for the owner's own model. **Verified accounts:** badge and link, editing the business page,
   a badge on replies, members apply and the owner approves.
-- **The app runs in Expo Go** (free; no store, no push, no Google sign-in there). First
+- **The app is built locally with Xcode and installed by cable** (free; no store, no push, no Google sign-in; Expo Go until 2026-10-17). First
   version: adding tastings and café visits, browsing, feed/likes/comments/notifications,
   profile and lists.
 

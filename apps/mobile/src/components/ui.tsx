@@ -1,5 +1,5 @@
 import { scoreTier, type ScoreTier } from "@espressoir/core";
-import { router, type Href } from "expo-router";
+import { router, type Route } from "@/navigation";
 import {
   ActivityIndicator,
   Pressable,
@@ -194,11 +194,11 @@ export function ScoreBadge({
  * which drops a style function, so the row lost its layout).
  */
 export function RowLink({
-  href,
+  to,
   children,
   label,
 }: {
-  href: Href;
+  to: Route;
   children: React.ReactNode;
   label?: string;
 }) {
@@ -207,7 +207,7 @@ export function RowLink({
     <Pressable
       accessibilityRole="link"
       accessibilityLabel={label}
-      onPress={() => router.push(href)}
+      onPress={() => router.push(to)}
       style={({ pressed }) => ({
         flexDirection: "row",
         alignItems: "center",
@@ -367,5 +367,22 @@ export function QuietButton({
         {title}
       </Text>
     </Pressable>
+  );
+}
+
+/** A link inside running text (a member's name, a coffee): underlined, opens its screen. */
+export function TextLink({
+  to,
+  style,
+  children,
+}: {
+  to: Route;
+  style?: TextStyle;
+  children: React.ReactNode;
+}) {
+  return (
+    <Text accessibilityRole="link" onPress={() => router.push(to)} style={style}>
+      {children}
+    </Text>
   );
 }
