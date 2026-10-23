@@ -6,12 +6,13 @@ Kapsam ve yol haritası: [`PROJECT_BRIEF.md`](./PROJECT_BRIEF.md)
 
 ## Yığın
 
-Next.js 16 (App Router, Cache Components) · TypeScript (strict) · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, RLS) · Zod · Vitest (+ gömülü Postgres: PGlite) · Playwright · pnpm + Turborepo · Vercel (Hobby, `fra1`)
+Next.js 16 (App Router, Cache Components) · TypeScript (strict) · Tailwind CSS 4 (tasarım token'larına bağlı) · Supabase (Postgres, Auth, RLS) · Zod · Vitest (+ gömülü Postgres: PGlite) · Playwright · pnpm + Turborepo · Vercel (Hobby, `fra1`)
 
 ## Klasör yapısı
 
 ```
-apps/web/          Next.js uygulaması (Vercel'in Root Directory'si)
+design/            Tasarım dili (DESIGN.md), token'lar (tokens.css), bileşen referansı, içerik metinleri
+apps/web/          Next.js uygulaması (Vercel'in Root Directory'si); src/content/ atölye programları ve bilgi yazıları
 packages/core/     siteConfig, Türkçe katlama/slug, puan kademeleri, istatistik, liste filtresi
 packages/i18n/     Tüm arayüz metinleri (Türkçe sözlük)
 packages/db/       Şemadan üretilen tipler, arşiv okuma modelleri, tadım formu doğrulaması
@@ -57,6 +58,7 @@ pnpm dev                       # http://localhost:3000
 | `pnpm db:new <ad>`                  | Yeni migration dosyası (geri alma dosyasını da yaz: `supabase/rollbacks/`)                  |
 | `pnpm db:push:dev` / `db:push:prod` | Migration'ları dev/prod'a uygular (prod onay ister)                                         |
 | `pnpm types:gen`                    | `packages/db` tiplerini migration'lardan yeniden üretir                                     |
+| `pnpm tokens:gen`                   | `design/tokens.css` renklerini CSS okuyamayan yerler için TS'e yazar (paylaşım görseli vb.) |
 | `pnpm admin:bootstrap`              | Hesabını oluşturur ve admin yapar (`--env prod` ile canlıda)                                |
 | `pnpm user:invite <e-posta>`        | Kayıt kapalıyken davet gönderir (sitede: Panel → Yönetim → Davetler)                        |
 | `pnpm import:notion`                | Notion CSV'sini içe aktarır (`--offline`, `--dry-run`, `--env prod`)                        |
@@ -69,26 +71,28 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 ## Sayfalar
 
-| Adres                             | İçerik                                                                                                          |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `/`                               | Sayılar, son tadımlar, en yüksek puanlılar, demleme yöntemleri                                                  |
-| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)                                             |
-| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                                                     |
-| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                                                                |
-| `/istatistik`                     | Dağılım, marka/form/yöntem ortalamaları (n ile), saçılım, zaman çizgisi                                         |
-| `/hakkinda`                       | Site ve puanlama hakkında                                                                                       |
-| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin; son kafe ziyaretleri                                               |
-| `/kafeler`                        | Kafeler; şehre ve ada göre süzme (durum URL'de)                                                                 |
-| `/kafe/[sehir]/[kafe]`            | Kafenin ziyaretleri, ortalaması, içecek türüne göre ortalama (n ile)                                            |
-| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                                                     |
-| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip                                     |
-| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                                                   |
-| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme                                       |
-| `/panel/isletme`                  | Resmi hesabı olduğun marka ve kafelerin tanıtımı; doğrulama başvuruların                                        |
-| `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)                                        |
-| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                                                         |
-| `/panel/yonetim`                  | Yönetici: şikâyetler, gizle/sil, üye kısıtlama, kahve ve kafe doğrulama/birleştirme, işletme hesabı başvuruları |
-| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                                               |
+| Adres                             | İçerik                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/`                               | Tek cümle ve tek eylem (açık atölye varsa "Atölyeye başvur"), sıradaki atölye, son tadımlar, bilgi yazıları  |
+| `/atolye`, `/atolye/[id]`         | Atölye: tarih, konum, kontenjan, program, sık sorulanlar ve başvuru formu (dolunca yedek liste)              |
+| `/bilgi`, `/bilgi/[yazi]`         | Kısa kahve yazıları; her biri `apps/web/src/content/bilgi/` altında bir Markdown dosyası                     |
+| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)                                          |
+| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                                                  |
+| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                                                             |
+| `/istatistik`                     | Arşivin sayıları, en yüksek puanlılar, yöntemler; dağılım, marka/form/yöntem ortalamaları (n ile), saçılım   |
+| `/hakkinda`                       | Site ve puanlama hakkında                                                                                    |
+| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin; son kafe ziyaretleri                                            |
+| `/kafeler`                        | Kafeler; şehre ve ada göre süzme (durum URL'de)                                                              |
+| `/kafe/[sehir]/[kafe]`            | Kafenin ziyaretleri, ortalaması, içecek türüne göre ortalama (n ile)                                         |
+| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                                                  |
+| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip                                  |
+| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                                                |
+| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme                                    |
+| `/panel/isletme`                  | Resmi hesabı olduğun marka ve kafelerin tanıtımı; doğrulama başvuruların                                     |
+| `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)                                     |
+| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                                                      |
+| `/panel/yonetim`                  | Yönetici: atölyeler ve başvurular, şikâyetler, gizle/sil, üye kısıtlama, kahve ve kafe doğrulama, işletmeler |
+| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                                            |
 
 ## Rehberler
 
@@ -121,3 +125,4 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
   - [x] 4C Uygulama: kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. 2026-10-17'den beri Expo'suz, düz React Native; Mac'te Xcode ile derlenip kabloyla iPhone'a kurulur. Kurulum: [docs/mobile.md](./docs/mobile.md)
   - [x] 4D Uygulama: "Ekle" sekmesinden ya da kahve/kafe sayfasından tadım ve kafe ziyareti ekleme; fotoğraf telefonda küçültülür, konum bilgisi silinir; kaydedilen sitede hemen görünür.
   - [x] 4E Uygulama: akış (herkes, takip ettiklerim, kafeler), tadım sayfasında beğeni, yorum ve şikâyet; bildirimler ve okunmamış sayısı; takip; kendi profilin (gizli tadımlar, denenecekler, listeler); kahve sayfasından "Denemek istiyorum" ve "Listeye ekle".
+- [x] **Yeni tasarım, atölye ve bilgi** (2026-10-23): krem zemin, espresso kahverengisi, tek tarçın vurgu; Fraunces, Archivo ve IBM Plex Mono; açık ve koyu tema. Kurallar: [`design/DESIGN.md`](./design/DESIGN.md). Atölye sayfası ve başvuru formu (herkes başvurur, başvuruları yalnızca yönetici görür; yönetimden atölye eklenir, başvurular yanıtlanır), bilgi yazıları.

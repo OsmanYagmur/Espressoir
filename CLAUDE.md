@@ -3,6 +3,8 @@
 Espressoir: a coffee-tasting archive (owner's Notion notes) growing into a coffee social network
 (web, and a React Native app for iOS). Full brief: `PROJECT_BRIEF.md` (Turkish).
 
+Tasarım kuralları: design/DESIGN.md, içerik: design/icerik.md. Yeni arayüz kodu bu kurallara ve design/tokens.css'e uymalı.
+
 @AGENTS.md
 
 ## Ground rules (from the brief)
@@ -36,6 +38,7 @@ pnpm test:e2e                                 # needs a prior build; port 3100
 pnpm format / format:check
 pnpm db:new <name> | db:push:dev | db:push:prod
 pnpm types:gen [--db-url <url>]               # default: from supabase/migrations via PGlite
+pnpm tokens:gen                               # design/tokens.css colours → lib/design-tokens.ts
 pnpm admin:bootstrap [--env prod]             # owner account (signup is closed)
 pnpm user:invite [--env prod] <email>…        # invitation e-mail (the only way in for now)
 pnpm export:analytics [--env prod|--offline]  # public tastings under pseudonyms → data/analytics/
@@ -56,7 +59,8 @@ Playwright suite, signed-in flows included, against `supabase start` on the runn
 ```
 apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'navigation'
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
-                             /u/[username]/liste/[slug],
+                             /u/[username]/liste/[slug], /atolye, /atolye/[id] (+ actions.ts:
+                             the application), /bilgi, /bilgi/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
                              /panel/yonetim (admin), /hesap,
@@ -64,16 +68,23 @@ apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
-apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
+apps/web/src/app/            root layout (fonts), 404/error/loading, icon + apple-icon (drawn),
+                             sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*,
                              /bildirimler, /giris only
-apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
-                             panel/ (forms, coffee picker), account/ (header link, Turnstile,
-                             form message), social/ (follow, feed, like, comments, report)
+apps/web/src/components/     ui/ (button, chip, card, field, dropdown), site/ (header, footer,
+                             page heading, legal page), coffee/ (TastingCard, ScoreBadge,
+                             TasteProfile), stats/ (charts), workshop/ (EventCard, ApplyForm),
+                             info/ (InfoCard), panel/ (forms, coffee picker), account/ (account
+                             menu, Turnstile, form message), social/ (follow, feed, like,
+                             comments, report)
+apps/web/src/content/        atolye/ (workshop programs, TS, one per kind), bilgi/ (articles,
+                             one Markdown file each; README says the format)
 apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
-                             pure views from @espressoir/db)
+                             pure views from @espressoir/db), workshops.ts (their own cached
+                             read), articles.ts, today.ts (the year, cached)
 apps/mobile/                 React Native app (no Expo): index.js, src/App.tsx (navigators),
                              src/navigation.ts (routes, router), src/screens, src/components,
                              src/lib (supabase, archive, session, theme, notifications, photo,
@@ -92,6 +103,8 @@ scripts/                     db-push, gen-types, import-notion (+ notion/), admi
                              accounts, contract)
 supabase/                    migrations/, rollbacks/, templates/ (auth e-mails),
                              tests/local-shim.sql
+design/                      DESIGN.md (rules), tokens.css (every value), components.css
+                             (reference only), icerik.md (copy and coffee facts)
 docs/                        setup-supabase, setup-auth, deploy-vercel, backup
 data/                        owner's Notion export + reports (git-ignored)
 ```
@@ -125,17 +138,21 @@ data/                        owner's Notion export + reports (git-ignored)
   `generateStaticParams` (required by `ensureStatic`; return a placeholder when the archive is
   empty). Client components that read the URL (`usePathname`, `useSearchParams`) also need a
   Suspense boundary. The coffee list filters in the browser; its state lives in the URL.
-- Charts are server-rendered HTML/CSS (no chart library): one ink series, value labels, a table
-  twin under each, `n` beside every mean, n < 3 faded + hollow + tagged (`SMALL_SAMPLE`).
+- Charts are server-rendered HTML/CSS (no chart library): one series (`ink-2`), value labels, a
+  table twin under each, `n` beside every mean, n < 3 faded and tagged "Az tadım"
+  (`SMALL_SAMPLE`). A mean score is a number and one accent bar, like every score.
 - Client components shared with the server must not format with `Intl` (hydration); prepare
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
-- **One secret at app runtime, for one screen.** `SUPABASE_SECRET_KEY` is read only by
+- **Two secrets at app runtime, each for one job.** `SUPABASE_SECRET_KEY` is read only by
   `lib/supabase/admin.ts` (`server-only`), only for the invitation screen's Auth admin calls,
   only after `requireAdmin()` (owner-approved exception, 2D). Never use that client on the app's
   own tables; everything else still runs with the publishable key and the caller's session.
-  Vercel holds it as a **Secret** (prod key on Production, dev key on Preview); the public
-  values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
+  `RESEND_API_KEY` (with `WORKSHOP_NOTIFY_EMAIL`) is read only by `lib/workshop-mail.ts`, to
+  tell the owner about a new workshop application (owner-approved 2026-10-23); without it
+  nothing is sent. Vercel holds secrets as **Secret** (prod key on Production, dev key on
+  Preview); the public values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a
+  Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
@@ -160,23 +177,32 @@ data/                        owner's Notion export + reports (git-ignored)
   edit an applied migration; expand → migrate → contract (old app versions stay in the wild);
   version RPCs (`_v2`) instead of changing signatures. Regenerate types after each migration
   (CI fails on stale `database.types.ts`).
-- **Design = "tasting form"** (owner picked it over two alternatives; the earlier cream/serif look
-  read as AI-made): off-white paper, black ink, hard rules instead of rounded cards, one accent
-  (signal red `--brand`), Archivo (wide via `.font-wide`) + IBM Plex Mono (labels/data,
-  `.label-caps`), radius 0, numbered section headings (`SectionHeading`). Tokens only in
-  `apps/web/src/app/globals.css` (AA-checked, light + dark). Score colour never carries meaning
-  alone — the number is always shown.
-- **Two looks over that design, same markup** (2D; the owner found the form hard to read but
-  wants it kept): `sade` (default) and `form` (the original, untouched), on `<html data-look>`.
-  Style with the `sade:` / `form:` variants; what only one look shows is hidden in the other
-  (`form:hidden`, `sade:hidden`). Sade's three rules: links in the content are underlined in the
-  accent (opt out with `data-plain` or a `Button`), a page says what it is for (the `lead` of
-  `PageHeading`, the `hint` of `SectionHeading`), the main thing outweighs its details. The choice is per browser
-  (`localStorage`, applied before paint by `LOOK_SCRIPT`; `lib/look.ts`), switched from the
-  header menu. **A change to the form look needs the owner's say-so**; new pages must read well
-  in both.
-- CSS `uppercase` follows `lang="tr"` (i → İ). Uppercase only Turkish UI copy; never coffee or
-  brand names (render those as written), and give English brand text `lang="en"`.
+- **Design = `design/DESIGN.md`** (replaced the "tasting form" and its two looks on
+  2026-10-23, at the owner's request): cream paper (`--bg`), espresso ink (`--ink`), one
+  cinnamon accent (`--accent`) for the primary button, the active menu line, score bars and the
+  focus ring only. Every colour, space, radius and font family comes from `design/tokens.css`,
+  imported by `app/globals.css` into a layer of its own and mapped onto Tailwind's theme
+  (`bg-surface`, `text-ink-2`, `border-line`, `rounded-lg`, `shadow-sticky`…); Tailwind's own
+  palette, radii, shadows and type sizes are switched off, so a class can only name a token.
+  Spacing uses the token steps (1, 2, 3, 4, 6, 8, 12, 16). Type styles are utilities
+  (`type-display`, `type-title`, `type-card-title`, `type-lead`, `type-label`, `type-meta`,
+  `type-figure`). Fraunces (titles, names), Archivo (everything else), IBM Plex Mono (numbers
+  only), loaded by next/font into `--font-display/sans/mono`. No uppercase labels, no numbered
+  headings, smallest text 14px, Lucide icons (1.5 stroke, 20px), no emoji.
+- **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm` is
+  the header's "Giriş" only). Cards are framed by `--line`, never by a shadow; the one shadow
+  is the phone's sticky bar. A TastingCard is a single link; lists of coffees, cafés and
+  suggestions are rows that are each one link. Scores never change colour.
+- **Light and dark** come from the same tokens: `data-theme` on `<html>` (next-themes) or the
+  system preference; the switch is in the footer. Places that cannot read CSS variables (theme
+  colour, manifest, share images, the global error page, the drawn icons) read
+  `lib/design-tokens.ts`, generated by `pnpm tokens:gen`; a test fails while it disagrees with
+  `tokens.css`.
+- **Menu:** Tadımlar (`/akis`), Atölye, Bilgi, then "Giriş" or the member's picture, whose menu
+  holds Profil, Panel, Bildirimler (with the unread count), Kahveler, Kafeler, İstatistik,
+  Hesap, Yönetim. Visitors find Kahveler, Kafeler, İstatistik and Hakkında in the footer.
+- Coffee, brand, café and member names are written as they are (no CSS uppercasing anywhere);
+  give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
 
 Accounts (Phase 2A):
@@ -209,8 +235,9 @@ Accounts (Phase 2A):
 - `requireUser()` sends signed-out visitors to `/giris` and members without a username to
   `/hesap/kurulum`; `requireSession()` is for the onboarding page only. The test helper
   `createUser()` returns onboarded users unless told `onboarded: false`.
-- **The header's account link reads the session cookie**, nothing else: public pages must not
-  pull in the Supabase client.
+- **The header's account menu decides from the session cookie** whether to show "Giriş" or a
+  member's picture: a visitor's browser never loads the Supabase client; a member's loads it on
+  demand to fill the menu (`AccountMenu`).
 - **Legal texts** are `packages/i18n/src/legal-tr.ts`, shown with a draft banner until the owner
   has had them reviewed. Changing them means bumping `TERMS_VERSION` in `@espressoir/core`.
 - Members are part of the archive read (`archive.profiles`).
@@ -296,12 +323,12 @@ Taste (Phase 3A):
 - **Taste numbers are derived, not stored:** `tasteMeans` and `countTags` (`@espressoir/core`)
   over the archive's tastings, via `lib/data/taste-summary.ts`. Each taste dimension has its own
   `n`, because people only fill in what they noticed.
-- **`Radar` (`components/stats/radar.tsx`)** is server-rendered SVG under the chart rules: every
-  corner prints its value (and `n` for a mean), small samples are hollow and faded, a table twin
-  sits underneath, and the SVG's label spells the numbers out. Fewer than three corners
-  (`hasRadarShape`) render as a list instead.
-- **Tags inside a tasting are a sentence, not a list** (`FlavorTags`): a tasting is already a
-  list item, and nested items would be counted with it (tests, screen readers).
+- **`TasteProfile` (`components/coffee/taste-profile.tsx`)** replaced the radar (2026-10-23):
+  each dimension five dots and a word (Hafif/Orta/Yoğun…), read aloud as "Gövde: 2/5, hafif";
+  a mean also prints its value and `n`, small samples faded. Dimensions without a value are
+  left out. Bitiş is shown too, after DESIGN.md's four.
+- **Tags inside a tasting are a sentence, not a list** (`FlavorTags`, note chips in small
+  letters): a tasting is already a list item, and nested items would be counted with it.
 - **Sample data** gets taste profiles and tags from `scripts/lib/sample-taste.ts`, applied only
   when the imported file is the fixture; a Notion export has no such columns.
 - **The archive read is measured:** `getArchive()` warns past `ARCHIVE_SPLIT_BYTES` (1 MB), and
@@ -351,9 +378,9 @@ Notifications (Phase 3C):
   `NOTIFICATIONS_KEPT` (200) per member are kept.
 - **`type` is text with a check** (`NOTIFICATION_TYPES`; a test compares the two), not an enum:
   see the note on enum values under Lists.
-- **No open connection.** The header's bell (`NotificationLink`) shows only to browsers with a
-  session cookie, loads the Supabase client on demand and counts unread rows on every page
-  change and when the tab comes back into view. `/bildirimler` marks what it shows as read
+- **No open connection.** The header's account menu (`AccountMenu`) shows only to browsers with
+  a session cookie, loads the Supabase client on demand and counts unread rows on every page
+  change and when the tab comes back into view (a dot on the picture, the number in the menu). `/bildirimler` marks what it shows as read
   from a client effect (`MarkRead`), never during rendering: a page fetched ahead must not
   swallow notifications.
 
@@ -598,6 +625,34 @@ Social in the app (Phase 4E):
 - **Writes that show on the website** (lists, want-to-try, deleting a tasting) call
   `refreshSite()` afterwards; likes, comments and follows do not, as on the website.
 
+Workshops and articles (2026-10-23):
+
+- **`workshops` and `workshop_applications`** (migration `20261023120000_workshops`). A workshop
+  row is a date with its capacity, price text, public location text and `is_open`; `program`
+  names the text the page shows (`content/atolye/<key>.ts`, registered in its `index.ts`). The
+  admin panel (Yönetim → Atölyeler) adds and edits workshops and answers applications: plain
+  table writes as the signed-in admin, allowed by `is_admin()` policies (not moderation, so
+  not logged).
+- **Anyone applies, nobody reads:** anon and members insert the form's columns only (column
+  grants); there is no select policy but the admin's. `prepare_workshop_application` (SECURITY
+  DEFINER trigger) tidies the input, refuses a closed or started workshop
+  (`workshop_closed`), stamps `created_at`, stops floods (20 per workshop per 10 minutes,
+  `rate_limited`), locks the workshop row and sets `status`: `pending`, or `waitlist` once the
+  seats are taken. One application per phone number / handle (`contact_key`). No `can_post()`:
+  applying is not posting and visitors apply too.
+- **The page reads only the seats left:** `workshop_overview` (capacity − applications not
+  rejected, the waitlist included, never below zero) through `workshop_seats_taken()`. Its own
+  cached read (`getOpenWorkshops`, tag `workshops`), refreshed by `refreshWorkshops()` after an
+  application or an admin change, so the archive is not re-rendered for it.
+- **The application is a Server Action** (`app/(site)/atolye/actions.ts`): honeypot field
+  (`website`), Zod (`workshopApplicationInputSchema`), insert with the public key, then the
+  owner's notification mail in `after()`. A full workshop keeps its form (waitlist). Workshop
+  form fields avoid form properties: `workshopTitle`, not `title`.
+- **Articles are files:** `apps/web/src/content/bilgi/<slug>.md`, a `key: value` header and
+  plain paragraphs, parsed by `parseArticle` (`@espressoir/core`, no package) and shipped with
+  the server functions (`outputFileTracingIncludes`). A broken file stops the build with a
+  sentence. Coffee facts come from `design/icerik.md` only.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -620,7 +675,8 @@ Social in the app (Phase 4E):
   - [x] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
         admin panel (hide, delete, restrict, review, merge).
   - [x] 2D (owner's addition): invitation screen in the admin panel; the plainer `sade` look
-        as default with the original `form` look one menu click away.
+        as default with the original `form` look one menu click away (both replaced by the
+        2026-10-23 redesign).
 - [x] Phase 3 — social depth. Plan approved 2026-10-13; decisions below. Six steps, each its
       own branch + PR:
   - [x] 3A taste: tag picker in the form, radar chart on a tasting, community profile and most
@@ -649,6 +705,12 @@ Social in the app (Phase 4E):
   - [x] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
   - [x] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
+- [ ] Redesign, workshop and articles (owner's request, 2026-10-23; branch
+      `redesign-workshop-info`): the design of `design/DESIGN.md` everywhere on the website
+      (the mobile app keeps its own theme for now), `/atolye` with the application form and an
+      admin section, `/bilgi` with four articles. Decided with the owner: one date per
+      workshop, capacity and price editable in the admin panel, e-mail notification through
+      Resend, a KVKK paragraph without a retention period, integer scores (no 0.5 steps).
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
@@ -705,7 +767,10 @@ Phase 4 decisions (owner-approved 2026-10-15):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 4C has none. After any branch switch, look for iCloud's
+  `db:push:prod`). 4C has none. The workshop migration is on dev (2026-10-23), not on prod.
+- Workshop: set the real date, price and place in Yönetim → Atölyeler (the first row holds
+  placeholders); for the e-mail, `RESEND_API_KEY` (Secret) and `WORKSHOP_NOTIFY_EMAIL` on
+  Vercel (docs/deploy-vercel.md). After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 

@@ -26,6 +26,15 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
    ⛔ `SUPABASE_DB_URL` Vercel'e **girmez**. `SUPABASE_SECRET_KEY` yalnızca yönetimdeki davet ekranı için, **Secret** türünde ve ortam başına kendi projesinin anahtarıyla eklenir ([`setup-auth.md`](./setup-auth.md), "Davet ekranı"); o ekranı kullanmayacaksan hiç ekleme.
 
+   **Atölye başvurusu bildirimi (isteğe bağlı).** Yeni başvuruda sana e-posta gelsin istersen iki değişken daha ekle; eklemezsen başvurular yine Panel → Yönetim → Atölyeler'de görünür:
+
+   | Değişken                | Tür    | Değer                                                                                      |
+   | ----------------------- | ------ | ------------------------------------------------------------------------------------------ |
+   | `RESEND_API_KEY`        | Secret | Resend → API Keys → **Create API Key** (yetki: Sending access, alan adı: `espressoir.com`) |
+   | `WORKSHOP_NOTIFY_EMAIL` | Config | Bildirimin gideceği adres                                                                  |
+
+   E-posta `atolye@espressoir.com` adresinden çıkar (giriş e-postaları için Resend'de doğrulanmış alan adı). Production'a ekle; önizlemelerde de istersen Preview'a da. Değişiklik bir sonraki deploy'da geçerli olur.
+
    - Tablodakiler için **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
    - Preview + Development sütunu boş kalırsa PR önizlemeleri derlenmez (PR'daki **Vercel** satırı kırmızı olur; canlı site etkilenmez). Dev projesini sonradan eklemek: [`setup-supabase.md`](./setup-supabase.md), "Dev projesini sonradan eklemek".
    - Vercel'in önerdiği **Supabase entegrasyonunu ekleme** ("Optional Integrations → Add"). Proje zaten var; entegrasyon yeni bir veritabanı kurar ve gizli anahtarları Vercel'e taşır.
