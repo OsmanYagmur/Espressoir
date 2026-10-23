@@ -1,10 +1,11 @@
 import { siteConfig } from "@espressoir/core";
 import type { MetadataRoute } from "next";
 
+import { designTokens } from "@/lib/design-tokens";
 import { t } from "@/lib/i18n";
 
-// The light paper colour of globals.css: what the screen shows while the site opens.
-const PAPER = "#f4f4f1";
+// The page colour (--bg): what the screen shows while the site opens.
+const PAPER = designTokens.light.bg;
 
 /**
  * What a phone needs to put the site on its home screen and open it like an app: full
@@ -28,10 +29,10 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: PAPER,
     categories: ["food", "lifestyle", "social"],
     icons: [
-      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/icon/192", sizes: "192x192", type: "image/png" },
+      { src: "/icon/512", sizes: "512x512", type: "image/png" },
       {
-        src: "/icons/icon-maskable-512.png",
+        src: "/icon/maskable",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
@@ -41,12 +42,12 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: t.pwa.shortcuts.newTasting,
         url: "/panel/tadim/yeni",
-        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        icons: [{ src: "/icon/192", sizes: "192x192", type: "image/png" }],
       },
       {
         name: t.pwa.shortcuts.feed,
         url: "/akis",
-        icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+        icons: [{ src: "/icon/192", sizes: "192x192", type: "image/png" }],
       },
     ],
   };

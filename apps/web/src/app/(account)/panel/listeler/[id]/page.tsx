@@ -1,4 +1,5 @@
 import { LIST_ITEMS_MAX, LIST_NOTE_MAX_LENGTH } from "@espressoir/core";
+import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -7,7 +8,7 @@ import { z } from "zod";
 import { AddCoffeeToList, DeleteList, ListForm } from "@/components/panel/list-form";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,9 +35,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
-const small = "h-9 px-3 font-mono text-xs uppercase";
+const link = "text-accent-ink underline underline-offset-3";
 
 /** What a refused change says, by the short code the action put in the address. */
 function editorError(code: string | string[] | undefined): string | null {
@@ -68,12 +67,9 @@ async function ListEditor({ params, searchParams }: Props) {
 
   if (!list) {
     return (
-      <div className="border-b border-border py-8">
-        <p className="text-muted-foreground">{p.notFound}</p>
-        <Link
-          href="/panel/listeler"
-          className="mt-3 inline-block font-mono text-xs uppercase underline"
-        >
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-ink-2">{p.notFound}</p>
+        <Link href="/panel/listeler" className={link}>
           {p.back}
         </Link>
       </div>
@@ -98,122 +94,126 @@ async function ListEditor({ params, searchParams }: Props) {
 
   return (
     <>
-      <nav className="flex flex-wrap gap-x-6 gap-y-1 border-b border-border py-4 font-mono text-xs uppercase">
-        <Link href="/panel/listeler" className={linkFocus}>
+      <nav className="flex flex-wrap gap-x-6 gap-y-2">
+        <Link href="/panel/listeler" className={link}>
           {p.back}
         </Link>
         {list.is_public && !list.hidden_at ? (
-          <Link href={listPath(user.username, list.slug)} prefetch={false} className={linkFocus}>
-            {p.view} →
+          <Link href={listPath(user.username, list.slug)} prefetch={false} className={link}>
+            {p.view}
           </Link>
         ) : null}
       </nav>
-      {list.hidden_at ? (
-        <p className="mt-4 border-l-2 border-foreground pl-3 font-mono text-sm">{l.hiddenNote}</p>
-      ) : null}
+      {list.hidden_at ? <p className="mt-6 rounded-md bg-sunk p-4">{l.hiddenNote}</p> : null}
       {error ? (
-        <p
-          role="alert"
-          className="mt-4 border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="mt-6 font-medium text-danger">
           {error}
         </p>
       ) : null}
 
-      <SectionHeading index={1} title={p.itemsTitle} aside={items.length} hint={p.itemsHint} />
-      {items.length === 0 ? (
-        <p className="border-b border-border py-6 text-muted-foreground">{l.empty}</p>
-      ) : (
-        <ol aria-label={p.itemsTitle}>
-          {items.map((item, index) => (
-            <li key={item.coffee_id} className="grid gap-3 border-b border-border py-4">
-              <p className="[overflow-wrap:anywhere]">
-                <span className="mr-2 font-mono text-xs text-muted-foreground">{index + 1}</span>
-                <Link
-                  href={coffeePath(item.coffee.brand.slug, item.coffee.slug)}
-                  prefetch={false}
-                  className={`font-semiwide font-bold ${linkFocus}`}
-                >
-                  {item.coffee.name}
-                </Link>{" "}
-                <span className="font-mono text-xs text-muted-foreground">
-                  {item.coffee.brand.name}
-                </span>
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <form
-                  action={setListItemNote.bind(null, list.id, item.coffee_id)}
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-                >
-                  <Input
-                    name="note"
-                    aria-label={`${p.note}: ${item.coffee.name}`}
-                    placeholder={p.note}
-                    maxLength={LIST_NOTE_MAX_LENGTH}
-                    defaultValue={item.note ?? ""}
-                    autoComplete="off"
-                    className="h-9 min-w-48 flex-1 text-sm"
-                  />
-                  <Button type="submit" variant="outline" className={small}>
-                    {p.saveNote}
-                  </Button>
-                </form>
-                <form action={moveListItem.bind(null, list.id, item.coffee_id, "up")}>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={index === 0}
-                    aria-label={`${p.moveUp}: ${item.coffee.name}`}
-                    className={small}
+      <Section id="kahveler">
+        <SectionHeading
+          id="kahveler"
+          title={p.itemsTitle}
+          aside={<span className="type-figure">{items.length}</span>}
+          hint={p.itemsHint}
+        />
+        {items.length === 0 ? (
+          <p className="text-ink-2">{l.empty}</p>
+        ) : (
+          <ol aria-labelledby="kahveler" className="border-t border-line">
+            {items.map((item, index) => (
+              <li key={item.coffee_id} className="grid gap-3 border-b border-line py-4">
+                <p className="[overflow-wrap:anywhere]">
+                  <span className="mr-2 type-figure text-ink-2">{index + 1}</span>
+                  <Link
+                    href={coffeePath(item.coffee.brand.slug, item.coffee.slug)}
+                    prefetch={false}
+                    className="font-display font-semibold text-ink no-underline hover:underline"
                   >
-                    ↑
-                  </Button>
-                </form>
-                <form action={moveListItem.bind(null, list.id, item.coffee_id, "down")}>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={index === items.length - 1}
-                    aria-label={`${p.moveDown}: ${item.coffee.name}`}
-                    className={small}
+                    {item.coffee.name}
+                  </Link>{" "}
+                  <span className="type-meta">{item.coffee.brand.name}</span>
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <form
+                    action={setListItemNote.bind(null, list.id, item.coffee_id)}
+                    className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
                   >
-                    ↓
-                  </Button>
-                </form>
-                <form action={removeListItem.bind(null, list.id, item.coffee_id)}>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    aria-label={`${p.remove}: ${item.coffee.name}`}
-                    className={small}
-                  >
-                    {p.remove}
-                  </Button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
+                    <Input
+                      name="note"
+                      aria-label={`${p.note}: ${item.coffee.name}`}
+                      placeholder={p.note}
+                      maxLength={LIST_NOTE_MAX_LENGTH}
+                      defaultValue={item.note ?? ""}
+                      autoComplete="off"
+                      className="h-9 min-w-48 flex-1"
+                    />
+                    <Button type="submit" variant="secondary" size="sm">
+                      {p.saveNote}
+                    </Button>
+                  </form>
+                  <form action={moveListItem.bind(null, list.id, item.coffee_id, "up")}>
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      disabled={index === 0}
+                      aria-label={`${p.moveUp}: ${item.coffee.name}`}
+                      size="sm"
+                    >
+                      <ArrowUpIcon aria-hidden />
+                    </Button>
+                  </form>
+                  <form action={moveListItem.bind(null, list.id, item.coffee_id, "down")}>
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      disabled={index === items.length - 1}
+                      aria-label={`${p.moveDown}: ${item.coffee.name}`}
+                      size="sm"
+                    >
+                      <ArrowDownIcon aria-hidden />
+                    </Button>
+                  </form>
+                  <form action={removeListItem.bind(null, list.id, item.coffee_id)}>
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      aria-label={`${p.remove}: ${item.coffee.name}`}
+                      size="sm"
+                    >
+                      {p.remove}
+                    </Button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Section>
 
-      <SectionHeading index={2} title={p.addTitle} />
-      <AddCoffeeToList
-        action={addListItem.bind(null, list.id)}
-        catalog={coffees.filter((coffee) => !onList.has(coffee.id))}
-      />
+      <Section id="kahve-ekle">
+        <SectionHeading id="kahve-ekle" title={p.addTitle} />
+        <AddCoffeeToList
+          action={addListItem.bind(null, list.id)}
+          catalog={coffees.filter((coffee) => !onList.has(coffee.id))}
+        />
+      </Section>
 
-      <SectionHeading index={3} title={p.editTitle} />
-      <ListForm
-        action={updateList.bind(null, list.id)}
-        initial={{
-          title: list.title,
-          description: list.description ?? "",
-          visibility: list.is_public ? "public" : "private",
-        }}
-        submitLabel={p.save}
-      />
+      <Section id="listeyi-duzenle">
+        <SectionHeading id="listeyi-duzenle" title={p.editTitle} />
+        <ListForm
+          action={updateList.bind(null, list.id)}
+          initial={{
+            title: list.title,
+            description: list.description ?? "",
+            visibility: list.is_public ? "public" : "private",
+          }}
+          submitLabel={p.save}
+        />
+      </Section>
 
-      <div className="max-w-2xl pt-5 pb-10">
+      <div className="mt-12">
         <DeleteList action={deleteList.bind(null, list.id)} />
       </div>
     </>
@@ -222,9 +222,9 @@ async function ListEditor({ params, searchParams }: Props) {
 
 export default function ListEditorPage(props: Props) {
   return (
-    <PageShell>
-      <PageHeading title={p.editTitle} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
+    <PageShell width="read">
+      <PageHeading title={p.editTitle} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <ListEditor {...props} />
       </Suspense>
     </PageShell>

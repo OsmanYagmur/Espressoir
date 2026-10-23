@@ -7,14 +7,16 @@ import { BusinessPageForm } from "@/components/business/business-page-form";
 import { OfficialBadge } from "@/components/business/official-badge";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
+import { cardClass } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { cafeHref } from "@/lib/data/cafes";
 import { formatLongDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { brandPath } from "@/lib/routes";
+import { cn } from "@/lib/utils";
 
 import { updateBusinessPage, withdrawApplication } from "./actions";
 
@@ -26,8 +28,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const linkFocus =
-  "underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-accent-ink underline underline-offset-3";
 
 /** An embedded row arrives as an object or a one-element list, depending on the relation. */
 function one<T>(value: T | T[] | null): T | null {
@@ -60,105 +61,104 @@ async function MyBusinesses() {
 
   return (
     <>
-      <SectionHeading index={1} title={b.mineTitle} aside={mine.length} />
-      {mine.length === 0 ? (
-        <p className="border-b border-border py-6 text-muted-foreground">{b.mineEmpty}</p>
-      ) : (
-        <ul aria-label={b.mineTitle}>
-          {mine.map((row) => {
-            const brand = one(row.brand);
-            const cafe = one(row.cafe);
-            const business = brand ?? cafe;
-            if (!business) return null;
-            const href = brand
-              ? brandPath(brand.slug)
-              : cafeHref({ cityCode: cafe!.city_code, slug: cafe!.slug });
-            return (
-              <li key={row.id} className="border-b border-border py-4">
-                <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="label-caps text-muted-foreground">
-                    {brand ? b.kinds.brand : b.kinds.cafe}
-                  </span>
-                  <span className="font-semiwide text-lg font-bold [overflow-wrap:anywhere]">
-                    {business.name}
-                  </span>
-                  <OfficialBadge />
-                  {/* Not fetched ahead: saving here changes that very page. */}
-                  <Link href={href} prefetch={false} className={`font-mono text-xs ${linkFocus}`}>
-                    {b.viewPage}
-                  </Link>
-                </p>
-                <BusinessPageForm
-                  idPrefix={row.id}
-                  cafe={cafe !== null}
-                  action={updateBusinessPage.bind(null, brand ? "brand" : "cafe", business.id)}
-                  initial={{
-                    description: business.description ?? "",
-                    website: business.website ?? "",
-                    district: cafe?.district ?? "",
-                    mapUrl: cafe?.map_url ?? "",
-                  }}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {mine.length > 0 ? (
-        <p className="max-w-[62ch] py-3 font-mono text-xs text-muted-foreground">{b.noScoreNote}</p>
-      ) : null}
+      <Section id="hesaplarim" className="mt-0 md:mt-0">
+        <SectionHeading
+          id="hesaplarim"
+          title={b.mineTitle}
+          aside={<span className="type-figure">{mine.length}</span>}
+        />
+        {mine.length === 0 ? (
+          <p className="text-ink-2">{b.mineEmpty}</p>
+        ) : (
+          <ul aria-labelledby="hesaplarim" className="flex flex-col gap-4">
+            {mine.map((row) => {
+              const brand = one(row.brand);
+              const cafe = one(row.cafe);
+              const business = brand ?? cafe;
+              if (!business) return null;
+              const href = brand
+                ? brandPath(brand.slug)
+                : cafeHref({ cityCode: cafe!.city_code, slug: cafe!.slug });
+              return (
+                <li key={row.id} className={cn(cardClass, "flex flex-col gap-4")}>
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span className="type-label">{brand ? b.kinds.brand : b.kinds.cafe}</span>
+                    <span className="font-display text-lg font-semibold [overflow-wrap:anywhere]">
+                      {business.name}
+                    </span>
+                    <OfficialBadge />
+                    {/* Not fetched ahead: saving here changes that very page. */}
+                    <Link href={href} prefetch={false} className={link}>
+                      {b.viewPage}
+                    </Link>
+                  </p>
+                  <BusinessPageForm
+                    idPrefix={row.id}
+                    cafe={cafe !== null}
+                    action={updateBusinessPage.bind(null, brand ? "brand" : "cafe", business.id)}
+                    initial={{
+                      description: business.description ?? "",
+                      website: business.website ?? "",
+                      district: cafe?.district ?? "",
+                      mapUrl: cafe?.map_url ?? "",
+                    }}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {mine.length > 0 ? <p className="mt-4 type-meta">{b.noScoreNote}</p> : null}
+      </Section>
 
-      <SectionHeading
-        index={2}
-        title={b.requestsTitle}
-        aside={applications.length}
-        className="mt-6"
-      />
-      {applications.length === 0 ? (
-        <p className="border-b border-border py-6 text-muted-foreground">{b.requestsEmpty}</p>
-      ) : (
-        <ul aria-label={b.requestsTitle}>
-          {applications.map((request) => {
-            const business = one(request.brand) ?? one(request.cafe);
-            const status = isStatus(request.status) ? request.status : "open";
-            return (
-              <li
-                key={request.id}
-                className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
-              >
-                <p className="min-w-0 [overflow-wrap:anywhere]">
-                  <span className="font-semibold">{business?.name}</span>{" "}
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {formatLongDay(request.created_at.slice(0, 10))} ·{" "}
-                    <span className="text-foreground uppercase">{b.statuses[status]}</span>
-                    {request.note ? ` · ${request.note}` : null}
-                  </span>
-                </p>
-                {status === "open" ? (
-                  <form action={withdrawApplication.bind(null, request.id)}>
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      className="h-9 font-mono text-xs uppercase"
-                    >
-                      {b.withdraw}
-                    </Button>
-                  </form>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <Section id="basvurularim">
+        <SectionHeading
+          id="basvurularim"
+          title={b.requestsTitle}
+          aside={<span className="type-figure">{applications.length}</span>}
+        />
+        {applications.length === 0 ? (
+          <p className="text-ink-2">{b.requestsEmpty}</p>
+        ) : (
+          <ul aria-labelledby="basvurularim" className="border-t border-line">
+            {applications.map((request) => {
+              const business = one(request.brand) ?? one(request.cafe);
+              const status = isStatus(request.status) ? request.status : "open";
+              return (
+                <li
+                  key={request.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
+                >
+                  <p className="min-w-0 [overflow-wrap:anywhere]">
+                    <span className="font-semibold">{business?.name}</span>{" "}
+                    <span className="type-meta">
+                      {formatLongDay(request.created_at.slice(0, 10))} ·{" "}
+                      <span className="text-ink">{b.statuses[status]}</span>
+                      {request.note ? ` · ${request.note}` : null}
+                    </span>
+                  </p>
+                  {status === "open" ? (
+                    <form action={withdrawApplication.bind(null, request.id)}>
+                      <Button type="submit" variant="secondary">
+                        {b.withdraw}
+                      </Button>
+                    </form>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Section>
     </>
   );
 }
 
 export default function BusinessPage() {
   return (
-    <PageShell>
-      <PageHeading title={b.title} aside={<p>{b.description}</p>} lead={b.lead} />
-      <Suspense fallback={<Skeleton className="mt-6 h-64" />}>
+    <PageShell width="read">
+      <PageHeading title={b.title} lead={b.lead} size="title" />
+      <Suspense fallback={<Skeleton className="h-64" />}>
         <MyBusinesses />
       </Suspense>
     </PageShell>

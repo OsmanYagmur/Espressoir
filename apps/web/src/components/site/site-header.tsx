@@ -1,18 +1,20 @@
 import { siteConfig } from "@espressoir/core";
 import Link from "next/link";
 
-import { AccountLink } from "@/components/account/account-link";
-import { NotificationLink } from "@/components/account/notification-link";
+import { AccountMenu } from "@/components/account/account-menu";
 import { t } from "@/lib/i18n";
 
 import { Wordmark } from "./logo";
 import { NavLinks } from "./nav-links";
-import { ThemeToggle } from "./theme-toggle";
 
+/**
+ * SiteHeader (DESIGN.md): the name, three links, and on the right "Giriş" or the member's
+ * picture with their menu. No menu button: under 560px the links move to a second row.
+ */
 export function SiteHeader() {
   return (
-    <header className="mx-auto w-full max-w-[1240px] px-5">
-      <div className="flex flex-wrap items-center justify-between gap-y-1 border-b-2 border-rule py-2.5">
+    <header className="border-b border-line bg-bg">
+      <div className="mx-auto flex max-w-grid flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
         {/* Not fetched ahead: the home page is built from the archive, and a fetch that
             starts while a member is saving something keeps the old state (see
             lib/data/refresh-archive.ts). It is static, so a click is fast anyway. */}
@@ -20,23 +22,14 @@ export function SiteHeader() {
           href="/"
           prefetch={false}
           aria-label={`${siteConfig.name} — ${t.nav.home}`}
-          className="py-1 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="mr-auto rounded-sm no-underline"
         >
           <Wordmark />
         </Link>
-        <div className="flex items-center gap-5">
-          <nav aria-label={t.nav.label} className="max-sm:hidden">
-            <NavLinks />
-          </nav>
-          <AccountLink />
-          <NotificationLink />
-          <ThemeToggle />
-        </div>
-        {/* Small screens: links get their own row under a hairline instead of a menu button. */}
-        <nav aria-label={t.nav.label} className="w-full border-t py-2 sm:hidden">
-          {/* Five links fit one row of a phone when they share it out evenly. */}
-          <NavLinks className="justify-between gap-x-3" />
+        <nav aria-label={t.nav.label} className="max-xs:order-3 max-xs:w-full">
+          <NavLinks />
         </nav>
+        <AccountMenu />
       </div>
     </header>
   );

@@ -5,14 +5,13 @@ import { parseCommentBody, threadComments, type Comment } from "@espressoir/db";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
+import { OfficialBadge } from "@/components/business/official-badge";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/field";
 import { format, t } from "@/lib/i18n";
 import { profilePath } from "@/lib/routes";
 import { useHasSession } from "@/lib/session-cookie";
-import { cn } from "@/lib/utils";
-
-import { OfficialBadge } from "@/components/business/official-badge";
 
 import { ReportButton } from "./report-button";
 
@@ -22,9 +21,7 @@ const s = t.social;
 const timeFormat = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" });
 
 const quietButton =
-  "font-mono text-xs underline underline-offset-4 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50";
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+  "cursor-pointer text-sm text-ink-2 underline underline-offset-3 hover:text-ink disabled:opacity-50";
 
 function errorText(failure: unknown): string {
   const kind = (failure as { kind?: string }).kind;
@@ -82,7 +79,7 @@ function CommentForm({
         void submit();
       }}
     >
-      <label htmlFor={id} className="label-caps text-muted-foreground">
+      <label htmlFor={id} className="type-label">
         {label}
       </label>
       <Textarea
@@ -95,12 +92,12 @@ function CommentForm({
         aria-describedby={`${id}-hint`}
       />
       {error ? (
-        <p role="alert" className="font-mono text-xs text-destructive">
+        <p role="alert" className="text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}
       <div className="flex flex-wrap items-center gap-4">
-        <Button type="submit" disabled={pending} className="h-10 px-5 font-mono text-xs uppercase">
+        <Button type="submit" variant="secondary" disabled={pending}>
           {pending ? s.sending : submitLabel}
         </Button>
         {onCancel ? (
@@ -108,7 +105,7 @@ function CommentForm({
             {s.cancel}
           </button>
         ) : null}
-        <span id={`${id}-hint`} className="font-mono text-xs text-muted-foreground">
+        <span id={`${id}-hint`} className="type-meta">
           {format(s.commentHint, { max: COMMENT_MAX_LENGTH })}
         </span>
       </div>
@@ -140,7 +137,7 @@ function CommentView({
   const mine = comment.author !== null && comment.author.id === actions.viewer;
 
   if (comment.deleted) {
-    return <p className="py-3 font-mono text-xs text-muted-foreground">{s.deleted}</p>;
+    return <p className="py-4 type-meta">{s.deleted}</p>;
   }
 
   async function remove() {
@@ -156,12 +153,12 @@ function CommentView({
   }
 
   return (
-    <div className="py-3">
-      <p className="font-mono text-xs text-muted-foreground">
+    <div className="py-4">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 type-meta">
         {comment.author ? (
           <Link
             href={profilePath(comment.author.username)}
-            className={cn("text-foreground", linkFocus)}
+            className="font-medium text-ink no-underline hover:underline"
           >
             @{comment.author.username}
           </Link>
@@ -170,13 +167,9 @@ function CommentView({
         <time dateTime={comment.createdAt}>{timeFormat.format(new Date(comment.createdAt))}</time>
         {comment.edited ? ` · ${s.edited}` : null}
         {comment.author && actions.officials.has(comment.author.id) ? (
-          <OfficialBadge label={t.business.officialReply} className="ml-2" />
+          <OfficialBadge label={t.business.officialReply} />
         ) : null}
-        {comment.hidden ? (
-          <span className="ml-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
-            {s.hidden}
-          </span>
-        ) : null}
+        {comment.hidden ? <Chip>{s.hidden}</Chip> : null}
       </p>
 
       {mode === "edit" ? (
@@ -194,13 +187,9 @@ function CommentView({
         </div>
       ) : (
         // Plain text, escaped by React; line breaks the author typed are kept.
-        <p className="mt-1 max-w-[62ch] leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line">
-          {comment.body}
-        </p>
+        <p className="mt-1 [overflow-wrap:anywhere] whitespace-pre-line">{comment.body}</p>
       )}
-      {comment.hidden ? (
-        <p className="mt-1 font-mono text-xs text-muted-foreground">{s.hiddenNote}</p>
-      ) : null}
+      {comment.hidden ? <p className="mt-1 type-meta">{s.hiddenNote}</p> : null}
 
       {mode === "read" && actions.viewer ? (
         <div className="mt-2 flex flex-wrap items-start gap-x-4 gap-y-2">
@@ -229,13 +218,13 @@ function CommentView({
         </div>
       ) : null}
       {error ? (
-        <p role="alert" className="mt-2 font-mono text-xs text-destructive">
+        <p role="alert" className="mt-2 text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}
 
       {mode === "reply" ? (
-        <div className="mt-3 border-l-2 border-rule pl-4">
+        <div className="mt-3 border-l-2 border-line pl-4">
           <CommentForm
             label={s.replyLabel}
             submitLabel={s.send}
@@ -292,14 +281,14 @@ export function CommentThread({
 
   if (state.status === "loading") {
     return (
-      <p role="status" className="py-6 font-mono text-sm text-muted-foreground">
+      <p role="status" className="py-6 text-ink-2">
         {s.commentsLoading}
       </p>
     );
   }
   if (state.status === "failed") {
     return (
-      <p role="alert" className="py-6 font-mono text-sm text-destructive">
+      <p role="alert" className="py-6 font-medium text-danger">
         {s.commentsFailed}
       </p>
     );
@@ -346,16 +335,14 @@ export function CommentThread({
   return (
     <div>
       {threads.length === 0 ? (
-        <p className="border-b border-border py-6 text-muted-foreground">
-          {viewer ? s.commentsEmpty : s.commentsEmptyVisitor}
-        </p>
+        <p className="pb-6 text-ink-2">{viewer ? s.commentsEmpty : s.commentsEmptyVisitor}</p>
       ) : (
         <ol aria-label={s.commentsTitle}>
           {threads.map((thread) => (
-            <li key={thread.id} className="border-b border-border">
+            <li key={thread.id} className="border-b border-line">
               <CommentView comment={thread} actions={actions} canReply={!thread.hidden} />
               {thread.replies.length > 0 ? (
-                <ol className="mb-2 ml-1 border-l-2 border-rule pl-4">
+                <ol className="mb-2 ml-1 border-l-2 border-line pl-4">
                   {thread.replies.map((reply) => (
                     <li key={reply.id}>
                       <CommentView comment={reply} actions={actions} canReply={false} />
@@ -368,7 +355,7 @@ export function CommentThread({
         </ol>
       )}
 
-      <div className="max-w-2xl py-6">
+      <div className="py-6">
         {viewer ? (
           <CommentForm
             label={s.commentLabel}
@@ -376,9 +363,9 @@ export function CommentThread({
             onSubmit={(body) => add(body, null)}
           />
         ) : (
-          <div className="grid justify-items-start gap-3">
-            <p className="text-muted-foreground">{s.signInToComment}</p>
-            <Button asChild variant="outline" className="h-10 px-5 font-mono text-xs uppercase">
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-ink-2">{s.signInToComment}</p>
+            <Button asChild variant="secondary">
               <Link href="/giris" prefetch={false}>
                 {s.signIn}
               </Link>

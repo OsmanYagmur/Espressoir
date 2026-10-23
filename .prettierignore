@@ -12,3 +12,7 @@ apps/mobile/ios/
 **/test-results/
 supabase/.temp/
 data/
+# Written from design/tokens.css by pnpm tokens:gen.
+apps/web/src/lib/design-tokens.ts
+# The design source (DESIGN.md, tokens, reference CSS, copy) is kept exactly as written.
+design/

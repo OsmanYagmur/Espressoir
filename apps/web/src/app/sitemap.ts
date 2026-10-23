@@ -1,13 +1,14 @@
 import type { MetadataRoute } from "next";
 
 import { getArchive } from "@/lib/data/archive";
+import { getArticles } from "@/lib/data/articles";
 import { cafeHref } from "@/lib/data/cafes";
 import { brandSummaries } from "@/lib/data/selectors";
 import { brandPath, coffeePath, listPath, profilePath } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const archive = await getArchive();
+  const [archive, articles] = await Promise.all([getArchive(), getArticles()]);
   const base = getSiteUrl();
   const url = (path: string) => new URL(path, base).toString();
   const latest = archive.coffees
@@ -22,6 +23,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: url("/hakkinda"), changeFrequency: "yearly", priority: 0.4 },
     { url: url("/akis"), lastModified: latest, changeFrequency: "daily", priority: 0.7 },
     { url: url("/kafeler"), changeFrequency: "weekly", priority: 0.7 },
+    { url: url("/atolye"), changeFrequency: "weekly", priority: 0.8 },
+    { url: url("/bilgi"), changeFrequency: "monthly", priority: 0.6 },
+    ...articles.map((article) => ({
+      url: url(`/bilgi/${article.slug}`),
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    })),
     // A coffee a member added is listed once an admin has checked it.
     ...archive.coffees
       .filter((coffee) => coffee.isReviewed)

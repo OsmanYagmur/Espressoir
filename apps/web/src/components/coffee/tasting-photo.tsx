@@ -35,7 +35,7 @@ export function TastingPhoto({
       alt={photo.alt ?? format(t.photo.defaultAlt, { coffee: tasting.coffee.name })}
       loading="lazy"
       decoding="async"
-      className={cn("h-auto max-w-full border border-border bg-muted", className)}
+      className={cn("h-auto max-w-full rounded-md border border-line bg-sunk", className)}
     />
   );
 }

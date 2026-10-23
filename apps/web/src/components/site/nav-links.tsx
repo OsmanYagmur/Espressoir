@@ -9,25 +9,27 @@ import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
-  { href: "/kahveler", label: t.nav.coffees },
-  { href: "/kafeler", label: t.nav.cafes },
   { href: "/akis", label: t.nav.feed },
-  { href: "/istatistik", label: t.nav.stats },
-  { href: "/hakkinda", label: t.nav.about },
+  { href: "/atolye", label: t.nav.workshop },
+  { href: "/bilgi", label: t.nav.info },
 ];
 
 /** Where members change things. */
-const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
+export const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
+
+/**
+ * Every change made in the signed-in area refreshes the public pages, and the router
+ * answers a refresh by fetching the links on screen again. Here that would start a read
+ * of the archive right after each save, and the next quick save would land in the middle
+ * of it (see lib/data/refresh-archive.ts). So links wait to be clicked there.
+ */
+export const prefetchFrom = (pathname: string | null) =>
+  pathname !== null && SIGNED_IN_AREA.test(pathname) ? false : undefined;
 
 function NavLinkList({ pathname, className }: { pathname: string | null; className?: string }) {
-  // Every change made in the signed-in area refreshes the public pages, and the router
-  // answers a refresh by fetching the links on screen again. Here that would start a read
-  // of the archive right after each save, and the next quick save would land in the middle
-  // of it (see lib/data/refresh-archive.ts). So these links wait to be clicked there.
-  const prefetch = pathname !== null && SIGNED_IN_AREA.test(pathname) ? false : undefined;
+  const prefetch = prefetchFrom(pathname);
   return (
-    // Wraps on a narrow phone rather than pushing the page sideways.
-    <ul className={cn("flex flex-wrap items-center gap-x-5 gap-y-2", className)}>
+    <ul className={cn("flex gap-6", className)}>
       {NAV_ITEMS.map(({ href, label }) => {
         const active = pathname !== null && (pathname === href || pathname.startsWith(`${href}/`));
         return (
@@ -36,10 +38,7 @@ function NavLinkList({ pathname, className }: { pathname: string | null; classNa
               href={href}
               prefetch={prefetch}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "font-mono text-xs font-medium tracking-wide uppercase underline-offset-[6px] hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-                active && "underline decoration-brand decoration-2",
-              )}
+              className="block border-b-2 border-transparent py-1 font-medium text-ink-2 no-underline transition-colors hover:text-ink aria-[current=page]:border-accent aria-[current=page]:text-ink"
             >
               {label}
             </Link>
@@ -55,9 +54,9 @@ function CurrentNavLinks({ className }: { className?: string }) {
 }
 
 /**
- * The main links, with the current section underlined. Which section is current depends
- * on the URL, which a page shell prerendered for an unknown URL does not have yet; the
- * fallback shows the same links without a marker until it is known.
+ * The three main links, the current one underlined in the accent. Which one is current
+ * depends on the URL, which a page shell prerendered for an unknown URL does not have yet;
+ * the fallback shows the same links without a marker until it is known.
  */
 export function NavLinks({ className }: { className?: string }) {
   return (

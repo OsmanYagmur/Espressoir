@@ -5,24 +5,21 @@ import { join } from "node:path";
 
 import { siteConfig } from "@espressoir/core";
 
+import { designTokens } from "./design-tokens";
+
 /**
  * Shared pieces of the share images (Open Graph cards). They are drawn with next/og, which
- * supports flexbox and inline styles only, so the look of the site is rebuilt here by
- * hand: paper, ink, one red square.
+ * supports flexbox and inline styles only and reads no CSS variables, so the look of the
+ * site is rebuilt here from the generated copy of the tokens: cream paper, espresso ink,
+ * the display face for names, one score bar in the accent.
  */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 
-// The light-theme tokens of globals.css, as plain hex (next/og does not read CSS variables).
-export const OG_COLORS = {
-  paper: "#f4f4f1",
-  ink: "#161616",
-  muted: "#6b6a64",
-  brand: "#c8372b",
-  white: "#ffffff",
-} as const;
+export const OG_COLORS = designTokens.light;
 
 export const OG_FONTS = {
-  display: '"Archivo", "Archivo Ext"',
+  display: "Fraunces",
+  sans: "Archivo",
   mono: '"Plex Mono", "Plex Mono Ext"',
 } as const;
 
@@ -41,14 +38,16 @@ const font = (file: string) => readFile(join(process.cwd(), "src/assets/fonts", 
 // another: registering both under one name makes the renderer use only the first.
 // latin-ext carries the Turkish letters (İ, ı, ş, ğ).
 const fonts = await Promise.all([
-  font("archivo-latin-800-normal.woff"),
-  font("archivo-latin-ext-800-normal.woff"),
+  font("fraunces-600-normal.woff"),
+  font("archivo-400-normal.woff"),
+  font("archivo-600-normal.woff"),
   font("ibm-plex-mono-latin-500-normal.woff"),
   font("ibm-plex-mono-latin-ext-500-normal.woff"),
 ]).then(
-  ([archivo, archivoExt, plexMono, plexMonoExt]) => [
-    { name: "Archivo", weight: 800 as const, style: "normal" as const, data: archivo },
-    { name: "Archivo Ext", weight: 800 as const, style: "normal" as const, data: archivoExt },
+  ([fraunces, archivo, archivoSemibold, plexMono, plexMonoExt]) => [
+    { name: "Fraunces", weight: 600 as const, style: "normal" as const, data: fraunces },
+    { name: "Archivo", weight: 400 as const, style: "normal" as const, data: archivo },
+    { name: "Archivo", weight: 600 as const, style: "normal" as const, data: archivoSemibold },
     { name: "Plex Mono", weight: 500 as const, style: "normal" as const, data: plexMono },
     { name: "Plex Mono Ext", weight: 500 as const, style: "normal" as const, data: plexMonoExt },
   ],
@@ -62,7 +61,7 @@ export function loadOgFonts() {
   return fonts;
 }
 
-/** The card frame: wordmark on top, a label on the right, the site address at the bottom. */
+/** The card frame: the name on top, a label on the right, the site address at the bottom. */
 export function OgFrame({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div
@@ -71,10 +70,10 @@ export function OgFrame({ label, children }: { label: string; children: React.Re
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        background: OG_COLORS.paper,
+        background: OG_COLORS.bg,
         color: OG_COLORS.ink,
-        padding: "44px 56px 40px",
-        fontFamily: OG_FONTS.mono,
+        padding: "48px 64px 40px",
+        fontFamily: OG_FONTS.sans,
       }}
     >
       <div
@@ -82,27 +81,22 @@ export function OgFrame({ label, children }: { label: string; children: React.Re
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: `4px solid ${OG_COLORS.ink}`,
-          paddingBottom: 22,
+          borderBottom: `2px solid ${OG_COLORS.line}`,
+          paddingBottom: 24,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ width: 26, height: 26, background: OG_COLORS.brand, marginRight: 18 }} />
-          <div style={{ fontFamily: OG_FONTS.display, fontSize: 38, letterSpacing: -1 }}>
-            {siteConfig.name.toUpperCase()}
-          </div>
-        </div>
-        <div style={{ fontSize: 22, color: OG_COLORS.muted, letterSpacing: 2 }}>{label}</div>
+        <div style={{ fontFamily: OG_FONTS.display, fontSize: 44 }}>{siteConfig.name}</div>
+        <div style={{ fontSize: 26, color: OG_COLORS["ink-2"] }}>{label}</div>
       </div>
       <div style={{ display: "flex", flex: 1 }}>{children}</div>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          borderTop: `2px solid ${OG_COLORS.ink}`,
+          borderTop: `2px solid ${OG_COLORS.line}`,
           paddingTop: 16,
-          fontSize: 22,
-          color: OG_COLORS.muted,
+          fontSize: 24,
+          color: OG_COLORS["ink-2"],
         }}
       >
         <div>{new URL(siteConfig.url).host}</div>
@@ -112,36 +106,57 @@ export function OgFrame({ label, children }: { label: string; children: React.Re
   );
 }
 
-/**
- * A display title ending in the red full stop. next/og has no inline text flow, so the
- * title is laid out word by word in a wrapping row, with the stop attached to the last word.
- */
+/** A title in the display face, as written (no capitals added). */
 export function OgTitle({ text, fontSize }: { text: string; fontSize: number }) {
-  const words = text.split(/\s+/).filter(Boolean);
   return (
     <div
       style={{
         display: "flex",
-        flexWrap: "wrap",
-        columnGap: fontSize * 0.24,
         fontFamily: OG_FONTS.display,
+        fontWeight: 600,
         fontSize,
-        lineHeight: 0.98,
-        letterSpacing: -fontSize * 0.03,
+        lineHeight: 1.08,
+        letterSpacing: -fontSize * 0.01,
       }}
     >
-      {words.map((word, index) =>
-        index < words.length - 1 ? (
-          <div key={index} style={{ display: "flex" }}>
-            {word}
-          </div>
-        ) : (
-          <div key={index} style={{ display: "flex" }}>
-            {word}
-            <div style={{ display: "flex", color: OG_COLORS.brand }}>.</div>
-          </div>
-        ),
-      )}
+      {text}
+    </div>
+  );
+}
+
+/**
+ * The app icon: the first letter of the name in the display face, on crema. `scale` is
+ * the letter's height against the icon; `rounded` cuts the corners (browsers show the file
+ * as it is, while home screens and maskable icons are cut by the system).
+ */
+export function IconMark({
+  size,
+  scale = 0.62,
+  rounded = false,
+}: {
+  size: number;
+  scale?: number;
+  rounded?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: OG_COLORS.crema,
+        color: OG_COLORS["on-crema"],
+        borderRadius: rounded ? size * 0.22 : 0,
+        fontFamily: OG_FONTS.display,
+        fontWeight: 600,
+        fontSize: size * scale,
+        lineHeight: 1,
+        paddingBottom: size * 0.04,
+      }}
+    >
+      {siteConfig.name.slice(0, 1)}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 import { t } from "@/lib/i18n";
-import { loadOgFonts, OG_SIZE, OgFrame, OgTitle } from "@/lib/og";
+import { loadOgFonts, OG_COLORS, OG_SIZE, OgFrame, OgTitle } from "@/lib/og";
 
 export const alt = t.meta.description;
 export const size = OG_SIZE;
@@ -10,20 +10,20 @@ export const contentType = "image/png";
 /** The default share image, used by every page that does not draw its own. */
 export default function Image() {
   return new ImageResponse(
-    <OgFrame
-      label={t.home.methodsLine.split(" · ").slice(0, 3).join(" · ").toLocaleUpperCase("tr")}
-    >
+    <OgFrame label={t.og.label}>
       <div
         style={{
           display: "flex",
           flex: 1,
           flexDirection: "column",
           justifyContent: "flex-end",
-          paddingBottom: 30,
+          paddingBottom: 40,
         }}
       >
-        <OgTitle text={t.home.title.toLocaleUpperCase("tr")} fontSize={150} />
-        <div style={{ fontSize: 28, marginTop: 24, maxWidth: 900 }}>{t.home.intro}</div>
+        <OgTitle text={t.home.heroTitle} fontSize={96} />
+        <div style={{ fontSize: 32, marginTop: 24, maxWidth: 900, color: OG_COLORS["ink-2"] }}>
+          {t.home.heroLead}
+        </div>
       </div>
     </OgFrame>,
     { ...OG_SIZE, fonts: loadOgFonts() },

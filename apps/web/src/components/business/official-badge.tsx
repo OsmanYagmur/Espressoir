@@ -1,3 +1,6 @@
+import { BadgeCheckIcon } from "lucide-react";
+
+import { Chip } from "@/components/ui/chip";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -10,13 +13,9 @@ export function OfficialBadge({
   className?: string;
 }) {
   return (
-    <span
-      className={cn(
-        "label-caps inline-block border border-foreground px-1.5 py-0.5 align-middle font-mono text-xs whitespace-nowrap text-foreground",
-        className,
-      )}
-    >
-      ✓ {label}
-    </span>
+    <Chip className={cn("align-middle", className)}>
+      <BadgeCheckIcon aria-hidden className="size-4 stroke-[1.5]" />
+      {label}
+    </Chip>
   );
 }

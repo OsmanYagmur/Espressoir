@@ -24,7 +24,7 @@ export function VerificationForm({
     <form
       action={formAction}
       onSubmit={submitWithoutReset(formAction)}
-      className="grid max-w-2xl gap-4 py-5"
+      className="grid max-w-2xl gap-4 py-6"
     >
       <Field
         label={a.message}
@@ -59,15 +59,12 @@ export function VerificationForm({
         />
       </Field>
       {state.message ? (
-        <p
-          role="alert"
-          className="border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="font-medium text-danger">
           {state.message}
         </p>
       ) : null}
       <div>
-        <Button type="submit" disabled={pending} className="h-11 px-8 font-mono text-xs uppercase">
+        <Button type="submit" disabled={pending}>
           {pending ? a.sending : a.send}
         </Button>
       </div>

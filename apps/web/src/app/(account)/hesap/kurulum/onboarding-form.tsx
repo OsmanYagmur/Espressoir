@@ -21,8 +21,7 @@ const o = t.onboarding;
 const initialState: AccountFormState = {};
 const HOST = new URL(siteConfig.url).host;
 
-const legalLink =
-  "underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const legalLink = "text-accent-ink underline underline-offset-3";
 
 export function OnboardingForm() {
   const [state, action, pending] = useActionState(completeOnboarding, initialState);
@@ -30,11 +29,11 @@ export function OnboardingForm() {
   const error = (name: string) => state.errors?.[name];
 
   return (
-    <form action={action} className="max-w-2xl pb-10">
-      <p className="max-w-[62ch] py-5 leading-relaxed">{o.intro}</p>
+    <form action={action} className="flex flex-col gap-6">
+      <p>{o.intro}</p>
 
-      <SectionHeading index={1} title={o.nameSection} />
-      <div className="grid gap-5 py-5 sm:grid-cols-2">
+      <SectionHeading title={o.nameSection} className="mt-6 mb-0" />
+      <div className="grid gap-6 sm:grid-cols-2">
         <Field
           label={o.username}
           htmlFor="username"
@@ -75,15 +74,15 @@ export function OnboardingForm() {
         </Field>
       </div>
 
-      <SectionHeading index={2} title={o.termsSection} />
-      <div className="grid gap-3 py-5">
-        <label className="flex items-start gap-3 leading-relaxed">
+      <SectionHeading title={o.termsSection} className="mt-6 mb-0" />
+      <div className="grid gap-3">
+        <label className="flex items-start gap-3">
           <input
             type="checkbox"
             name="acceptTerms"
             defaultChecked={value("acceptTerms") === "on"}
             required
-            className="mt-1 size-5 shrink-0 accent-foreground"
+            className="mt-1 size-5 shrink-0 accent-accent"
             aria-describedby={error("acceptTerms") ? "acceptTerms-error" : undefined}
           />
           <span>
@@ -99,20 +98,16 @@ export function OnboardingForm() {
           </span>
         </label>
         {error("acceptTerms") ? (
-          <p id="acceptTerms-error" role="alert" className="font-mono text-xs text-destructive">
+          <p id="acceptTerms-error" role="alert" className="text-sm font-medium text-danger">
             {error("acceptTerms")}
           </p>
         ) : null}
-        <p className="font-mono text-xs text-muted-foreground">{o.termsNote}</p>
+        <p className="type-meta">{o.termsNote}</p>
       </div>
 
-      <div className="grid gap-4 border-t border-rule pt-5">
+      <div className="grid gap-4 border-t border-line pt-6">
         <FormMessage>{state.message}</FormMessage>
-        <Button
-          type="submit"
-          disabled={pending}
-          className="h-11 justify-self-start px-8 font-mono text-xs uppercase"
-        >
+        <Button type="submit" disabled={pending} className="justify-self-start">
           {pending ? o.submitting : o.submit}
         </Button>
       </div>

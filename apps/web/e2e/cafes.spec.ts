@@ -34,7 +34,7 @@ async function sessionOf(browser: Browser, account: typeof owner): Promise<Page>
 test("a member adds a visit at a new café, then another one there", async ({ page }) => {
   await signIn(page, guest);
   await page.getByRole("link", { name: "Kafe ziyareti ekle" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafe ziyareti ekle.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafe ziyareti ekle");
 
   await seen(page, "Yeni kafe", { exact: true }).click();
   await page.getByLabel("Kafenin adı", { exact: true }).fill(name);
@@ -61,7 +61,7 @@ test("a member adds a visit at a new café, then another one there", async ({ pa
 
   // Saved: the café's page, new and marked as not reviewed, already shows the visit.
   await expect(page).toHaveURL(cafeUrl);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${name}.`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
   await expect(page.getByRole("note")).toContainText("Doğrulanmadı");
   await expect(page.getByRole("link", { name: /Haritada aç/ })).toHaveAttribute(
     "href",
@@ -79,7 +79,7 @@ test("a member adds a visit at a new café, then another one there", async ({ pa
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(cafeUrl);
   await expect(visits).toHaveCount(2);
-  await expect(page.getByRole("img", { name: "10 üzerinden 7 puan" }).first()).toBeVisible();
+  await expect(page.getByRole("img", { name: "Puan: 7 / 10" }).first()).toBeVisible();
 
   // Listed among the cafés at once.
   await page.goto(`/kafeler?q=${encodeURIComponent(stamp)}`);
@@ -107,12 +107,12 @@ test("a member edits and deletes their visit from the panel", async ({ page }) =
   await expect(row).toHaveCount(1);
 
   await row.getByRole("link", { name: "Düzenle" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafe ziyaretini düzenle.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafe ziyaretini düzenle");
   await page.getByRole("group", { name: "Puan" }).getByText("9", { exact: true }).click();
   await page.getByLabel("Menüdeki adı", { exact: true }).fill("Tek shot");
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel$/);
-  await expect(row.getByRole("img", { name: "10 üzerinden 9 puan" })).toBeVisible();
+  await expect(row.getByRole("img", { name: "Puan: 9 / 10" })).toBeVisible();
   await expect(row).toContainText("Espresso · Tek shot");
 
   await row.getByRole("link", { name: "Düzenle" }).click();
@@ -136,7 +136,7 @@ test("the admin reviews the café", async ({ browser }) => {
   await admin.goto(`/kafeler?q=${encodeURIComponent(stamp)}`);
   await admin.getByRole("link", { name }).click();
   await expect(admin).toHaveURL(cafeUrl);
-  await expect(admin.getByRole("heading", { level: 1 })).toHaveText(`${name}.`);
+  await expect(admin.getByRole("heading", { level: 1 })).toHaveText(name);
   await expect(admin.getByRole("note")).toHaveCount(0);
   await admin.context().close();
 });

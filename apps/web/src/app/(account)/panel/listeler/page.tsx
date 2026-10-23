@@ -6,7 +6,8 @@ import { Suspense } from "react";
 import { ListForm } from "@/components/panel/list-form";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
+import { Chip } from "@/components/ui/chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { format, t } from "@/lib/i18n";
@@ -22,8 +23,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-accent-ink underline underline-offset-3";
 
 // The member's own lists, private and hidden ones included, read on each request.
 async function MyLists() {
@@ -37,58 +37,62 @@ async function MyLists() {
 
   return (
     <>
-      <nav className="border-b border-border py-4 font-mono text-xs uppercase">
-        <Link href="/panel" className={linkFocus}>
+      <nav>
+        <Link href="/panel" className={link}>
           {t.admin.back}
         </Link>
       </nav>
 
-      <SectionHeading index={1} title={p.mine} aside={data.length} />
-      {data.length === 0 ? (
-        <p className="border-b border-border py-6 text-muted-foreground">{p.none}</p>
-      ) : (
-        <ul aria-label={p.mine}>
-          {data.map((list) => (
-            <li
-              key={list.id}
-              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border py-3"
-            >
-              <Link
-                href={`/panel/listeler/${list.id}` as Route}
-                className={`font-semiwide text-lg font-bold [overflow-wrap:anywhere] ${linkFocus}`}
+      <Section id="listelerim">
+        <SectionHeading
+          id="listelerim"
+          title={p.mine}
+          aside={<span className="type-figure">{data.length}</span>}
+        />
+        {data.length === 0 ? (
+          <p className="text-ink-2">{p.none}</p>
+        ) : (
+          <ul aria-labelledby="listelerim" className="border-t border-line">
+            {data.map((list) => (
+              <li
+                key={list.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line py-3"
               >
-                {list.title}
-              </Link>
-              <p className="font-mono text-xs text-muted-foreground">
-                {format(l.itemCount, { count: list.list_items.length })}
-                {" · "}
-                {list.is_public ? l.public : l.private}
-                {list.hidden_at ? (
-                  <span className="ml-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
-                    {l.hidden}
-                  </span>
-                ) : null}
-              </p>
-            </li>
-          ))}
-        </ul>
-      )}
+                <Link
+                  href={`/panel/listeler/${list.id}` as Route}
+                  className="font-display text-lg font-semibold [overflow-wrap:anywhere] text-ink no-underline hover:underline"
+                >
+                  {list.title}
+                </Link>
+                <p className="type-meta">
+                  {format(l.itemCount, { count: list.list_items.length })}
+                  {" · "}
+                  {list.is_public ? l.public : l.private}
+                  {list.hidden_at ? <Chip className="ml-2">{l.hidden}</Chip> : null}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
 
-      <SectionHeading index={2} title={p.newTitle} />
-      <ListForm
-        action={createList}
-        initial={{ title: "", description: "", visibility: "public" }}
-        submitLabel={p.create}
-      />
+      <Section id="yeni-liste">
+        <SectionHeading id="yeni-liste" title={p.newTitle} />
+        <ListForm
+          action={createList}
+          initial={{ title: "", description: "", visibility: "public" }}
+          submitLabel={p.create}
+        />
+      </Section>
     </>
   );
 }
 
 export default function MyListsPage() {
   return (
-    <PageShell>
-      <PageHeading title={p.title} lead={p.lead} />
-      <Suspense fallback={<Skeleton className="mt-6 h-64" />}>
+    <PageShell width="read">
+      <PageHeading title={p.title} lead={p.lead} size="title" />
+      <Suspense fallback={<Skeleton className="h-64" />}>
         <MyLists />
       </Suspense>
     </PageShell>

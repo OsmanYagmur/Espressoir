@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
+import { Chip } from "@/components/ui/chip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { format, t } from "@/lib/i18n";
@@ -24,8 +25,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-accent-ink underline underline-offset-3";
 
 const when = new Intl.DateTimeFormat(siteConfig.locale, {
   day: "numeric",
@@ -41,12 +41,12 @@ function Item({ item }: { item: Notification }) {
     return (
       <li
         className={cn(
-          "grid gap-1 border-b border-border py-3.5",
-          !item.read && "border-l-2 border-l-brand pl-3",
+          "grid gap-1 border-b border-line py-4",
+          !item.read && "border-l-2 border-l-accent pl-3",
         )}
       >
         <p className="[overflow-wrap:anywhere]">
-          <Link href="/panel/isletme" prefetch={false} className={linkFocus}>
+          <Link href="/panel/isletme" prefetch={false} className={link}>
             {format(
               item.verification.approved ? n.verification.approved : n.verification.rejected,
               {
@@ -55,12 +55,12 @@ function Item({ item }: { item: Notification }) {
             )}
           </Link>
           {item.read ? null : (
-            <span className="ml-2 border border-foreground px-1.5 py-0.5 font-mono text-xs uppercase">
+            <Chip variant="note" className="ml-2">
               {n.unread}
-            </span>
+            </Chip>
           )}
         </p>
-        <time dateTime={item.createdAt} className="font-mono text-xs text-muted-foreground">
+        <time dateTime={item.createdAt} className="type-meta">
           {when.format(new Date(item.createdAt))}
         </time>
       </li>
@@ -69,17 +69,13 @@ function Item({ item }: { item: Notification }) {
   return (
     <li
       className={cn(
-        "grid gap-1 border-b border-border py-3.5",
+        "grid gap-1 border-b border-line py-4",
         // Unread: a rule in the accent down the side, and the word "Yeni" (not colour alone).
-        !item.read && "border-l-2 border-l-brand pl-3",
+        !item.read && "border-l-2 border-l-accent pl-3",
       )}
     >
       <p className="[overflow-wrap:anywhere]">
-        <Link
-          href={profilePath(item.actor.username)}
-          prefetch={false}
-          className={`font-mono text-sm ${linkFocus}`}
-        >
+        <Link href={profilePath(item.actor.username)} prefetch={false} className={link}>
           @{item.actor.username}
         </Link>{" "}
         {n.kinds[item.type]}
@@ -89,25 +85,23 @@ function Item({ item }: { item: Notification }) {
             <Link
               href={tastingPath(item.tasting.id)}
               prefetch={false}
-              className={`font-semibold ${linkFocus}`}
+              className={`font-semibold ${link}`}
             >
               {item.tasting.brandName} {item.tasting.coffeeName}
             </Link>
           </>
         ) : null}
         {item.read ? null : (
-          <span className="ml-2 border border-foreground px-1.5 py-0.5 font-mono text-xs uppercase">
+          <Chip variant="note" className="ml-2">
             {n.unread}
-          </span>
+          </Chip>
         )}
       </p>
       {item.excerpt ? (
         // Plain text, escaped by React.
-        <p className="max-w-[62ch] text-sm [overflow-wrap:anywhere] text-muted-foreground">
-          “{item.excerpt}”
-        </p>
+        <p className="[overflow-wrap:anywhere] text-ink-2">“{item.excerpt}”</p>
       ) : null}
-      <time dateTime={item.createdAt} className="font-mono text-xs text-muted-foreground">
+      <time dateTime={item.createdAt} className="type-meta">
         {when.format(new Date(item.createdAt))}
       </time>
     </li>
@@ -129,16 +123,16 @@ async function Inbox() {
 
   return (
     <>
-      <nav className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border py-4 font-mono text-xs">
-        <Link href="/panel" className={`uppercase ${linkFocus}`}>
+      <nav className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+        <Link href="/panel" className={link}>
           {n.back}
         </Link>
         {unread > 0 ? <p role="status">{format(n.summary, { count: unread })}</p> : null}
       </nav>
       {items.length === 0 ? (
-        <p className="border-b border-border py-8 text-muted-foreground">{n.empty}</p>
+        <p className="text-ink-2">{n.empty}</p>
       ) : (
-        <ul aria-label={n.listLabel}>
+        <ul aria-label={n.listLabel} className="border-t border-line">
           {items.map((item) => (
             <Item key={item.id} item={item} />
           ))}
@@ -151,9 +145,9 @@ async function Inbox() {
 
 export default function NotificationsPage() {
   return (
-    <PageShell>
-      <PageHeading title={n.title} lead={n.lead} />
-      <Suspense fallback={<Skeleton className="mt-6 h-64" />}>
+    <PageShell width="read">
+      <PageHeading title={n.title} lead={n.lead} size="title" />
+      <Suspense fallback={<Skeleton className="h-64" />}>
         <Inbox />
       </Suspense>
     </PageShell>

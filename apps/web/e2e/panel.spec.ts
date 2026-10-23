@@ -64,9 +64,9 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
 
   // Saved: we land on the coffee's public page, which already shows the tasting.
   await expect(page).toHaveURL(new RegExp(`/kahve/e2e-kavurucu/${slug}$`));
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${coffeeName}.`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(coffeeName);
   await expect(page.getByRole("list", { name: "Tadımlar" })).toContainText("Uçtan uca test notu.");
-  await expect(page.getByRole("img", { name: "10 üzerinden 7 puan" }).first()).toBeVisible();
+  await expect(page.getByRole("img", { name: "Puan: 7 / 10" }).first()).toBeVisible();
 
   // …and so does the public list, without waiting for the hourly refresh.
   await page.goto(`/kahveler?q=${encodeURIComponent(coffeeName)}`);
@@ -82,7 +82,7 @@ test("the owner can add, edit and delete a tasting", async ({ page }, testInfo) 
   await page.getByRole("group", { name: "Puan" }).getByText("9", { exact: true }).click();
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/\/panel$/);
-  await expect(row.getByRole("img", { name: "10 üzerinden 9 puan" })).toBeVisible();
+  await expect(row.getByRole("img", { name: "Puan: 9 / 10" })).toBeVisible();
 
   // Delete.
   await row.getByRole("link", { name: "Düzenle" }).click();
@@ -107,7 +107,7 @@ test("a new tasting starts from the last one: its coffees one tap away, its meth
   await page.getByLabel("Demleme yöntemi", { exact: true }).selectOption({ label: "V60" });
   await page.getByLabel("Cihaz", { exact: true }).fill("Hızlı Test Değirmeni");
   await page.getByRole("button", { name: "Kaydet" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${coffeeName}.`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(coffeeName);
 
   // The next one: the coffee is first among the recent ones, method and device are set.
   await page.goto("/panel/tadim/yeni");
@@ -160,7 +160,9 @@ test("another user cannot open the owner's tasting for editing", async ({ page, 
 test("signing out ends the session", async ({ page }) => {
   await signIn(page, owner);
   // The header knows about the session without asking the server.
-  await expect(page.getByRole("banner").getByRole("link", { name: "Panel" })).toBeVisible();
+  await expect(
+    page.getByRole("banner").getByRole("button", { name: /^Hesap menüsü/ }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Çıkış yap" }).click();
   await expect(page).toHaveURL(/\/$/);

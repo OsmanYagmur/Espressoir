@@ -20,6 +20,7 @@
     "db:push:dev": "tsx scripts/db-push.ts --env dev",
     "db:push:prod": "tsx scripts/db-push.ts --env prod",
     "types:gen": "tsx scripts/gen-types.ts",
+    "tokens:gen": "tsx scripts/gen-tokens.ts",
     "import:notion": "tsx scripts/import-notion.ts",
     "seed:dev": "tsx scripts/import-notion.ts --env dev --file scripts/notion/fixtures/sample-export.csv",
     "admin:bootstrap": "tsx scripts/admin-bootstrap.ts",

@@ -17,10 +17,7 @@ export function LoginNotice() {
   if (!text) return null;
 
   return (
-    <p
-      role="alert"
-      className="mt-6 max-w-xl border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-    >
+    <p role="alert" className="mb-6 font-medium text-danger">
       {text}
     </p>
   );

@@ -43,9 +43,9 @@ async function EditTasting({ params, searchParams }: PageProps<"/panel/tadim/[id
 
   if (!tasting) {
     return (
-      <div className="border-b border-border py-8">
-        <p className="text-muted-foreground">{t.panel.notFound}</p>
-        <Link href="/panel" className="mt-3 inline-block font-mono text-xs uppercase underline">
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-ink-2">{t.panel.notFound}</p>
+        <Link href="/panel" className="text-accent-ink underline underline-offset-3">
           {t.panel.back}
         </Link>
       </div>
@@ -61,10 +61,7 @@ async function EditTasting({ params, searchParams }: PageProps<"/panel/tadim/[id
     <>
       {foto === "hata" ? (
         // The tasting was saved a moment ago, its picture was not.
-        <p
-          role="alert"
-          className="mt-4 max-w-2xl border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="mb-6 font-medium text-danger">
           {t.photo.savedWithoutPhoto}
         </p>
       ) : null}
@@ -96,7 +93,7 @@ async function EditTasting({ params, searchParams }: PageProps<"/panel/tadim/[id
           photoAlt: text(tasting.photo_alt),
         }}
       />
-      <div className="max-w-2xl border-t border-rule pt-5 pb-10">
+      <div className="mt-12 border-t border-line pt-6">
         <DeleteTasting action={deleteTasting.bind(null, tasting.id)} />
       </div>
     </>
@@ -105,9 +102,9 @@ async function EditTasting({ params, searchParams }: PageProps<"/panel/tadim/[id
 
 export default function EditTastingPage(props: PageProps<"/panel/tadim/[id]">) {
   return (
-    <PageShell>
-      <PageHeading title={t.panel.editTitle} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
+    <PageShell width="read">
+      <PageHeading title={t.panel.editTitle} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <EditTasting {...props} />
       </Suspense>
     </PageShell>

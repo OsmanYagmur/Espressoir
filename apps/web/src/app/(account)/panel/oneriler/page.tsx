@@ -16,7 +16,7 @@ import {
 } from "@/components/coffee/recommendation-list";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
 import { getArchive } from "@/lib/data/archive";
@@ -84,7 +84,7 @@ async function Recommendations() {
   if (suggestions.source === "top") {
     return (
       <>
-        <p className="border-b border-border py-4 text-muted-foreground">
+        <p className="mb-6 text-ink-2">
           {format(r.tooFew, { min: RECOMMEND_MIN_SCORED, count: suggestions.scored })}
         </p>
         <RecommendationList rows={rows} label={r.topTitle} />
@@ -92,11 +92,11 @@ async function Recommendations() {
     );
   }
   if (rows.length === 0) {
-    return <p className="border-b border-border py-8 text-muted-foreground">{r.empty}</p>;
+    return <p className="text-ink-2">{r.empty}</p>;
   }
   return (
     <>
-      <p className="border-b border-border py-3 font-mono text-xs text-muted-foreground">
+      <p className="mb-6 type-meta">
         {suggestions.source === "model"
           ? format(r.fromModel, { model: suggestions.model })
           : r.fromSite}
@@ -108,16 +108,18 @@ async function Recommendations() {
 
 export default function RecommendationsPage() {
   return (
-    <PageShell>
-      <PageHeading title={r.title} aside={<p>{r.description}</p>} lead={r.lead} />
-      <SectionHeading index={1} title={r.listLabel} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
-        <Recommendations />
-      </Suspense>
-      <section aria-labelledby="nasil" className="mt-8 max-w-[62ch]">
-        <SectionHeading id="nasil" index={2} title={r.howTitle} />
-        <p className="py-4 text-sm leading-relaxed">{r.how}</p>
-      </section>
+    <PageShell width="read">
+      <PageHeading title={r.title} lead={r.lead} size="title" />
+      <Section id="oneriler" className="mt-0 md:mt-0">
+        <SectionHeading id="oneriler" title={r.listLabel} />
+        <Suspense fallback={<Skeleton className="h-96" />}>
+          <Recommendations />
+        </Suspense>
+      </Section>
+      <Section id="nasil">
+        <SectionHeading id="nasil" title={r.howTitle} />
+        <p>{r.how}</p>
+      </Section>
     </PageShell>
   );
 }

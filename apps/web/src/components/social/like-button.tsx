@@ -1,14 +1,17 @@
 "use client";
 
+import { HeartIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { format, t } from "@/lib/i18n";
 import { useHasSession } from "@/lib/session-cookie";
+import { cn } from "@/lib/utils";
 
 const s = t.social;
-const buttonClass = "h-10 px-5 font-mono text-xs uppercase";
+// Not a framed button (DESIGN.md): an icon and a word, a quiet background on hover.
+const likeClass =
+  "-ml-3 inline-flex h-10 cursor-pointer items-center gap-2 rounded-md px-3 font-medium text-ink no-underline transition-colors hover:bg-sunk disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:text-accent-ink";
 
 /**
  * Like a tasting. The count shown at first is the one the static page was built with;
@@ -49,16 +52,15 @@ export function LikeButton({
   }, [signedIn, tastingId]);
 
   const count = live?.count ?? initialCount;
-  const countText = <span className="font-mono text-xs">{format(s.likeCount, { count })}</span>;
+  const countText = <span className="type-meta">{format(s.likeCount, { count })}</span>;
 
   if (!signedIn) {
     return (
       <div className="flex flex-wrap items-center gap-4">
-        <Button asChild variant="outline" className={buttonClass}>
-          <Link href="/giris" prefetch={false}>
-            {s.like}
-          </Link>
-        </Button>
+        <Link href="/giris" prefetch={false} className={likeClass}>
+          <HeartIcon aria-hidden className="size-5 stroke-[1.5]" />
+          {s.like}
+        </Link>
         {countText}
       </div>
     );
@@ -93,22 +95,25 @@ export function LikeButton({
   }
 
   return (
-    <div className="grid gap-1.5">
+    <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-4">
-        <Button
+        <button
           type="button"
-          variant={live.liked ? "default" : "outline"}
           disabled={pending}
           aria-pressed={live.liked}
-          className={buttonClass}
+          className={likeClass}
           onClick={() => void toggle()}
         >
+          <HeartIcon
+            aria-hidden
+            className={cn("size-5 stroke-[1.5]", live.liked && "fill-current")}
+          />
           {live.liked ? s.liked : s.like}
-        </Button>
+        </button>
         {countText}
       </div>
       {error ? (
-        <p role="alert" className="font-mono text-xs text-destructive">
+        <p role="alert" className="text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}

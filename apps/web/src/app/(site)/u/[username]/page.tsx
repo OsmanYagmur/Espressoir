@@ -6,27 +6,30 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { OfficialBadge } from "@/components/business/official-badge";
-import { VisitItem } from "@/components/cafe/visit-item";
-import { TastingItem } from "@/components/coffee/tasting-item";
+import { VisitCard } from "@/components/cafe/visit-item";
+import { TasteProfile } from "@/components/coffee/taste-profile";
+import { TastingCard } from "@/components/coffee/tasting-card";
 import { FieldStrip } from "@/components/site/field-strip";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { FollowButton } from "@/components/social/follow-button";
 import { ReportButton } from "@/components/social/report-button";
 import { GroupMeans } from "@/components/stats/group-means";
-import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
 import { TagCounts } from "@/components/stats/tag-counts";
+import { cardClass } from "@/components/ui/card";
 import { getArchive } from "@/lib/data/archive";
 import { cafeHref, visitsBy } from "@/lib/data/cafes";
 import { findProfile, listsBy, scoresOf, tastingsBy } from "@/lib/data/selectors";
 import { tasteSummary } from "@/lib/data/taste-summary";
+import { getCurrentYear } from "@/lib/data/today";
 import { formatAverage, formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { mediaUrl } from "@/lib/media";
-import { brandPath, listPath, profilePath } from "@/lib/routes";
+import { brandPath, coffeePath, listPath, profilePath } from "@/lib/routes";
+import { cn } from "@/lib/utils";
 
 type Props = PageProps<"/u/[username]">;
 
@@ -102,47 +105,39 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
   const lists = listsBy(archive, profile.id);
   const visits = visitsBy(archive, profile.id);
   const avatar = profile.avatarPath ? mediaUrl(profile.avatarPath) : null;
-  let section = 0;
+  const currentYear = await getCurrentYear();
+  const count = (n: number) => <span className="type-figure">{n}</span>;
 
   return (
     <>
       <PageHeading
-        plain
-        fit
         title={nameOf(profile)}
-        kicker={
-          <>
-            {p.kicker} · <span className="normal-case">@{profile.username}</span>
-          </>
+        kicker={profile.displayName ? `@${profile.username}` : p.kicker}
+        lead={
+          profile.bio ? (
+            // Plain text, escaped by React; line breaks the member typed are kept.
+            <span className="[overflow-wrap:anywhere] whitespace-pre-line">{profile.bio}</span>
+          ) : undefined
         }
-        aside={
-          <>
-            {avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element -- already the right size
-              <img
-                src={avatar}
-                alt={format(t.photo.avatarAlt, { username: profile.username })}
-                width={96}
-                height={96}
-                className="mb-3 size-24 border border-border bg-muted object-cover md:ml-auto"
-              />
-            ) : null}
-            {profile.bio ? (
-              // Plain text, escaped by React; line breaks the member typed are kept.
-              <p className="mb-2 text-left font-sans text-sm [overflow-wrap:anywhere] whitespace-pre-line text-foreground md:text-right">
-                {profile.bio}
-              </p>
-            ) : null}
-            <p>{format(p.joined, { date: formatLongDay(profile.joinedAt.slice(0, 10)) })}</p>
-            <div className="mt-3 grid justify-items-start gap-2 md:justify-items-end">
-              <FollowButton userId={profile.id} />
-              <ReportButton target="profile" targetId={profile.id} />
-            </div>
-          </>
-        }
-      />
+      >
+        {avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element -- already the right size
+          <img
+            src={avatar}
+            alt={format(t.photo.avatarAlt, { username: profile.username })}
+            width={64}
+            height={64}
+            className="size-16 rounded-full bg-sunk object-cover"
+          />
+        ) : null}
+        <p className="type-meta">
+          {format(p.joined, { date: formatLongDay(profile.joinedAt.slice(0, 10)) })}
+        </p>
+        <FollowButton userId={profile.id} />
+      </PageHeading>
+
       {profile.officialFor.length > 0 ? (
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border py-3 font-mono text-xs">
+        <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 type-meta">
           <OfficialBadge />
           {profile.officialFor.map((business, index) => (
             <span key={business.id}>
@@ -153,7 +148,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
                     ? brandPath(business.slug)
                     : cafeHref({ cityCode: business.cityCode ?? 0, slug: business.slug })
                 }
-                className="underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                className="text-accent-ink underline underline-offset-3"
               >
                 {business.name}
               </Link>
@@ -161,6 +156,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
           ))}
         </p>
       ) : null}
+
       <FieldStrip
         fields={[
           {
@@ -193,49 +189,31 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
         ]}
       />
 
-      {scores.length >= SMALL_SAMPLE ? (
-        // The same charts as the site-wide statistics, drawn from this notebook alone.
-        <div className="grid gap-x-10 md:grid-cols-2">
-          <section aria-labelledby="dagilim">
-            <SectionHeading
-              id="dagilim"
-              index={++section}
-              title={p.distributionTitle}
-              aside={format(p.averageNote, { n: scores.length })}
-            />
-            <ScoreColumns counts={scoreHistogram(scores)} className="mt-4 mb-7" />
-          </section>
-          <section aria-labelledby="yontemler">
-            <SectionHeading id="yontemler" index={++section} title={p.methodsTitle} />
-            <GroupMeans
-              caption={p.methodsTitle}
-              groupLabel={t.stats.columns.method}
-              rows={methods}
-            />
-          </section>
-        </div>
-      ) : null}
+      <Section id="tadimlar">
+        <SectionHeading id="tadimlar" title={p.tastingsTitle} aside={count(tastings.length)} />
+        {tastings.length === 0 ? (
+          <p className="text-ink-2">{p.empty}</p>
+        ) : (
+          <ul aria-labelledby="tadimlar" className="grid gap-4 md:grid-cols-2">
+            {tastings.map((tasting) => (
+              <li key={tasting.id}>
+                <TastingCard tasting={tasting} currentYear={currentYear} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
 
-      {taste.axes || taste.tags.length > 0 ? (
-        <section aria-labelledby="damak">
-          <SectionHeading
-            id="damak"
-            index={++section}
-            title={t.taste.member.title}
-            hint={t.taste.member.hint}
-          />
-          <div className="grid gap-x-10 gap-y-4 pt-3 pb-6 md:grid-cols-2">
-            {taste.axes ? (
-              <Radar
-                axes={taste.axes}
-                caption={format(t.taste.member.caption, { username: profile.username })}
-              />
-            ) : null}
+      {taste.profile || taste.tags.length > 0 ? (
+        <Section id="damak">
+          <SectionHeading id="damak" title={t.taste.member.title} hint={t.taste.member.hint} />
+          <div className="grid gap-x-12 gap-y-8 md:grid-cols-2">
+            {taste.profile ? <TasteProfile rows={taste.profile} /> : null}
             {taste.tags.length > 0 ? (
               <div>
-                <p className="label-caps pb-1 text-muted-foreground">
-                  {t.taste.community.tagsTitle}
-                  <span className="ml-2 tracking-normal normal-case">
+                <p className="mb-2 type-label">
+                  {t.taste.community.tagsTitle}{" "}
+                  <span className="type-figure font-normal text-ink-2">
                     {format(t.taste.community.tagsAside, { n: taste.taggedCount })}
                   </span>
                 </p>
@@ -247,65 +225,95 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
               </div>
             ) : null}
           </div>
-        </section>
+        </Section>
       ) : null}
 
-      <SectionHeading index={++section} title={p.tastingsTitle} aside={tastings.length} />
-      {tastings.length === 0 ? (
-        <p className="border-b border-border py-8 text-muted-foreground">{p.empty}</p>
-      ) : (
-        <ul aria-label={p.tastingsTitle}>
-          {tastings.map((tasting) => (
-            <TastingItem key={tasting.id} tasting={tasting} showCoffee />
-          ))}
-        </ul>
-      )}
+      {scores.length >= SMALL_SAMPLE ? (
+        // The same charts as the site-wide statistics, drawn from this notebook alone.
+        <div className="grid gap-x-12 md:grid-cols-2">
+          <Section id="dagilim">
+            <SectionHeading
+              id="dagilim"
+              title={p.distributionTitle}
+              aside={
+                <span className="type-figure">{format(p.averageNote, { n: scores.length })}</span>
+              }
+            />
+            <ScoreColumns counts={scoreHistogram(scores)} className="mt-4" />
+          </Section>
+          <Section id="yontemler">
+            <SectionHeading id="yontemler" title={p.methodsTitle} />
+            <GroupMeans
+              caption={p.methodsTitle}
+              groupLabel={t.stats.columns.method}
+              rows={methods}
+            />
+          </Section>
+        </div>
+      ) : null}
 
       {lists.length > 0 ? (
-        <>
-          <SectionHeading index={++section} title={p.listsTitle} aside={lists.length} />
-          <ul aria-label={p.listsTitle}>
+        <Section id="listeler">
+          <SectionHeading id="listeler" title={p.listsTitle} aside={count(lists.length)} />
+          <ul aria-labelledby="listeler" className="grid gap-4 md:grid-cols-2">
             {lists.map((list) => (
-              <li
-                key={list.id}
-                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border py-3"
-              >
+              <li key={list.id}>
                 <Link
                   href={listPath(profile.username, list.slug)}
-                  className="font-semiwide text-lg font-bold [overflow-wrap:anywhere] underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className={cn(
+                    cardClass,
+                    "flex h-full flex-col gap-1 text-ink no-underline transition-colors hover:border-line-strong",
+                  )}
                 >
-                  {list.title}
+                  <span className="type-card-title [overflow-wrap:anywhere]">{list.title}</span>
+                  <span className="type-meta">
+                    {format(t.lists.itemCount, { count: list.items.length })}
+                  </span>
                 </Link>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {format(t.lists.itemCount, { count: list.items.length })}
-                </span>
               </li>
             ))}
           </ul>
-        </>
+        </Section>
       ) : null}
 
       {visits.length > 0 ? (
-        <>
-          <SectionHeading index={++section} title={p.cafesTitle} aside={visits.length} />
-          <ul aria-label={p.cafesTitle}>
+        <Section id="kafeler">
+          <SectionHeading id="kafeler" title={p.cafesTitle} aside={count(visits.length)} />
+          <ul aria-labelledby="kafeler" className="grid gap-4 md:grid-cols-2">
             {visits.map((visit) => (
-              <VisitItem key={visit.id} visit={visit} showCafe />
+              <li key={visit.id}>
+                <VisitCard visit={visit} currentYear={currentYear} showCafe />
+              </li>
             ))}
           </ul>
-        </>
+        </Section>
       ) : null}
 
       {wishlist.length > 0 ? (
-        <>
-          <SectionHeading index={++section} title={p.wishlistTitle} aside={wishlist.length} />
-          <ul aria-label={p.wishlistTitle}>
-            {wishlist.map((tasting) => (
-              <TastingItem key={tasting.id} tasting={tasting} showCoffee />
+        <Section id="denenecekler">
+          <SectionHeading
+            id="denenecekler"
+            title={p.wishlistTitle}
+            aside={count(wishlist.length)}
+          />
+          {/* Not tastings yet: the coffees, each a link to its page. */}
+          <ul aria-labelledby="denenecekler" className="border-t border-line">
+            {wishlist.map((entry) => (
+              <li key={entry.id} className="border-b border-line">
+                <Link
+                  href={coffeePath(entry.brand.slug, entry.coffee.slug)}
+                  className="flex flex-wrap items-baseline justify-between gap-x-4 py-3 text-ink no-underline hover:underline"
+                >
+                  <span className="font-display text-lg font-semibold">{entry.coffee.name}</span>
+                  <span className="type-meta">{entry.brand.name}</span>
+                </Link>
+              </li>
             ))}
           </ul>
-        </>
+        </Section>
       ) : null}
+
+      <ReportButton target="profile" targetId={profile.id} className="mt-12" />
     </>
   );
 }

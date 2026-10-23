@@ -38,9 +38,9 @@ test("a member finds an existing coffee despite a typo and adds their own tastin
   await expect(page).toHaveURL(/\/kahve\/nespresso\/ristretto-siyah-kapsul$/);
   const tastings = page.getByRole("list", { name: "Tadımlar" });
   await expect(tastings.getByRole("listitem")).toHaveCount(2);
-  await expect(tastings.getByRole("link", { name: "@e2e_guest" })).toBeVisible();
-  await expect(tastings.getByRole("link", { name: `@${ownerUsername}` })).toBeVisible();
-  await expect(page.getByRole("img", { name: "10 üzerinden 7,5 puan" }).first()).toBeVisible();
+  await expect(tastings).toContainText("@e2e_guest");
+  await expect(tastings).toContainText(`@${ownerUsername}`);
+  await expect(page.getByRole("img", { name: "Puan: 7,5 / 10" }).first()).toBeVisible();
 
   // It is in the public feed without waiting for the hourly refresh.
   await page.goto("/akis");
@@ -108,22 +108,21 @@ test("following someone fills the feed of followed people", async ({ page }) => 
   const followed = page.getByRole("list", { name: "Takip ettiklerim" });
   await expect(followed.getByRole("listitem").first()).toBeVisible();
   // Only the followed person's entries: none of the guest's own.
-  await expect(followed.getByRole("link", { name: "@e2e_guest" })).toHaveCount(0);
-  await expect(followed.getByRole("link", { name: `@${ownerUsername}` }).first()).toBeVisible();
+  await expect(followed).not.toContainText("@e2e_guest");
+  await expect(followed).toContainText(`@${ownerUsername}`);
 
   // Ten at a time. The imported entries share one timestamp, so paging has to break the
   // tie by id to neither skip nor repeat any of them.
   await expect(followed.getByRole("listitem")).toHaveCount(10);
   await page.getByRole("button", { name: "Daha fazla göster" }).click();
   await expect(page.getByText("Akışın sonu.")).toBeVisible();
+  // Each card is one link to its tasting: all of the owner's 17, none twice.
   const links = await followed
-    .getByRole("heading", { level: 3 })
     .getByRole("link")
     .evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href")));
-  const coffees = links.filter((href) => href?.startsWith("/kahve/"));
-  expect(coffees.length).toBeGreaterThanOrEqual(17);
-  // Each of the owner's 17 imported tastings is of a different coffee.
-  expect(new Set(coffees).size).toBe(coffees.length);
+  const tastings = links.filter((href) => href?.startsWith("/tadim/"));
+  expect(tastings.length).toBeGreaterThanOrEqual(17);
+  expect(new Set(tastings).size).toBe(tastings.length);
 
   // One's own page has no follow button; unfollowing empties the feed again.
   await page.goto("/u/e2e_guest");
@@ -173,15 +172,14 @@ test("a member gives a tasting a taste profile and tags, and changes them later"
     .getByRole("list", { name: "Tadımlar" })
     .getByRole("listitem")
     .filter({ hasText: note });
-  await expect(mine.getByText("Tat etiketleri: Kakao, Fındık")).toBeVisible();
+  await expect(mine.getByText("Tat notaları: kakao, fındık")).toBeVisible();
 
-  // Its own page draws the profile; the corners left empty say so.
+  // Its own page shows the profile; the dimensions left empty are left out.
   await mine.getByRole("link", { name: /beğeni · \d+ yorum/ }).click();
-  await expect(
-    page.getByRole("img", {
-      name: "Tat profili grafiği: Gövde 4/5, Asidite 3/5, Acılık —, Tatlılık —, Bitiş 5/5",
-    }),
-  ).toBeVisible();
+  await expect(page.getByRole("img", { name: "Gövde: 4/5, yoğun" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Asidite: 3/5, dengeli" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Bitiş: 5/5, uzun" })).toBeVisible();
+  await expect(page.getByRole("img", { name: /^Tatlılık:/ })).toHaveCount(0);
 
   // Editing shows what was chosen and saves the new set.
   await page.goto("/panel");
@@ -201,5 +199,5 @@ test("a member gives a tasting a taste profile and tags, and changes them later"
   await expect(page).toHaveURL(/\/panel$/);
 
   await page.goto("/kahve/nespresso/colombia");
-  await expect(mine.getByText("Tat etiketleri: Fındık, Bal")).toBeVisible();
+  await expect(mine.getByText("Tat notaları: fındık, bal")).toBeVisible();
 });

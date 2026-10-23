@@ -2,34 +2,56 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-// Form controls in the tasting-form style: ruled boxes, mono text, no rounding.
-// 16px text on small screens keeps iOS from zooming into a focused field.
+// 16px text keeps iOS from zooming into a focused field.
 const control =
-  "w-full border border-input bg-background px-3 font-mono text-base outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground/70 focus-visible:border-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive md:text-sm";
+  "w-full rounded-md border border-line-strong bg-surface px-4 text-base text-ink transition-colors placeholder:text-ink-3 disabled:opacity-50 aria-invalid:border-danger";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
-  return <label className={cn("label-caps block text-muted-foreground", className)} {...props} />;
+  return <label className={cn("block type-label text-ink", className)} {...props} />;
 }
 
 function Input({ className, ...props }: React.ComponentProps<"input">) {
-  return <input data-slot="input" className={cn(control, "h-11", className)} {...props} />;
+  return <input data-slot="input" className={cn(control, "h-12", className)} {...props} />;
 }
 
 function Select({ className, ...props }: React.ComponentProps<"select">) {
-  return <select data-slot="select" className={cn(control, "h-11 pr-8", className)} {...props} />;
+  return <select data-slot="select" className={cn(control, "h-12 pr-8", className)} {...props} />;
 }
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"
-      className={cn(control, "min-h-32 py-2.5 leading-relaxed", className)}
+      className={cn(control, "min-h-24 resize-y py-3", className)}
       {...props}
     />
   );
 }
 
-/** A label stacked over its control, with an optional hint or error underneath. */
+/** The help or error line under a control; the error replaces the help. */
+function FieldNote({ id, error, hint }: { id: string; error?: string; hint?: React.ReactNode }) {
+  if (error) {
+    return (
+      <p id={`${id}-error`} className="text-sm font-medium text-danger">
+        {error}
+      </p>
+    );
+  }
+  if (!hint) return null;
+  return (
+    <p id={`${id}-hint`} className="type-meta">
+      {hint}
+    </p>
+  );
+}
+
+/** Where a control's help or error line is, for its aria-describedby. */
+function describedBy(id: string, { error, hint }: { error?: string; hint?: unknown }) {
+  if (error) return `${id}-error`;
+  return hint ? `${id}-hint` : undefined;
+}
+
+/** A label over its control, with an optional help sentence or error underneath. */
 function Field({
   label,
   htmlFor,
@@ -38,28 +60,25 @@ function Field({
   className,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   htmlFor: string;
-  hint?: string;
+  hint?: React.ReactNode;
   error?: string;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("grid content-start gap-1.5", className)}>
+    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
-      {error ? (
-        <p id={`${htmlFor}-error`} role="alert" className="font-mono text-xs text-destructive">
-          {error}
-        </p>
-      ) : hint ? (
-        <p id={`${htmlFor}-hint`} className="font-mono text-xs text-muted-foreground">
-          {hint}
-        </p>
-      ) : null}
+      <FieldNote id={htmlFor} error={error} hint={hint} />
     </div>
   );
 }
 
-export { Field, Input, Label, Select, Textarea };
+/** The "(isteğe bağlı)" after a label. */
+function Optional({ children }: { children: React.ReactNode }) {
+  return <span className="font-normal text-ink-2">{children}</span>;
+}
+
+export { describedBy, Field, FieldNote, Input, Label, Optional, Select, Textarea };

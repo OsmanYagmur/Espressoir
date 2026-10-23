@@ -27,8 +27,8 @@ export function ScatterPlot({
 
   return (
     <figure>
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 font-mono text-xs text-muted-foreground">
-        <div aria-hidden className="relative h-72 w-4">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 type-figure text-ink-2">
+        <div aria-hidden className="relative h-72 w-5">
           {yTicks.map((tick) => (
             <span
               key={tick}
@@ -41,13 +41,13 @@ export function ScatterPlot({
         </div>
         <ul
           aria-label={t.stats.scatterTitle}
-          className="relative h-72 border-b border-l border-rule"
+          className="relative h-72 border-b border-l border-line-strong"
         >
           {yTicks.map((tick) => (
             <li
               key={`grid-${tick}`}
               aria-hidden
-              className="absolute inset-x-0 border-t border-border"
+              className="absolute inset-x-0 border-t border-line"
               style={{ bottom: bottom(tick) }}
             />
           ))}
@@ -72,17 +72,17 @@ export function ScatterPlot({
               <li
                 key={`${point.x}:${point.y}`}
                 tabIndex={0}
-                className="group absolute grid size-6 -translate-x-1/2 translate-y-1/2 place-items-center outline-none hover:z-10 focus-visible:z-10"
+                className="group absolute grid size-6 -translate-x-1/2 translate-y-1/2 place-items-center rounded-full hover:z-10 focus-visible:z-10"
                 style={{ left: left(point.x), bottom: bottom(point.y) }}
               >
                 <span
                   aria-hidden
-                  className="bg-foreground ring-2 ring-background group-hover:bg-brand group-focus-visible:bg-brand"
+                  className="rounded-full bg-ink-2 ring-2 ring-bg group-hover:bg-ink group-focus-visible:bg-ink"
                   style={{ width: size, height: size }}
                 />
                 <span
                   className={cn(
-                    "pointer-events-none absolute bottom-full mb-1 w-max max-w-40 border border-rule bg-popover px-2 py-1 text-popover-foreground opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 sm:max-w-none sm:whitespace-nowrap",
+                    "pointer-events-none absolute bottom-full mb-1 w-max max-w-40 rounded-sm border border-line bg-surface px-2 py-1 font-sans text-ink opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 sm:max-w-none sm:whitespace-nowrap",
                     anchor,
                   )}
                 >
@@ -93,7 +93,7 @@ export function ScatterPlot({
           })}
         </ul>
         <div />
-        <div aria-hidden className="relative h-5">
+        <div aria-hidden className="relative h-6">
           {xTicks.map((tick) => (
             <span
               key={tick}
@@ -105,7 +105,7 @@ export function ScatterPlot({
           ))}
         </div>
       </div>
-      <figcaption className="mt-2 flex justify-between font-mono text-xs text-muted-foreground">
+      <figcaption className="mt-2 flex justify-between type-meta">
         <span>↑ {t.stats.axis.score}</span>
         <span>{t.stats.axis.intensity} →</span>
       </figcaption>

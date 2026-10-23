@@ -1,8 +1,11 @@
 import { siteConfig } from "@espressoir/core";
+import type { Route } from "next";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 import { format, t } from "@/lib/i18n";
+
+import { ThemeSwitch } from "./theme-switch";
 
 async function CopyrightLine() {
   "use cache";
@@ -14,30 +17,56 @@ async function CopyrightLine() {
   );
 }
 
-const footerLink =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+// The catalog pages live in a member's menu; everyone else finds them here.
+const EXPLORE: ReadonlyArray<{ href: Route; label: string }> = [
+  { href: "/kahveler", label: t.nav.coffees },
+  { href: "/kafeler", label: t.nav.cafes },
+  { href: "/istatistik", label: t.nav.stats },
+  { href: "/hakkinda", label: t.nav.about },
+];
+
+const LEGAL: ReadonlyArray<{ href: Route; label: string }> = [
+  { href: "/kvkk", label: t.footer.kvkk },
+  { href: "/gizlilik", label: t.footer.privacy },
+  { href: "/kosullar", label: t.footer.terms },
+];
+
+const footerLink = "text-ink-2 no-underline transition-colors hover:text-ink";
 
 export function SiteFooter() {
   return (
-    <footer className="mx-auto mt-20 w-full max-w-[1240px] px-5">
-      <div className="flex flex-col gap-2 border-t-2 border-rule pt-3 pb-10 font-mono text-xs text-muted-foreground sm:flex-row sm:justify-between">
-        <span>
-          {siteConfig.name} — {siteConfig.tagline.tr.toLocaleLowerCase("tr")}
-        </span>
-        <span className="flex flex-wrap gap-x-4 gap-y-1">
-          <nav aria-label={t.footer.legalLabel} className="flex gap-4">
-            <Link href="/kvkk" prefetch={false} className={footerLink}>
-              {t.footer.kvkk}
-            </Link>
-            <Link href="/gizlilik" prefetch={false} className={footerLink}>
-              {t.footer.privacy}
-            </Link>
-            <Link href="/kosullar" prefetch={false} className={footerLink}>
-              {t.footer.terms}
-            </Link>
-          </nav>
-          <CopyrightLine />
-        </span>
+    <footer className="mt-12 border-t border-line md:mt-16">
+      <div className="mx-auto flex max-w-grid flex-col gap-6 px-4 py-8">
+        <p className="font-display text-2xl font-semibold text-ink">{t.footer.slogan}</p>
+        <nav aria-label={t.footer.exploreLabel}>
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {EXPLORE.map(({ href, label }) => (
+              <li key={href}>
+                {/* Not fetched ahead: built from the archive (see lib/data/refresh-archive.ts). */}
+                <Link href={href} prefetch={false} className={footerLink}>
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 type-meta">
+            <nav aria-label={t.footer.legalLabel}>
+              <ul className="flex flex-wrap gap-x-6 gap-y-2">
+                {LEGAL.map(({ href, label }) => (
+                  <li key={href}>
+                    <Link href={href} prefetch={false} className={footerLink}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <CopyrightLine />
+          </div>
+          <ThemeSwitch />
+        </div>
       </div>
     </footer>
   );

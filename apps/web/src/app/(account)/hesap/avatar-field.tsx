@@ -11,7 +11,6 @@ import { setAvatar } from "./actions";
 
 const p = t.photo;
 const a = p.avatar;
-const buttonClass = "h-10 px-4 font-mono text-xs uppercase";
 
 function problemText(kind: string): string {
   if (kind === "tooLarge") {
@@ -92,8 +91,8 @@ export function AvatarField({
   const src = path ? mediaUrl(path) : null;
 
   return (
-    <div className="grid max-w-2xl gap-3 border-b border-border py-5">
-      <p className="text-sm text-muted-foreground">{a.hint}</p>
+    <div className="flex flex-col gap-4">
+      <p className="type-meta">{a.hint}</p>
       <div className="flex flex-wrap items-center gap-4">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element -- already the right size
@@ -102,10 +101,10 @@ export function AvatarField({
             alt={format(p.avatarAlt, { username })}
             width={96}
             height={96}
-            className="size-24 border border-border bg-muted object-cover"
+            className="size-24 rounded-full bg-sunk object-cover"
           />
         ) : (
-          <p className="font-mono text-xs text-muted-foreground">{a.none}</p>
+          <p className="type-meta">{a.none}</p>
         )}
         <div className="flex flex-wrap gap-2">
           <input
@@ -119,20 +118,14 @@ export function AvatarField({
           />
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={busy}
-            className={buttonClass}
             onClick={() => input.current?.click()}
           >
             {busy ? p.uploading : path ? a.replace : a.choose}
           </Button>
           {path && !busy ? (
-            <Button
-              type="button"
-              variant="outline"
-              className={buttonClass}
-              onClick={() => void remove()}
-            >
+            <Button type="button" variant="secondary" onClick={() => void remove()}>
               {a.remove}
             </Button>
           ) : null}
@@ -141,7 +134,7 @@ export function AvatarField({
       {message ? (
         <p
           role={message.error ? "alert" : "status"}
-          className={message.error ? "font-mono text-xs text-destructive" : "font-mono text-xs"}
+          className={message.error ? "text-sm font-medium text-danger" : "type-meta"}
         >
           {message.text}
         </p>

@@ -13,10 +13,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   typedRoutes: true,
-  // Files read at runtime (the share-image fonts) are shipped with every server function.
-  // The build usually finds them on its own; this makes it a guarantee.
+  // Files read at runtime (the share-image fonts, the Bilgi articles) are shipped with every
+  // server function. The build usually finds them on its own; this makes it a guarantee.
   outputFileTracingIncludes: {
-    "/*": ["src/assets/fonts/*.woff"],
+    "/*": ["src/assets/fonts/*.woff", "src/content/bilgi/*.md"],
   },
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: ["@espressoir/core", "@espressoir/db", "@espressoir/i18n"],

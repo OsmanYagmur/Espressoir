@@ -5,41 +5,64 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const coffeeList = (page: Page) => page.getByRole("list", { name: "Kahveler" });
-const mainNav = (page: Page) =>
-  page.getByRole("navigation", { name: "Ana menü" }).locator("visible=true");
+const mainNav = (page: Page) => page.getByRole("navigation", { name: "Ana menü" });
+/** The catalog pages sit in a member's menu; everyone finds them in the footer. */
+const exploreNav = (page: Page) => page.getByRole("navigation", { name: "Keşfet" });
 
 test.describe("home", () => {
-  test("shows the notebook's numbers and the latest tastings", async ({ page }) => {
+  test("says what the site is, leads to the open workshop and shows the latest", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/Espressoir/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tadım defteri.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("İçtiğin her kahveyi kaydet.");
 
-    // 17 tastings of 20 coffees from 8 brands; 3 coffees are still on the wishlist.
-    const fields = page.locator("dl").first();
-    await expect(fields).toContainText("17");
-    await expect(fields).toContainText("3 tanesi denenecek");
-    await expect(fields).toContainText("n = 16");
+    // One main action: the open workshop's form. "Nasıl çalışır?" sits beside it as a link.
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: "Atölyeye başvur" })).toHaveAttribute(
+      "href",
+      "/atolye#basvuru",
+    );
+    await expect(main.getByRole("link", { name: "Nasıl çalışır?" })).toHaveAttribute(
+      "href",
+      "/hakkinda#nasil-calisir",
+    );
+
+    const workshop = page.getByRole("region", { name: "Sıradaki atölye" });
+    await expect(workshop.getByRole("heading", { name: "Kahveye giriş atölyesi" })).toBeVisible();
+    await expect(workshop).toContainText("8 kişilik · 8 yer kaldı");
+    await expect(workshop.getByRole("link", { name: "Detaylar" })).toHaveAttribute(
+      "href",
+      "/atolye",
+    );
 
     const latest = page.getByRole("list", { name: "Son tadımlar" });
-    await expect(latest.getByRole("listitem")).toHaveCount(8);
-    await expect(latest.getByRole("listitem").first()).toContainText("10 Eki 2026");
-    await expect(latest.getByRole("link", { name: "Original Taste" })).toBeVisible();
+    await expect(latest.getByRole("listitem")).toHaveCount(3);
+    await expect(latest.getByRole("listitem").first()).toContainText(/10 Eki/);
+    await expect(latest.getByRole("link", { name: /Original Taste/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Puan: 8 / 10" }).first()).toBeVisible();
+
+    await expect(
+      page.getByRole("list", { name: "Merak ettiklerin" }).getByRole("listitem"),
+    ).toHaveCount(3);
+    // The numbers, the top coffees and the brew methods live on the statistics page now.
+    await expect(page.getByText("En yüksek puanlılar")).toHaveCount(0);
   });
 
-  test("welcomes every brew method, not only espresso", async ({ page }) => {
-    await page.goto("/");
+  test("the about page welcomes every brew method, not only espresso", async ({ page }) => {
+    await page.goto("/hakkinda");
+    await expect(page.getByRole("heading", { name: "Nasıl çalışır?" })).toBeVisible();
     await expect(page.getByText("Türk Kahvesi", { exact: true })).toBeVisible();
     await expect(page.getByText("French Press", { exact: true })).toBeVisible();
-    await expect(page.getByRole("img", { name: "10 üzerinden 8 puan" }).first()).toBeVisible();
   });
 });
 
 test.describe("coffee list", () => {
   test("is reachable from the main navigation and lists everything", async ({ page }) => {
     await page.goto("/");
-    await mainNav(page).getByRole("link", { name: "Kahveler" }).click();
+    await exploreNav(page).getByRole("link", { name: "Kahveler" }).click();
     await expect(page).toHaveURL(/\/kahveler$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveler.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveler");
     await expect(page.getByRole("status")).toContainText("20 kahve");
     await expect(coffeeList(page).getByRole("listitem")).toHaveCount(20);
   });
@@ -89,11 +112,11 @@ test.describe("coffee list", () => {
 test.describe("coffee page", () => {
   test("shows the tasting, the label details and structured data", async ({ page }) => {
     await page.goto("/kahveler");
-    await page.getByRole("link", { name: "Ristretto (Siyah Kapsül)" }).click();
+    await page.getByRole("link", { name: /Ristretto \(Siyah Kapsül\)/ }).click();
     await expect(page).toHaveURL(/\/kahve\/nespresso\/ristretto-siyah-kapsul$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ristretto (Siyah Kapsül).");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ristretto (Siyah Kapsül)");
 
-    await expect(page.getByRole("img", { name: "10 üzerinden 9 puan" }).first()).toBeVisible();
+    await expect(page.getByRole("img", { name: "Puan: 9 / 10" }).first()).toBeVisible();
     const tastings = page.getByRole("list", { name: "Tadımlar" });
     await expect(tastings).toContainText("Çok yoğun, kısa ve net.");
     await expect(tastings).toContainText("Kapsül Makinesi · Nespresso C30");
@@ -117,7 +140,7 @@ test.describe("coffee page", () => {
 
   test("marks a coffee that has not been tasted yet", async ({ page }) => {
     await page.goto("/kahve/jacobs/intenso-lungo");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("İntenso Lungo.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("İntenso Lungo");
     await expect(page.getByRole("img", { name: "Puansız" }).first()).toBeVisible();
     // Nobody has tasted it; someone has it on their "want to try" list, which is counted.
     await expect(page.getByText("Bu kahveyi henüz kimse tatmadı.")).toBeVisible();
@@ -146,7 +169,7 @@ test("a brand's page without an official account invites one", async ({ page }) 
 
 test("brand page lists the brand's coffees with its average", async ({ page }) => {
   await page.goto("/marka/jacobs");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jacobs.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jacobs");
   const coffees = page.getByRole("list", { name: "Kahveleri" });
   await expect(coffees.getByRole("listitem")).toHaveCount(4);
   await expect(coffees).toContainText("Classico Lungo");
@@ -157,14 +180,25 @@ test("brand page lists the brand's coffees with its average", async ({ page }) =
 
 test("statistics show n beside every average and flag small samples", async ({ page }) => {
   await page.goto("/istatistik");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("İstatistik.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("İstatistik");
+  // What the home page used to carry: the archive's numbers, the top coffees, the methods.
+  const figures = page.locator("dl").first();
+  await expect(figures).toContainText("17");
+  await expect(figures).toContainText("3 tanesi denenecek");
+  await expect(figures).toContainText("n = 16");
+  await expect(
+    page.getByRole("list", { name: "En yüksek puanlılar" }).getByRole("listitem"),
+  ).toHaveCount(5);
+  await expect(page.getByRole("list", { name: "Hangi yöntemle demleniyor?" })).toContainText(
+    "Kapsül Makinesi",
+  );
 
   const brands = page.getByRole("table", { name: "Marka ortalamaları" });
   const nespresso = brands.getByRole("row", { name: /Nespresso/ });
   await expect(nespresso.getByRole("cell").first()).toHaveText("3");
   await expect(nespresso).toContainText("8,0");
   // A single Nescafe tasting is not a trend.
-  await expect(brands.getByRole("row", { name: /Nescafe/ })).toContainText("n < 3");
+  await expect(brands.getByRole("row", { name: /Nescafe/ })).toContainText("Az tadım");
 
   await expect(page.getByRole("list", { name: "Puan dağılımı" }).getByRole("listitem")).toHaveCount(
     10,
@@ -175,51 +209,27 @@ test("statistics show n beside every average and flag small samples", async ({ p
 test("theme can be switched to dark and back", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");
+  const colours = page.getByTestId("theme-switch");
 
-  await page.getByTestId("theme-toggle").click();
-  await page.getByRole("menuitemradio", { name: "Koyu" }).click();
-  await expect(html).toHaveClass(/dark/);
-  // Wait for the menu's close animation before reopening it.
-  await expect(page.getByRole("menu")).toBeHidden();
+  await colours.getByRole("button", { name: "Koyu" }).click();
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await expect(colours.getByRole("button", { name: "Koyu" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 
-  await page.getByTestId("theme-toggle").click();
-  await page.getByRole("menuitemradio", { name: "Açık" }).click();
-  await expect(html).not.toHaveClass(/dark/);
+  await colours.getByRole("button", { name: "Açık" }).click();
+  await expect(html).toHaveAttribute("data-theme", "light");
 });
 
-test("the look can be switched to the tasting form, is remembered, and switches back", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const html = page.locator("html");
-  const lead = page.getByText(/^Espressoir bir kahve tadım defteri\./);
-  const steps = page.getByRole("heading", { name: "Nasıl çalışır" });
-
-  // Sade is what a first visit gets: the page says what it is and where to start.
-  await expect(html).toHaveAttribute("data-look", "sade");
-  await expect(lead).toBeVisible();
-  await expect(steps).toBeAttached();
-  await expect(
-    page.getByRole("main").getByRole("link", { name: /Kahvelere göz at/ }),
-  ).toBeVisible();
-
-  await page.getByTestId("theme-toggle").click();
-  await page.getByRole("menuitemradio", { name: "Tadım formu" }).click();
-  await expect(html).toHaveAttribute("data-look", "form");
-  await expect(lead).toBeHidden();
-  await expect(page.getByText("V60 · filtre · kapsül", { exact: false })).toBeVisible();
-  await expect(page.getByRole("menu")).toBeHidden();
-
-  // The choice belongs to the browser: it is there again after a reload, on any page.
-  await page.goto("/kahveler");
-  await expect(html).toHaveAttribute("data-look", "form");
-  await expect(page.getByText(/^Katalogdaki bütün kahveler\./)).toBeHidden();
-
-  await page.getByTestId("theme-toggle").click();
-  await expect(page.getByRole("menuitemradio", { name: "Tadım formu" })).toBeChecked();
-  await page.getByRole("menuitemradio", { name: "Sade" }).click();
-  await expect(html).toHaveAttribute("data-look", "sade");
-  await expect(page.getByText(/^Katalogdaki bütün kahveler\./)).toBeVisible();
+test("the main menu has the feed, the workshop and the articles", async ({ page }) => {
+  await page.goto("/bilgi");
+  const links = mainNav(page).getByRole("link");
+  await expect(links).toHaveText(["Tadımlar", "Atölye", "Bilgi"]);
+  await expect(mainNav(page).getByRole("link", { name: "Bilgi" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });
 
 test("no page is wider than a phone's screen", async ({ page }) => {
@@ -231,6 +241,9 @@ test("no page is wider than a phone's screen", async ({ page }) => {
     "/kahve/nespresso/ristretto-siyah-kapsul",
     "/kafeler",
     "/kafe/istanbul/ornek-kahve-atolyesi",
+    "/atolye",
+    "/bilgi",
+    "/bilgi/oran",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -274,7 +287,7 @@ test("the site can go on a phone's home screen and open like an app", async ({ p
   expect(manifest.shortcuts).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ name: "Tadım ekle", url: "/panel/tadim/yeni" }),
-      expect.objectContaining({ name: "Akış", url: "/akis" }),
+      expect.objectContaining({ name: "Tadımlar", url: "/akis" }),
     ]),
   );
   for (const icon of manifest.icons) {
@@ -295,6 +308,8 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
   expect(sitemap).toContain("/kahve/nespresso/ristretto-siyah-kapsul</loc>");
   expect(sitemap).toContain("/marka/kahve-dunyasi</loc>");
   expect(sitemap).toContain("/kafe/istanbul/ornek-kahve-atolyesi</loc>");
+  expect(sitemap).toContain("/atolye</loc>");
+  expect(sitemap).toContain("/bilgi/ogutme</loc>");
 
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /panel");
@@ -321,7 +336,7 @@ test("the signed-in area sends visitors to the login page", async ({ page }) => 
   await expect(page).toHaveURL(/\/giris$/);
   await page.goto("/panel/tadim/yeni");
   await expect(page).toHaveURL(/\/giris$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş");
   await expect(page.getByLabel("E-posta")).toBeVisible();
 });
 
@@ -333,7 +348,7 @@ test.describe("members and legal texts", () => {
     expect(path).toBeTruthy();
 
     await page.goto(path!);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`@${path!.slice(3)}.`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`@${path!.slice(3)}`);
     // 17 public tastings, one of them unscored; 3 coffees wait on the wishlist.
     const fields = page.locator("dl").first();
     await expect(fields).toContainText("17");
@@ -356,9 +371,9 @@ test.describe("members and legal texts", () => {
     await page.goto("/");
     const legal = page.getByRole("navigation", { name: "Yasal metinler" });
     for (const [link, heading] of [
-      ["KVKK", "KVKK aydınlatma metni."],
-      ["Gizlilik", "Gizlilik politikası."],
-      ["Koşullar", "Kullanım koşulları."],
+      ["KVKK", "KVKK aydınlatma metni"],
+      ["Gizlilik", "Gizlilik politikası"],
+      ["Koşullar", "Kullanım koşulları"],
     ] as const) {
       await legal.getByRole("link", { name: link }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
@@ -370,25 +385,24 @@ test.describe("members and legal texts", () => {
     await page.goto("/");
     await page.getByRole("banner").getByRole("link", { name: "Giriş" }).click();
     await expect(page).toHaveURL(/\/giris$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş.");
-    // (Each look prints this sentence in its own place; one of the two is on screen.)
-    await expect(
-      page.getByText(/Kayıt şimdilik davetle\./).filter({ visible: true }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş");
+    await expect(page.getByText(/Kayıt şimdilik davetle\./)).toBeVisible();
   });
 });
 
 test.describe("community", () => {
   test("the feed lists the latest entries with who wrote them", async ({ page }) => {
     await page.goto("/");
-    await mainNav(page).getByRole("link", { name: "Akış" }).click();
+    await mainNav(page).getByRole("link", { name: "Tadımlar" }).click();
     await expect(page).toHaveURL(/\/akis$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Akış.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tadımlar");
 
     // The first ten of the 17 logged tastings come with the page; the rest is on request.
     const entries = page.getByRole("list", { name: "Herkes" }).getByRole("listitem");
     await expect(entries).toHaveCount(10);
-    await expect(entries.first().getByRole("link", { name: /^@/ })).toBeVisible();
+    // Each card is one link to the tasting, and says who wrote it.
+    await expect(entries.first()).toContainText(/@[a-z0-9_]+/);
+    await expect(entries.first().getByRole("link")).toHaveAttribute("href", /^\/tadim\//);
     await expect(page.getByRole("button", { name: "Daha fazla göster" })).toBeVisible();
   });
 
@@ -405,11 +419,9 @@ test.describe("community", () => {
 
   test("a tasting names its author, who has a notebook with charts", async ({ page }) => {
     await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
-    const author = page
-      .getByRole("list", { name: "Tadımlar" })
-      .getByRole("link", { name: /^@/ })
-      .first();
-    await author.click();
+    await page.getByRole("list", { name: "Tadımlar" }).getByRole("link").first().click();
+    await expect(page).toHaveURL(/\/tadim\/[0-9a-f-]{36}$/);
+    await page.getByRole("main").getByRole("link", { name: /^@/ }).click();
     await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
     await expect(page.getByRole("list", { name: "Puan dağılımı" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Yönteme göre/ })).toBeVisible();
@@ -420,96 +432,81 @@ test.describe("community", () => {
 
 test.describe("taste profile and flavour tags", () => {
   const RISTRETTO = "/kahve/nespresso/ristretto-siyah-kapsul";
-  /** Follows the counts under the first tasting of a coffee to that tasting's own page. */
+  /** Opens the first tasting card of a coffee: the card is one link to its page. */
   async function openTastingOf(page: Page, coffeePage: string) {
     await page.goto(coffeePage);
-    await page
-      .getByRole("list", { name: "Tadımlar" })
-      .getByRole("link", { name: /beğeni · \d+ yorum/ })
-      .first()
-      .click();
+    await page.getByRole("list", { name: "Tadımlar" }).getByRole("link").first().click();
     await expect(page).toHaveURL(/\/tadim\/[0-9a-f-]{36}$/);
   }
+  /** The rows of a taste profile, each read aloud as "Gövde: 5/5, yoğun". */
+  const profileRows = (page: Page) =>
+    page.getByRole("img", { name: /^(Gövde|Asidite|Tatlılık|Acılık|Bitiş):/ });
 
-  test("a tasting carries its tags, and its own page draws its profile", async ({ page }) => {
+  test("a tasting carries its notes, and its own page shows its profile", async ({ page }) => {
     await page.goto(RISTRETTO);
     await expect(
       page
         .getByRole("list", { name: "Tadımlar" })
-        .getByText("Tat etiketleri: Bitter Çikolata, Kakao, Tütsülü"),
+        .getByText("Tat notaları: bitter çikolata, kakao, tütsülü"),
     ).toBeVisible();
 
     await openTastingOf(page, RISTRETTO);
-    // Every corner is named and valued in words: the chart is never the only carrier.
-    await expect(
-      page.getByRole("img", {
-        name: "Tat profili grafiği: Gövde 5/5, Asidite 2/5, Acılık 4/5, Tatlılık 2/5, Bitiş 4/5",
-      }),
-    ).toBeVisible();
-    await page.getByText("Tablo olarak göster").filter({ visible: true }).click();
-    const twin = page.getByRole("table", {
-      name: "Ristretto (Siyah Kapsül) tadımının tat puanları",
-    });
-    await expect(twin.getByRole("row").nth(1)).toContainText("Gövde");
-    await expect(twin.getByRole("row").nth(1)).toContainText("5/5");
+    // Five dots and a word for every dimension, each row named in words.
+    await expect(profileRows(page)).toHaveCount(5);
+    await expect(page.getByRole("img", { name: "Gövde: 5/5, yoğun" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Asidite: 2/5, yumuşak" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Acılık: 4/5, çok" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Bitiş: 4/5, uzun" })).toBeVisible();
   });
 
-  test("a corner nobody rated stays empty, and too few corners make a list instead", async ({
-    page,
-  }) => {
+  test("a dimension nobody rated is left out", async ({ page }) => {
     await openTastingOf(page, "/kahve/kronotrop/wilder-jungle");
-    await expect(
-      page.getByRole("img", {
-        name: "Tat profili grafiği: Gövde 2/5, Asidite 4/5, Acılık —, Tatlılık —, Bitiş 3/5",
-      }),
-    ).toBeVisible();
+    await expect(profileRows(page)).toHaveCount(3);
+    await expect(page.getByRole("img", { name: "Gövde: 2/5, hafif" })).toBeVisible();
+    await expect(page.getByRole("img", { name: /^Tatlılık:/ })).toHaveCount(0);
 
     await openTastingOf(page, "/kahve/kronotrop/original-taste");
-    const profile = page.getByRole("region", { name: "Tat profili" });
-    await expect(profile.getByRole("definition")).toHaveText("3/5");
-    await expect(page.getByRole("img", { name: /Tat profili grafiği/ })).toHaveCount(0);
+    await expect(profileRows(page)).toHaveCount(1);
   });
 
-  test("a coffee's page averages the profiles and counts the tags, each with its n", async ({
+  test("a coffee's page averages the profiles and counts the notes, each with its n", async ({
     page,
   }) => {
     await page.goto(RISTRETTO);
     await expect(page.getByRole("heading", { name: /Tat profili/ })).toBeVisible();
     await expect(
-      page.getByRole("img", {
-        name: /^Tat profili grafiği: Gövde 5,0 \(n = 1\), Asidite 2,0 \(n = 1\)/,
-      }),
+      page.getByRole("img", { name: "Gövde: ortalama 5,0/5, yoğun (1 tadım)" }),
     ).toBeVisible();
-    // One tasting is not much to go on, and the page says so in words.
-    await expect(page.getByText(/üçten az tadıma dayanıyor/)).toBeVisible();
+    await expect(
+      page.getByRole("img", { name: "Asidite: ortalama 2,0/5, yumuşak (1 tadım)" }),
+    ).toBeVisible();
 
-    const tags = page.getByRole("table", { name: "Tat etiketleri ve kaç tadımda geçtikleri" });
+    const tags = page.getByRole("table", { name: "Tat notaları ve kaç tadımda geçtikleri" });
     await expect(tags.getByRole("row")).toHaveCount(3);
-    await expect(tags.getByRole("row").first()).toContainText("Bitter Çikolata");
+    await expect(tags.getByRole("row").first()).toContainText("bitter çikolata");
     await expect(tags.getByRole("row").first()).toContainText("1 tadım");
 
     // A coffee nobody has profiled or tagged shows neither section.
     await page.goto("/kahve/jacobs/classico-lungo");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Classico Lungo.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Classico Lungo");
     await expect(page.getByRole("heading", { name: /Tat profili/ })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: /Öne çıkan tatlar/ })).toHaveCount(0);
   });
 
   test("a member's page sums up their palate", async ({ page }) => {
-    await page.goto(RISTRETTO);
-    await page
-      .getByRole("list", { name: "Tadımlar" })
-      .getByRole("link", { name: /^@/ })
-      .first()
-      .click();
+    await openTastingOf(page, RISTRETTO);
+    await page.getByRole("main").getByRole("link", { name: /^@/ }).click();
     await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
     await expect(page.getByRole("heading", { name: /Damak/ })).toBeVisible();
-    // Seven sample tastings rate the body; fewer rate the other corners.
+    // Seven sample tastings rate the body; fewer rate the other dimensions.
     await expect(
-      page.getByRole("img", { name: /Gövde 3,3 \(n = 7\), Asidite 3,0 \(n = 6\)/ }),
+      page.getByRole("img", { name: "Gövde: ortalama 3,3/5, orta (7 tadım)" }),
     ).toBeVisible();
-    const tags = page.getByRole("table", { name: /tat etiketleri ve kaç tadımda geçtikleri/ });
-    await expect(tags.getByRole("row").first()).toContainText("Meyvemsi");
+    await expect(
+      page.getByRole("img", { name: "Asidite: ortalama 3,0/5, dengeli (6 tadım)" }),
+    ).toBeVisible();
+    const tags = page.getByRole("table", { name: /tat notaları ve kaç tadımda geçtikleri/ });
+    await expect(tags.getByRole("row").first()).toContainText("meyvemsi");
     await expect(tags.getByRole("row").first()).toContainText("2 tadım");
   });
 });
@@ -520,19 +517,16 @@ test.describe("lists", () => {
     request,
   }) => {
     await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
-    await page
-      .getByRole("list", { name: "Tadımlar" })
-      .getByRole("link", { name: /^@/ })
-      .first()
-      .click();
+    await page.getByRole("list", { name: "Tadımlar" }).getByRole("link").first().click();
+    await page.getByRole("main").getByRole("link", { name: /^@/ }).click();
     await expect(page).toHaveURL(/\/u\/[a-z0-9_]+$/);
     const lists = page.getByRole("list", { name: "Listeler" });
     await expect(lists.getByRole("listitem")).toHaveCount(1);
     await expect(lists).toContainText("3 kahve");
-    await lists.getByRole("link", { name: "Sabah için kapsüller" }).click();
+    await lists.getByRole("link", { name: /Sabah için kapsüller/ }).click();
 
     await expect(page).toHaveURL(/\/u\/[a-z0-9_]+\/liste\/sabah-icin-kapsuller$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sabah için kapsüller.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sabah için kapsüller");
     await expect(page.getByText("Güne başlarken elimin gittiği kapsüller")).toBeVisible();
     const coffees = page.getByRole("list", { name: "Listedeki kahveler" }).getByRole("listitem");
     await expect(coffees).toHaveCount(3);
@@ -541,7 +535,7 @@ test.describe("lists", () => {
     await expect(coffees.nth(1)).toContainText("Explore Colombia");
     await expect(coffees.nth(2)).toContainText("Colombia");
     // Each entry leads to the coffee, with the community's score beside it.
-    await expect(coffees.nth(0).getByRole("img", { name: "10 üzerinden 9 puan" })).toBeVisible();
+    await expect(coffees.nth(0).getByRole("img", { name: "Puan: 9 / 10" })).toBeVisible();
     await expect(
       coffees.nth(0).getByRole("link", { name: "Ristretto (Siyah Kapsül)" }),
     ).toHaveAttribute("href", "/kahve/nespresso/ristretto-siyah-kapsul");
@@ -576,16 +570,16 @@ test.describe("cafés", () => {
 
   test("are listed apart from the coffees and filtered by city and name", async ({ page }) => {
     await page.goto("/");
-    await mainNav(page).getByRole("link", { name: "Kafeler" }).click();
+    await exploreNav(page).getByRole("link", { name: "Kafeler" }).click();
     await expect(page).toHaveURL(/\/kafeler$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafeler.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kafeler");
     await expect(cafeList(page).getByRole("listitem")).toHaveCount(2);
     // The busiest first, with its visits and average.
     const first = cafeList(page).getByRole("listitem").first();
     await expect(first).toContainText("Örnek Kahve Atölyesi");
     await expect(first).toContainText("Kadıköy, İstanbul");
     await expect(first).toContainText("3 ziyaret");
-    await expect(first.getByRole("img", { name: "10 üzerinden 8 puan" })).toBeVisible();
+    await expect(first.getByRole("img", { name: "Puan: 8 / 10" })).toBeVisible();
 
     await page.getByLabel("Şehir").selectOption({ label: "İzmir" });
     await expect(page).toHaveURL(/sehir=izmir/);
@@ -606,10 +600,12 @@ test.describe("cafés", () => {
     page,
   }) => {
     await page.goto("/kafeler");
-    await cafeList(page).getByRole("link", { name: "Örnek Kahve Atölyesi" }).click();
+    await cafeList(page)
+      .getByRole("link", { name: /Örnek Kahve Atölyesi/ })
+      .click();
     await expect(page).toHaveURL(/\/kafe\/istanbul\/ornek-kahve-atolyesi$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Örnek Kahve Atölyesi.");
-    await expect(page.getByRole("img", { name: "10 üzerinden 8 puan" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Örnek Kahve Atölyesi");
+    await expect(page.getByRole("img", { name: "Puan: 8 / 10" }).first()).toBeVisible();
 
     const visits = page.getByRole("list", { name: "Ziyaretler" }).getByRole("listitem");
     await expect(visits).toHaveCount(3);
@@ -622,7 +618,7 @@ test.describe("cafés", () => {
     // Three drinks, one visit each: every row says n = 1 and is marked as a small sample.
     const drinks = page.getByRole("table", { name: /içecek türüne göre ortalama puan/ }).first();
     await expect(drinks.getByRole("row")).toHaveCount(4);
-    await expect(drinks.getByRole("row", { name: /Filtre kahve/ })).toContainText("n < 3");
+    await expect(drinks.getByRole("row", { name: /Filtre kahve/ })).toContainText("Az tadım");
     // Visitors are sent to the login to add their own visit.
     await expect(page.getByRole("link", { name: "Burada ne içtin?" })).toHaveAttribute(
       "href",
@@ -659,13 +655,14 @@ test.describe("a tasting's own page", () => {
     await page.goto("/kahve/nespresso/ristretto-siyah-kapsul");
     await page
       .getByRole("list", { name: "Tadımlar" })
-      .getByRole("link", { name: "0 beğeni · 0 yorum" })
+      .getByRole("link", { name: /0 beğeni · 0 yorum/ })
       .click();
     await expect(page).toHaveURL(/\/tadim\/[0-9a-f-]{36}$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ristretto (Siyah Kapsül).");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ristretto (Siyah Kapsül)");
     // (The page that was left stays in the document, hidden: ask for what is on screen.)
+    await expect(page.getByText("Çok yoğun, kısa ve net.").filter({ visible: true })).toBeVisible();
     await expect(
-      page.getByRole("list", { name: "Tadım", exact: true }).getByText("Çok yoğun, kısa ve net."),
+      page.getByRole("img", { name: "Puan: 9 / 10" }).filter({ visible: true }),
     ).toBeVisible();
 
     // Liking and commenting need an account; reporting is not offered to visitors.
@@ -681,6 +678,69 @@ test.describe("a tasting's own page", () => {
 
   test("does not exist for an unknown id", async ({ page }) => {
     const response = await page.goto("/tadim/00000000-0000-4000-8000-000000000000");
+    expect(response?.status()).toBe(404);
+  });
+});
+
+test.describe("workshop", () => {
+  test("shows the next workshop, its program and a form that says what to fix", async ({
+    page,
+  }) => {
+    await page.goto("/atolye");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveye giriş atölyesi");
+    await expect(page.getByText("İki saatte üç demleme yöntemi ve bir mini tadım.")).toBeVisible();
+    await expect(page.getByText("8 kişilik · 8 yer kaldı")).toBeVisible();
+    await expect(page.getByText(/Konum, başvurun onaylanınca paylaşılır\./)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ne yapacağız?" })).toBeVisible();
+    await expect(page.getByText("Demleme pratiği")).toBeVisible();
+    await expect(page.getByText("60 dk")).toBeVisible();
+    await expect(page.getByText("Ücretli mi?")).toBeVisible();
+
+    // One way to the form on screen: the card's button, or on a phone the bar at the bottom.
+    const toForm = page.getByRole("link", { name: "Başvur" }).filter({ visible: true });
+    await expect(toForm).toHaveCount(1);
+    await expect(toForm).toHaveAttribute("href", "#basvuru");
+
+    // Checked on the server before anything is written: an empty form is refused field by
+    // field, and the first field to fix gets the focus.
+    await page.getByRole("button", { name: "Başvur" }).click();
+    await expect(page.getByText("Adını yaz.")).toBeVisible();
+    await expect(
+      page.getByText("Bir telefon numarası ya da Instagram kullanıcı adı yaz."),
+    ).toBeVisible();
+    await expect(page.getByText("Devam etmek için onay kutusunu işaretle.")).toBeVisible();
+    await expect(page.getByLabel("Adın")).toBeFocused();
+    await expect(page.getByLabel("Adın")).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+test.describe("articles", () => {
+  test("the info page lists the articles, each with its own page", async ({ page }) => {
+    await page.goto("/");
+    await mainNav(page).getByRole("link", { name: "Bilgi" }).click();
+    await expect(page).toHaveURL(/\/bilgi$/);
+    const articles = page.getByRole("list", { name: "Yazılar" }).getByRole("listitem");
+    await expect(articles).toHaveCount(4);
+    await expect(articles.first()).toContainText("Arabica ile Robusta arasındaki fark ne?");
+    await expect(articles.first()).toContainText("2 dakikalık okuma");
+
+    await articles
+      .first()
+      .getByRole("link", { name: /Devamını oku/ })
+      .click();
+    await expect(page).toHaveURL(/\/bilgi\/arabica-robusta$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Arabica ile Robusta arasındaki fark ne?",
+    );
+    await expect(page.getByText(/%100 Arabica/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Bütün yazılar" })).toHaveAttribute(
+      "href",
+      "/bilgi",
+    );
+  });
+
+  test("an article that does not exist is a 404", async ({ page }) => {
+    const response = await page.goto("/bilgi/boyle-bir-yazi-yok");
     expect(response?.status()).toBe(404);
   });
 });

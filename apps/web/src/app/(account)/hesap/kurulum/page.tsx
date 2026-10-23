@@ -25,9 +25,9 @@ async function Onboarding() {
 
 export default function OnboardingPage() {
   return (
-    <PageShell>
-      <PageHeading title={t.onboarding.title} />
-      <Suspense fallback={<Skeleton className="my-6 h-64 max-w-2xl" />}>
+    <PageShell width="read">
+      <PageHeading title={t.onboarding.title} size="title" />
+      <Suspense fallback={<Skeleton className="h-64" />}>
         <Onboarding />
       </Suspense>
     </PageShell>

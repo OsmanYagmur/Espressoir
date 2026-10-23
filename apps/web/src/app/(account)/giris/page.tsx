@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
+import { Card } from "@/components/ui/card";
 import { authConfig } from "@/lib/auth-config";
 import { t } from "@/lib/i18n";
 
@@ -17,17 +18,21 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <PageShell>
-      <PageHeading
-        title={t.auth.title}
-        aside={<p>{authConfig.signupEnabled ? t.auth.signupOpen : t.auth.inviteOnly}</p>}
-        lead={authConfig.signupEnabled ? t.auth.signupOpen : t.auth.inviteOnly}
-      />
-      {/* Reads the URL, which the prerendered page does not know; the form does not wait. */}
-      <Suspense fallback={null}>
-        <LoginNotice />
-      </Suspense>
-      <LoginForm />
+    <PageShell width="read">
+      <div className="mx-auto max-w-sm">
+        <PageHeading
+          size="title"
+          title={t.auth.title}
+          lead={authConfig.signupEnabled ? t.auth.signupOpen : t.auth.inviteOnly}
+        />
+        {/* Reads the URL, which the prerendered page does not know; the form does not wait. */}
+        <Suspense fallback={null}>
+          <LoginNotice />
+        </Suspense>
+        <Card>
+          <LoginForm />
+        </Card>
+      </div>
     </PageShell>
   );
 }

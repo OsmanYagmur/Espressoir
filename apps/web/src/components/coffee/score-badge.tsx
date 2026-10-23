@@ -1,38 +1,17 @@
-import { scoreTier, type ScoreTier } from "@espressoir/core";
+import { SCORE_MAX } from "@espressoir/core";
 
 import { format, t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-// Ink-on-paper scale: low scores are faint outlines, 8 is solid ink, 9–10 get the red stamp.
-const TIER_CLASSES: Record<ScoreTier, string> = {
-  low: "border-input text-muted-foreground",
-  fair: "border-input text-muted-foreground",
-  good: "border-foreground",
-  great: "border-foreground bg-foreground text-background",
-  exceptional: "border-brand bg-brand text-brand-foreground",
-};
-
-const SIZE_CLASSES = {
-  sm: "size-8 border-[1.5px] text-sm",
-  md: "size-[54px] border-2 text-[25px]",
-  lg: "size-20 border-2 text-4xl",
-} as const;
-
-// An average such as "7,5" needs one more character than a whole score.
-const LONG_TEXT_CLASSES = {
-  sm: "text-[11px]",
-  md: "text-[19px]",
-  lg: "text-[28px]",
-} as const;
-
-/** Whole scores as they are, averages with one decimal and a Turkish decimal comma. */
+/** Whole scores as they are, averages with one decimal and a Turkish comma (no Intl: the
+ * badge also renders in client components, and server and browser must agree). */
 function scoreText(score: number): string {
   return Number.isInteger(score) ? String(score) : score.toFixed(1).replace(".", ",");
 }
 
 /**
- * Score box, for a single score or an average. The number is always printed and
- * announced, so colour never carries the meaning on its own.
+ * ScoreBadge (DESIGN.md): the number and one bar in the accent colour, its length the
+ * score × 10 %. The colour never changes with the score. Without a score: "—".
  */
 export function ScoreBadge({
   score,
@@ -40,41 +19,40 @@ export function ScoreBadge({
   className,
 }: {
   score: number | null;
-  size?: keyof typeof SIZE_CLASSES;
+  size?: "sm" | "md";
   className?: string;
 }) {
-  if (score === null) {
-    return (
-      <span
-        role="img"
-        aria-label={t.score.none}
-        className={cn(
-          "inline-grid shrink-0 place-items-center border-dashed border-input font-mono text-muted-foreground",
-          SIZE_CLASSES[size],
-          className,
-        )}
-      >
-        –
-      </span>
-    );
-  }
-
-  const text = scoreText(score);
-  const tier = scoreTier(Math.round(score));
+  const text = score === null ? "—" : scoreText(score);
   return (
     <span
       role="img"
-      aria-label={format(t.score.aria, { score: text })}
-      data-tier={tier}
+      aria-label={score === null ? t.score.none : format(t.score.aria, { score: text })}
       className={cn(
-        "inline-grid shrink-0 place-items-center font-extrabold tabular-nums",
-        SIZE_CLASSES[size],
-        text.length > 2 && LONG_TEXT_CLASSES[size],
-        TIER_CLASSES[tier],
+        "inline-flex shrink-0 flex-col",
+        size === "sm" ? "min-w-14" : "min-w-19",
         className,
       )}
     >
-      {text}
+      <span className="flex items-baseline gap-1">
+        <span
+          className={cn(
+            "font-mono font-medium tabular-nums",
+            size === "sm" ? "text-xl" : "text-4xl/8",
+            score === null ? "text-ink-3" : "text-ink",
+          )}
+        >
+          {text}
+        </span>
+        <span className="font-mono text-sm text-ink-2">/{SCORE_MAX}</span>
+      </span>
+      <span className="mt-1 h-1 w-full overflow-hidden rounded-full bg-sunk">
+        {score === null ? null : (
+          <span
+            className="block h-full rounded-full bg-accent"
+            style={{ width: `${(score / SCORE_MAX) * 100}%` }}
+          />
+        )}
+      </span>
     </span>
   );
 }

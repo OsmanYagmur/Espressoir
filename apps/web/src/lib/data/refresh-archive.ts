@@ -4,6 +4,7 @@ import { revalidateTag, updateTag } from "next/cache";
 import { after } from "next/server";
 
 import { ARCHIVE_TAG } from "./archive";
+import { WORKSHOPS_TAG } from "./workshops";
 
 /** Long enough for any read of the archive that was under way to have finished. */
 const ECHO_MS = 2000;
@@ -23,7 +24,13 @@ const ECHO_MS = 2000;
  */
 export function refreshArchive(): void {
   updateTag(ARCHIVE_TAG);
-  expireAgainSoon();
+  expireAgainSoon(ARCHIVE_TAG);
+}
+
+/** The same for the workshops' own read: after an application, or an admin's change. */
+export function refreshWorkshops(): void {
+  updateTag(WORKSHOPS_TAG);
+  expireAgainSoon(WORKSHOPS_TAG);
 }
 
 /**
@@ -32,16 +39,16 @@ export function refreshArchive(): void {
  */
 export function expireArchive(): void {
   revalidateTag(ARCHIVE_TAG, { expire: 0 });
-  expireAgainSoon();
+  expireAgainSoon(ARCHIVE_TAG);
 }
 
-function expireAgainSoon(): void {
+function expireAgainSoon(tag: string): void {
   after(async () => {
     await new Promise((resolve) => setTimeout(resolve, ECHO_MS));
     try {
-      revalidateTag(ARCHIVE_TAG, { expire: 0 });
+      revalidateTag(tag, { expire: 0 });
     } catch (error) {
-      console.error("[archive] second refresh failed:", error instanceof Error ? error.message : error);
+      console.error(`[${tag}] second refresh failed:`, error instanceof Error ? error.message : error);
     }
   });
 }

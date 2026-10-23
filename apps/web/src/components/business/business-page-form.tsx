@@ -98,19 +98,16 @@ export function BusinessPageForm({
         </div>
       ) : null}
       {state.message ? (
-        <p
-          role="alert"
-          className="border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="font-medium text-danger">
           {state.message}
         </p>
       ) : state.done ? (
-        <p role="status" className="border-l-2 border-rule pl-3 font-mono text-sm">
+        <p role="status" className="rounded-md bg-sunk p-4">
           {f.saved}
         </p>
       ) : null}
       <div>
-        <Button type="submit" disabled={pending} className="h-11 px-8 font-mono text-xs uppercase">
+        <Button type="submit" disabled={pending}>
           {pending ? f.saving : f.save}
         </Button>
       </div>

@@ -15,8 +15,7 @@ export function FormMessage({
     <p
       role={tone === "error" ? "alert" : "status"}
       className={cn(
-        "border-l-2 pl-3 font-mono text-sm",
-        tone === "error" ? "border-destructive text-destructive" : "border-rule",
+        tone === "error" ? "font-medium text-danger" : "rounded-md bg-leaf-soft p-4 text-leaf",
         className,
       )}
     >

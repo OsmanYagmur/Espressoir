@@ -1,9 +1,12 @@
 "use client";
 
+import { designTokens } from "@/lib/design-tokens";
 import { t } from "@/lib/i18n";
 
-// Replaces the root layout when it fails, so it must render <html>/<body> and
-// cannot rely on the theme or fonts.
+const colors = designTokens.light;
+
+// Replaces the root layout when it fails, so it must render <html>/<body> and cannot rely
+// on the stylesheet, the theme or the fonts: the token values are written inline.
 export default function GlobalError({
   reset,
 }: {
@@ -16,37 +19,40 @@ export default function GlobalError({
         style={{
           margin: 0,
           minHeight: "100dvh",
-          padding: "2.5rem 1.25rem",
-          background: "#f4f4f1",
-          color: "#161616",
-          fontFamily: "Arial, Helvetica, sans-serif",
+          padding: "48px 16px",
+          background: colors.bg,
+          color: colors.ink,
+          fontFamily: "Georgia, serif",
         }}
       >
-        <h1
+        <h1 style={{ margin: 0, fontSize: 40, lineHeight: "44px", fontWeight: 600 }}>
+          {t.states.errorTitle}
+        </h1>
+        <p
           style={{
-            margin: 0,
-            paddingBottom: "1rem",
-            borderBottom: "2px solid #161616",
-            fontSize: "2.5rem",
-            fontWeight: 800,
-            textTransform: "uppercase",
+            maxWidth: 640,
+            fontFamily: "system-ui, sans-serif",
+            fontSize: 18,
+            lineHeight: "28px",
+            color: colors["ink-2"],
           }}
         >
-          {t.states.errorTitle}
-          <span style={{ color: "#cc291f" }}>.</span>
-        </h1>
-        <p style={{ color: "#64645e", maxWidth: "52ch" }}>{t.states.errorBody}</p>
+          {t.states.errorBody}
+        </p>
         <button
           type="button"
           onClick={() => reset()}
           style={{
-            marginTop: "1rem",
-            padding: "0.7rem 1.2rem",
+            height: 48,
+            marginTop: 16,
+            padding: "0 24px",
             border: "none",
-            background: "#161616",
-            color: "#f4f4f1",
-            fontFamily: "monospace",
-            textTransform: "uppercase",
+            borderRadius: 12,
+            background: colors.accent,
+            color: colors["on-accent"],
+            fontFamily: "system-ui, sans-serif",
+            fontSize: 16,
+            fontWeight: 600,
             cursor: "pointer",
           }}
         >

@@ -17,7 +17,6 @@ import { useHasSession } from "@/lib/session-cookie";
 import type { CoffeeShelf } from "./list-data";
 
 const l = t.lists;
-const buttonClass = "h-10 px-4 font-mono text-xs uppercase";
 
 /**
  * What a member can do with a coffee besides tasting it: put it on their "want to try"
@@ -57,13 +56,13 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
 
   if (!signedIn) {
     return (
-      <div className="flex flex-wrap gap-2 border-b border-border py-3">
-        <Button asChild variant="outline" className={buttonClass}>
+      <div className="flex flex-wrap gap-2">
+        <Button asChild variant="secondary">
           <Link href="/giris" prefetch={false}>
             {l.want.add}
           </Link>
         </Button>
-        <Button asChild variant="outline" className={buttonClass}>
+        <Button asChild variant="secondary">
           <Link href="/giris" prefetch={false}>
             {l.add.open}
           </Link>
@@ -74,12 +73,12 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
   // Signed in, but the state is not known yet (or could not be read): nothing to offer.
   if (!shelf) {
     return failed ? (
-      <p role="alert" className="border-b border-border py-3 font-mono text-xs text-destructive">
+      <p role="alert" className="font-medium text-danger">
         {l.add.failed}
       </p>
     ) : (
-      <div className="border-b border-border py-3" aria-hidden>
-        <div className="h-10" />
+      <div aria-hidden>
+        <div className="h-12" />
       </div>
     );
   }
@@ -147,24 +146,23 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
   }
 
   return (
-    <div className="border-b border-border py-3">
+    <div>
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"
-          variant={shelf.wantsToTry ? "default" : "outline"}
+          variant="secondary"
           aria-pressed={shelf.wantsToTry}
           disabled={busy}
-          className={buttonClass}
+          className="aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:hover:bg-ink"
           onClick={() => void toggleWant()}
         >
           {shelf.wantsToTry ? l.want.added : l.want.add}
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           aria-expanded={open}
           aria-controls={panelId}
-          className={buttonClass}
           onClick={() => setOpen(!open)}
         >
           {l.add.open}
@@ -172,36 +170,37 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
       </div>
 
       {open ? (
-        <div id={panelId} className="mt-3 grid max-w-md gap-3 border border-border p-4">
+        <div
+          id={panelId}
+          className="mt-4 grid max-w-md gap-4 rounded-lg border border-line bg-surface p-4"
+        >
           <fieldset disabled={busy} className="grid gap-2">
-            <legend className="label-caps mb-2 text-muted-foreground">{l.add.title}</legend>
+            <legend className="mb-2 type-label">{l.add.title}</legend>
             {shelf.lists.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{l.add.none}</p>
+              <p className="type-meta">{l.add.none}</p>
             ) : (
               shelf.lists.map((list) => (
-                <label key={list.id} className="flex items-center gap-2.5 text-sm">
+                <label key={list.id} className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    className="size-4 accent-foreground"
+                    className="size-4.5 accent-accent"
                     checked={list.has}
                     onChange={(event) => void toggleList(list.id, event.target.checked)}
                   />
                   <span className="[overflow-wrap:anywhere]">{list.title}</span>
-                  {list.isPublic ? null : (
-                    <span className="font-mono text-xs text-muted-foreground">({l.private})</span>
-                  )}
+                  {list.isPublic ? null : <span className="type-meta">({l.private})</span>}
                 </label>
               ))
             )}
           </fieldset>
           <form
-            className="grid gap-1.5"
+            className="grid gap-2"
             onSubmit={(event) => {
               event.preventDefault();
               void create();
             }}
           >
-            <label htmlFor={`${panelId}-new`} className="label-caps text-muted-foreground">
+            <label htmlFor={`${panelId}-new`} className="type-label">
               {l.add.newLabel}
             </label>
             <div className="flex flex-wrap gap-2">
@@ -212,9 +211,9 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
                 placeholder={l.add.newPlaceholder}
                 autoComplete="off"
                 onChange={(event) => setTitle(event.target.value)}
-                className="h-10 min-w-0 flex-1"
+                className="min-w-0 flex-1"
               />
-              <Button type="submit" disabled={busy || title.trim() === ""} className={buttonClass}>
+              <Button type="submit" variant="secondary" disabled={busy || title.trim() === ""}>
                 {l.add.create}
               </Button>
             </div>
@@ -222,15 +221,15 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
           <Link
             href="/panel/listeler"
             prefetch={false}
-            className="font-mono text-xs underline underline-offset-4"
+            className="text-accent-ink underline underline-offset-3"
           >
-            {l.add.manage} →
+            {l.add.manage}
           </Link>
         </div>
       ) : null}
 
       {error ? (
-        <p role="alert" className="mt-2 font-mono text-xs text-destructive">
+        <p role="alert" className="mt-2 text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}

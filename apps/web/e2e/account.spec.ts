@@ -133,7 +133,7 @@ test("an invited person joins, picks a name, gets a profile, takes their data an
   // The profile exists right away, empty.
   await page.getByRole("link", { name: "Profilim" }).click();
   await expect(page).toHaveURL(new RegExp(`/u/${username}$`));
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`@${username}.`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`@${username}`);
   await expect(page.getByText("Bu defterde henüz herkese açık tadım yok.")).toBeVisible();
 
   // Editing the profile shows on the public page without waiting for the hourly refresh.
@@ -143,7 +143,7 @@ test("an invited person joins, picks a name, gets a profile, takes their data an
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page.getByText("Kaydedildi.")).toBeVisible();
   await page.goto(`/u/${username}`);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Davetli Üye.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Davetli Üye");
   await expect(page.getByText("V60 ve Türk kahvesi.")).toBeVisible();
 
   // A second name change has to wait.

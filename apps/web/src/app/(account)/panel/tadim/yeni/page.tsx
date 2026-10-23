@@ -63,9 +63,9 @@ async function NewTasting() {
 
 export default function NewTastingPage() {
   return (
-    <PageShell>
-      <PageHeading title={t.panel.newTitle} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
+    <PageShell width="read">
+      <PageHeading title={t.panel.newTitle} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <NewTasting />
       </Suspense>
     </PageShell>

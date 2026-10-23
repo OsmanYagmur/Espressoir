@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { NOTIFICATIONS_READ_EVENT } from "@/components/account/notification-link";
+import { NOTIFICATIONS_READ_EVENT } from "@/components/account/account-menu";
 
 import { markNotificationsRead } from "./actions";
 

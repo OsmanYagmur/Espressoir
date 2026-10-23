@@ -1,3 +1,4 @@
+import { cardClass } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export interface Field {
@@ -8,15 +9,12 @@ export interface Field {
   empty?: boolean;
 }
 
-/**
- * A row of labelled fields, like the header boxes of a tasting form. The 1px gaps over an
- * ink background draw the rules between the fields.
- */
+/** A few headline figures side by side, each in its own card: label, number, a note. */
 export function FieldStrip({ fields, className }: { fields: Field[]; className?: string }) {
   return (
     <dl
       className={cn(
-        "grid grid-cols-2 gap-px border-b border-rule bg-rule",
+        "grid grid-cols-2 gap-4",
         fields.length >= 5
           ? "md:grid-cols-5"
           : fields.length === 3
@@ -28,21 +26,19 @@ export function FieldStrip({ fields, className }: { fields: Field[]; className?:
       {fields.map((field) => (
         <div
           key={field.label}
-          // On a phone the fields sit two to a row; an odd one out takes the whole row.
-          className="bg-background px-3.5 pt-3 pb-3.5 max-md:odd:pl-0 max-md:last:odd:col-span-2 md:first:pl-0"
+          // On a phone the figures sit two to a row; an odd one out takes the whole row.
+          className={cn(cardClass, "flex flex-col gap-1 max-md:last:odd:col-span-2")}
         >
-          <dt className="label-caps text-muted-foreground">{field.label}</dt>
+          <dt className="type-label text-ink-2">{field.label}</dt>
           <dd
             className={cn(
-              "mt-1 text-[clamp(1.75rem,3.6vw,2.5rem)] leading-tight font-bold",
-              field.empty && "text-muted-foreground/50",
+              "font-mono text-4xl/8 font-medium tabular-nums",
+              field.empty && "text-ink-3",
             )}
           >
             {field.value}
           </dd>
-          {field.note ? (
-            <dd className="font-mono text-xs text-muted-foreground">{field.note}</dd>
-          ) : null}
+          {field.note ? <dd className="type-meta">{field.note}</dd> : null}
         </div>
       ))}
     </dl>

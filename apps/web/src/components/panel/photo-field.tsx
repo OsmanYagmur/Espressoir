@@ -83,8 +83,8 @@ export function PhotoField({
 
   return (
     <fieldset className="grid gap-3">
-      <legend className="label-caps text-muted-foreground">{p.label}</legend>
-      <p className="font-mono text-xs text-muted-foreground">{p.hint}</p>
+      <legend className="type-label">{p.label}</legend>
+      <p className="type-meta">{p.hint}</p>
 
       <input type="hidden" name="photoPath" value={photo?.path ?? ""} />
       <input type="hidden" name="photoWidth" value={photo?.width ?? ""} />
@@ -97,7 +97,7 @@ export function PhotoField({
           alt=""
           width={photo.width}
           height={photo.height}
-          className="h-auto max-h-64 w-auto max-w-full border border-border bg-muted"
+          className="h-auto max-h-64 w-auto max-w-full rounded-md border border-line bg-sunk"
         />
       ) : null}
 
@@ -115,9 +115,9 @@ export function PhotoField({
         />
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={busy}
-          className="h-10 px-4 font-mono text-xs uppercase"
+
           onClick={() => input.current?.click()}
         >
           {busy ? p.uploading : photo ? p.replace : p.choose}
@@ -125,8 +125,8 @@ export function PhotoField({
         {photo && !busy ? (
           <Button
             type="button"
-            variant="outline"
-            className="h-10 px-4 font-mono text-xs uppercase"
+            variant="secondary"
+
             onClick={() => {
               void discard(photo.path);
               setPhoto(null);
@@ -138,7 +138,7 @@ export function PhotoField({
       </div>
 
       {error ? (
-        <p role="alert" className="font-mono text-xs text-destructive">
+        <p role="alert" className="text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}

@@ -36,7 +36,7 @@ test("a member applies for a brand, is approved, edits its page and wears the ba
   await page.goto(BRAND);
   await page.getByRole("link", { name: /Bu işletme senin mi\?/ }).click();
   await expect(page).toHaveURL(/\/panel\/isletme\/basvuru\/marka\/[0-9a-f-]{36}$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Doğrulama başvurusu.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Doğrulama başvurusu");
   await page
     .getByLabel("Açıklama", { exact: true })
     .fill(`E2E ${stamp}: kavurucunun temsilcisiyim.`);

@@ -9,18 +9,11 @@ export function PageSkeleton() {
   return (
     <div role="status" aria-live="polite">
       <span className="sr-only">{t.states.loading}</span>
-      <div className="border-b border-rule pt-9 pb-6">
-        <Skeleton className="h-3 w-40" />
-        <Skeleton className="mt-4 h-16 w-full max-w-2xl" />
-      </div>
-      <div className="grid grid-cols-2 gap-px border-b border-rule md:grid-cols-4">
+      <Skeleton className="h-11 w-full max-w-xl md:h-15" />
+      <Skeleton className="mt-4 h-7 w-full max-w-md" />
+      <div className="mt-12 grid gap-4 md:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="m-3 h-14" />
-        ))}
-      </div>
-      <div className="mt-6 space-y-3">
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-16" />
+          <Skeleton key={i} className="h-40 rounded-lg" />
         ))}
       </div>
     </div>

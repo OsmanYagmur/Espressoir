@@ -15,8 +15,6 @@ import { brandPath } from "@/lib/routes";
 import { applyForBusiness, type BusinessKind } from "./actions";
 
 const a = t.business.apply;
-const linkFocus =
-  "underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
 async function Apply({ kind, id }: { kind: BusinessKind; id: Promise<string> }) {
   const { supabase } = await requireUser();
@@ -49,7 +47,7 @@ async function Apply({ kind, id }: { kind: BusinessKind; id: Promise<string> }) 
     }
   }
   if (!business) {
-    return <p className="border-b border-border py-8 text-muted-foreground">{a.notFound}</p>;
+    return <p className="text-ink-2">{a.notFound}</p>;
   }
 
   const { data: official } = await supabase
@@ -60,21 +58,21 @@ async function Apply({ kind, id }: { kind: BusinessKind; id: Promise<string> }) 
 
   return (
     <>
-      <p className="border-b border-border py-4">
-        <span className="label-caps mr-2 text-muted-foreground">{a.business}</span>
+      <p className="mb-6">
+        <span className="mr-2 type-meta">{a.business}</span>
         <Link
           href={business.href}
           prefetch={false}
-          className={`font-semiwide font-bold ${linkFocus}`}
+          className="font-display text-lg font-semibold text-ink underline-offset-3 hover:underline"
         >
           {business.name}
         </Link>
       </p>
       {official ? (
-        <p className="border-b border-border py-6 text-muted-foreground">{a.alreadyOfficial}</p>
+        <p className="text-ink-2">{a.alreadyOfficial}</p>
       ) : (
         <>
-          <p className="max-w-[62ch] pt-4 text-sm text-muted-foreground">{t.business.claimNote}</p>
+          <p className="mb-6 type-meta">{t.business.claimNote}</p>
           <VerificationForm action={applyForBusiness.bind(null, kind, businessId)} />
         </>
       )}
@@ -88,9 +86,9 @@ async function Apply({ kind, id }: { kind: BusinessKind; id: Promise<string> }) 
  */
 export function ApplyPage({ kind, id }: { kind: BusinessKind; id: Promise<string> }) {
   return (
-    <PageShell>
-      <PageHeading title={a.title} lead={a.lead} />
-      <Suspense fallback={<Skeleton className="mt-6 h-64" />}>
+    <PageShell width="read">
+      <PageHeading title={a.title} lead={a.lead} size="title" />
+      <Suspense fallback={<Skeleton className="h-64" />}>
         <Apply kind={kind} id={id} />
       </Suspense>
     </PageShell>
