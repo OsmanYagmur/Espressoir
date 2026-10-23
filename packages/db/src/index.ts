@@ -85,6 +85,25 @@ export {
 export { notificationRowSchema, type Notification } from "./notification";
 
 export {
+  WORKSHOP_APPLICATION_ERRORS,
+  WORKSHOP_INPUT_ERRORS,
+  fetchWorkshopRows,
+  toWorkshopApplicationInsert,
+  toWorkshopRow,
+  workshopApplicationInputSchema,
+  workshopApplicationRowSchema,
+  workshopInputSchema,
+  workshopRowSchema,
+  zonedTimeToIso,
+  type Workshop,
+  type WorkshopApplication,
+  type WorkshopApplicationError,
+  type WorkshopApplicationInput,
+  type WorkshopInput,
+  type WorkshopInputError,
+} from "./workshop";
+
+export {
   COMMENT_SELECT,
   commentRowSchema,
   parseCommentBody,

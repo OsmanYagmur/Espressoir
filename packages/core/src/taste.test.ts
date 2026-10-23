@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { countTags, hasRadarShape, radarPoint, tasteMeans, type TasteProfile } from "./taste";
+import { countTags, tasteMeans, type TasteProfile } from "./taste";
 
 const profile = (values: Partial<TasteProfile>): TasteProfile => ({
   body: null,
@@ -33,29 +33,6 @@ describe("tasteMeans", () => {
 
   it("has nothing to say about no tastings", () => {
     expect(tasteMeans([]).every(({ n, mean }) => n === 0 && mean === null)).toBe(true);
-  });
-});
-
-describe("hasRadarShape", () => {
-  it("needs three corners", () => {
-    expect(hasRadarShape([4, null, 3, null, null])).toBe(false);
-    expect(hasRadarShape([4, null, 3, 2, null])).toBe(true);
-  });
-});
-
-describe("radarPoint", () => {
-  it("starts at the top and goes clockwise", () => {
-    expect(radarPoint(0, 4, 5)).toEqual({ x: 0, y: -1 });
-    expect(radarPoint(1, 4, 5)).toEqual({ x: 1, y: 0 });
-    expect(radarPoint(2, 4, 5)).toEqual({ x: 0, y: 1 });
-    expect(radarPoint(3, 4, 5)).toEqual({ x: -1, y: 0 });
-  });
-
-  it("scales with the value and stays inside the rim", () => {
-    expect(radarPoint(0, 5, 2.5)).toEqual({ x: 0, y: -0.5 });
-    expect(radarPoint(0, 5, 0)).toEqual({ x: 0, y: 0 });
-    expect(radarPoint(0, 5, 9)).toEqual({ x: 0, y: -1 });
-    expect(radarPoint(1, 5, 5)).toEqual({ x: 0.9511, y: -0.309 });
   });
 });
 
