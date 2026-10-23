@@ -12,14 +12,13 @@ import { getArchive } from "@/lib/data/archive";
 import { findList } from "@/lib/data/selectors";
 import { formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
-import { brandPath, coffeePath, listPath, profilePath } from "@/lib/routes";
+import { coffeePath, listPath, profilePath } from "@/lib/routes";
 
 type Props = PageProps<"/u/[username]/liste/[slug]">;
 
 const l = t.lists;
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-ink-2 underline underline-offset-3 hover:text-ink";
 
 // Public lists are prerendered; one made later is rendered on its first visit. The
 // placeholder keeps a site without lists buildable (it renders the 404 page).
@@ -51,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function ListPage({ params }: Props) {
   return (
-    <PageShell>
+    <PageShell width="read">
       <Suspense fallback={<PageSkeleton />}>
         <ListDetail params={params} />
       </Suspense>
@@ -76,70 +75,60 @@ async function ListDetail({ params }: Pick<Props, "params">) {
   return (
     <>
       <PageHeading
-        plain
         title={list.title}
         kicker={
           <nav aria-label={t.coffeeDetail.breadcrumb}>
             {l.kicker}
-            {" / "}
-            <Link href={profilePath(list.owner.username)} className={`normal-case ${linkFocus}`}>
+            {" · "}
+            <Link href={profilePath(list.owner.username)} className={link}>
               @{list.owner.username}
             </Link>
           </nav>
         }
-        aside={
-          <p>
-            {format(l.itemCount, { count: entries.length })}
-            <br />
-            {format(l.updated, { date: formatDay(list.updatedAt.slice(0, 10)) })}
-          </p>
+        lead={
+          list.description ? (
+            // Plain text, escaped by React; line breaks the author typed are kept.
+            <span className="[overflow-wrap:anywhere] whitespace-pre-line">{list.description}</span>
+          ) : undefined
         }
-      />
-
-      {list.description ? (
-        // Plain text, escaped by React; line breaks the author typed are kept.
-        <p className="max-w-[62ch] border-b border-border py-5 leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line">
-          {list.description}
+      >
+        <p className="type-meta">
+          {format(l.itemCount, { count: entries.length })} ·{" "}
+          {format(l.updated, { date: formatDay(list.updatedAt.slice(0, 10)) })}
         </p>
-      ) : null}
+      </PageHeading>
 
       {entries.length === 0 ? (
-        <p className="border-b border-border py-8 text-muted-foreground">{l.empty}</p>
+        <p className="text-ink-2">{l.empty}</p>
       ) : (
-        <ol aria-label={l.itemsLabel}>
+        <ol aria-label={l.itemsLabel} className="border-t border-line">
           {entries.map(({ coffee, note }, index) => (
             <li
               key={coffee.id}
-              className="grid grid-cols-[2rem_minmax(0,1fr)_54px] gap-3 border-b border-border py-4"
+              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] gap-3 border-b border-line py-4"
             >
-              <span aria-hidden className="pt-1 font-mono text-xs text-muted-foreground">
-                {String(index + 1).padStart(2, "0")}
+              <span aria-hidden className="pt-1 type-figure text-ink-2">
+                {index + 1}
               </span>
               <div className="min-w-0">
-                <h2 className="font-semiwide text-xl leading-tight font-bold [overflow-wrap:anywhere]">
-                  <Link href={coffeePath(coffee.brand.slug, coffee.slug)} className={linkFocus}>
-                    {coffee.name}
-                  </Link>{" "}
+                <h2 className="type-card-title [overflow-wrap:anywhere]">
                   <Link
-                    href={brandPath(coffee.brand.slug)}
-                    className={`font-mono text-xs font-normal text-muted-foreground ${linkFocus}`}
+                    href={coffeePath(coffee.brand.slug, coffee.slug)}
+                    className="text-ink no-underline hover:underline"
                   >
-                    {coffee.brand.name}
+                    {coffee.name}
                   </Link>
                 </h2>
-                {note ? (
-                  <p className="mt-1.5 max-w-[62ch] text-[0.95rem] leading-relaxed [overflow-wrap:anywhere]">
-                    {note}
-                  </p>
-                ) : null}
+                <p className="type-meta">{coffee.brand.name}</p>
+                {note ? <p className="mt-2 [overflow-wrap:anywhere]">{note}</p> : null}
               </div>
-              <ScoreBadge score={coffee.stats.avgScore} />
+              <ScoreBadge score={coffee.stats.avgScore} size="sm" />
             </li>
           ))}
         </ol>
       )}
 
-      <ReportButton target="list" targetId={list.id} className="py-3" />
+      <ReportButton target="list" targetId={list.id} className="mt-12" />
     </>
   );
 }

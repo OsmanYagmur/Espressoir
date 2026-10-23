@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -7,8 +8,7 @@ import { profilePath } from "@/lib/routes";
 import { OfficialBadge } from "./official-badge";
 
 const b = t.business;
-const linkFocus =
-  "underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-accent-ink underline underline-offset-3";
 
 /**
  * What a brand or café says about itself, on its page: the description and website its
@@ -27,23 +27,21 @@ export function BusinessBlock({
   claimHref: Route;
 }) {
   return (
-    <section className="grid gap-2 border-b border-border py-4">
+    <section className="mb-8 flex max-w-read flex-col gap-3">
       {description ? (
         // Plain text, escaped by React; the line breaks typed are kept.
-        <p className="max-w-[62ch] leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line">
-          {description}
-        </p>
+        <p className="[overflow-wrap:anywhere] whitespace-pre-line">{description}</p>
       ) : null}
-      <p className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs">
+      <p className="flex flex-wrap items-center gap-x-4 gap-y-2 type-meta">
         {officialUsername ? (
-          <span>
-            <OfficialBadge className="mr-2" />
-            <Link href={profilePath(officialUsername)} className={linkFocus}>
+          <span className="flex flex-wrap items-center gap-2">
+            <OfficialBadge />
+            <Link href={profilePath(officialUsername)} className={link}>
               @{officialUsername}
             </Link>
           </span>
         ) : (
-          <Link href={claimHref} prefetch={false} className={`text-muted-foreground ${linkFocus}`}>
+          <Link href={claimHref} prefetch={false} className={link}>
             {b.claim}
           </Link>
         )}
@@ -53,9 +51,10 @@ export function BusinessBlock({
             href={website}
             target="_blank"
             rel="nofollow ugc noopener noreferrer"
-            className={linkFocus}
+            className={`inline-flex items-center gap-1 ${link}`}
           >
-            {b.website} ↗
+            {b.website}
+            <ExternalLinkIcon aria-hidden className="size-4 stroke-[1.5]" />
           </a>
         ) : null}
       </p>

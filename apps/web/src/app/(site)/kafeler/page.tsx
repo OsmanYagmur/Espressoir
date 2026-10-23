@@ -32,26 +32,23 @@ export default async function CafesPage() {
 
   return (
     <PageShell>
-      <PageHeading title={c.title} aside={<p>{c.description}</p>} lead={c.lead} />
-      <div className="border-b border-border py-4">
+      <PageHeading title={c.title} lead={c.lead}>
         {/* The form is behind the sign-in; signed-out visitors land on the login first. */}
-        <Button asChild className="h-11 font-mono text-xs uppercase">
+        <Button asChild>
           <Link href="/panel/kafe/yeni" prefetch={false}>
             {c.add}
           </Link>
         </Button>
-      </div>
+      </PageHeading>
       {cards.length === 0 ? (
-        <p className="border-b border-border py-10 text-muted-foreground">{c.emptyArchive}</p>
+        <p className="text-ink-2">{c.emptyArchive}</p>
       ) : (
         // As on the coffee list: the complete list is prerendered, and the filters take
         // over once the browser knows the URL.
         <Suspense
           fallback={
             <div>
-              <p className="border-b border-rule py-3 font-mono text-xs">
-                {format(c.resultCount, { count: cards.length })}
-              </p>
+              <p className="pb-6 type-meta">{format(c.resultCount, { count: cards.length })}</p>
               <CafeList cafes={cards} heading="h2" label={c.title} />
             </div>
           }

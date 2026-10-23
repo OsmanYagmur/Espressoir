@@ -26,7 +26,7 @@ export function ListForm({
     state.values?.[name] ?? initial[name];
 
   return (
-    <form action={formAction} className="grid max-w-2xl gap-5 border-b border-border py-5">
+    <form action={formAction} className="grid gap-6">
       <Field label={p.name} htmlFor="list-title" error={state.errors?.title}>
         <Input
           id="list-title"
@@ -54,15 +54,15 @@ export function ListForm({
         />
       </Field>
       <fieldset className="grid gap-2">
-        <legend className="label-caps mb-2 text-muted-foreground">{p.visibility}</legend>
+        <legend className="mb-2 type-label">{p.visibility}</legend>
         {(["public", "private"] as const).map((option) => (
-          <label key={option} className="flex items-center gap-2.5 text-sm">
+          <label key={option} className="flex items-center gap-3">
             <input
               type="radio"
               name="visibility"
               value={option}
               defaultChecked={value("visibility") === option}
-              className="size-4 accent-foreground"
+              className="size-4 accent-accent"
             />
             {option === "public" ? p.visibilityPublic : p.visibilityPrivate}
           </label>
@@ -70,20 +70,17 @@ export function ListForm({
       </fieldset>
 
       {state.message ? (
-        <p
-          role="alert"
-          className="border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="font-medium text-danger">
           {state.message}
         </p>
       ) : state.saved ? (
-        <p role="status" className="border-l-2 border-rule pl-3 font-mono text-sm">
+        <p role="status" className="rounded-md bg-sunk p-4">
           {p.saved}
         </p>
       ) : null}
 
       <div>
-        <Button type="submit" disabled={pending} className="h-11 px-8 font-mono text-xs uppercase">
+        <Button type="submit" disabled={pending}>
           {pending ? p.saving : submitLabel}
         </Button>
       </div>
@@ -103,7 +100,7 @@ export function AddCoffeeToList({
   const [missing, setMissing] = useState(false);
 
   return (
-    <form action={action} className="grid max-w-2xl gap-3 border-b border-border py-5">
+    <form action={action} className="grid gap-3">
       <CoffeePicker
         catalog={catalog}
         picked={picked}
@@ -114,14 +111,9 @@ export function AddCoffeeToList({
         onAddNew={() => setMissing(true)}
       />
       <input type="hidden" name="coffeeId" value={picked?.id ?? ""} />
-      {missing ? <p className="text-sm text-muted-foreground">{p.addMissing}</p> : null}
+      {missing ? <p className="type-meta">{p.addMissing}</p> : null}
       <div>
-        <Button
-          type="submit"
-          disabled={!picked}
-          variant="outline"
-          className="h-10 px-5 font-mono text-xs uppercase"
-        >
+        <Button type="submit" disabled={!picked} variant="secondary" className="text-sm">
           {p.addButton}
         </Button>
       </div>
@@ -138,11 +130,7 @@ export function DeleteList({ action }: { action: () => Promise<void> }) {
         if (!window.confirm(p.deleteConfirm)) event.preventDefault();
       }}
     >
-      <Button
-        type="submit"
-        variant="outline"
-        className="h-11 border-destructive font-mono text-xs text-destructive uppercase hover:bg-destructive hover:text-white"
-      >
+      <Button type="submit" variant="secondary">
         {p.delete}
       </Button>
     </form>

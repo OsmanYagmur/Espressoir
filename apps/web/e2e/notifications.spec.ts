@@ -12,7 +12,9 @@ test.skip(!configured, "needs a Supabase with test accounts (E2E_* variables)");
 test.describe.configure({ mode: "serial" });
 
 const ownerUsername = process.env.OWNER_USERNAME ?? "owner";
-const bell = (page: Page) => page.getByRole("banner").getByRole("link", { name: /^Bildirimler/ });
+/** The member's menu in the header: its name counts what has not been seen. */
+const bell = (page: Page) =>
+  page.getByRole("banner").getByRole("button", { name: /^Hesap menüsü/ });
 const inbox = (page: Page) => page.getByRole("list", { name: "Bildirimlerin" });
 
 test("what others do with a member's tasting reaches that member, once", async ({
@@ -29,11 +31,11 @@ test("what others do with a member's tasting reaches that member, once", async (
   // The guest logs a tasting; whatever was waiting for them from earlier tests is read.
   await signIn(page, guest);
   await page.goto("/bildirimler");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler");
   // (Opening the list marks it as read in the background; look again until that is done.)
   await expect(async () => {
     await page.reload();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bildirimler");
     await expect(page.getByText("Yeni", { exact: true })).toHaveCount(0, { timeout: 1000 });
   }).toPass({ timeout: 20_000 });
   await page.goto("/panel/tadim/yeni");
@@ -68,9 +70,12 @@ test("what others do with a member's tasting reaches that member, once", async (
   // once per page: look again until both writes have landed.)
   await expect(async () => {
     await page.goto("/kahveler");
-    await expect(bell(page)).toHaveAccessibleName("Bildirimler: 2 yeni", { timeout: 3000 });
+    await expect(bell(page)).toHaveAccessibleName("Hesap menüsü: 2 yeni bildirim", {
+      timeout: 3000,
+    });
   }).toPass({ timeout: 20_000 });
   await bell(page).click();
+  await page.getByRole("menuitem", { name: /Bildirimler/ }).click();
   await expect(page).toHaveURL(/\/bildirimler$/);
   const liked = inbox(page).getByRole("listitem").filter({ hasText: "tadımını beğendi" }).first();
   await expect(liked).toContainText(`@${ownerUsername}`);
@@ -83,7 +88,7 @@ test("what others do with a member's tasting reaches that member, once", async (
     tastingPath!,
   );
   // Seen now: the number goes, and they are no longer new the next time.
-  await expect(bell(page)).toHaveAccessibleName("Bildirimler");
+  await expect(bell(page)).toHaveAccessibleName("Hesap menüsü");
   await page.reload();
   await expect(commented).toBeVisible();
   await expect(commented).not.toContainText("Yeni");

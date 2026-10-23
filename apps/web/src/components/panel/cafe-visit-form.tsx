@@ -73,12 +73,12 @@ export function CafeVisitForm({
     (value("visibility") || "public") !== "public";
 
   return (
-    <form action={formAction} onSubmit={submitWithoutReset(formAction)} className="max-w-2xl pb-10">
-      <SectionHeading index={1} title={f.cafeSection} />
-      <div className="grid gap-5 border-b border-border py-5">
+    <form action={formAction} onSubmit={submitWithoutReset(formAction)} className="max-w-2xl pb-12">
+      <SectionHeading title={f.cafeSection} />
+      <div className="grid gap-6 border-b border-line py-6">
         {editing ? (
           <>
-            <p className="font-semiwide text-xl font-bold">{editing.cafeLabel}</p>
+            <p className="font-display text-xl font-semibold">{editing.cafeLabel}</p>
             <input type="hidden" name="cafeMode" value="existing" />
             <input type="hidden" name="cafeId" value={value("cafeId")} />
           </>
@@ -108,7 +108,7 @@ export function CafeVisitForm({
               />
             ) : (
               <>
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-6 sm:grid-cols-2">
                   <Field label={f.name} htmlFor="cafeName" error={error("name")}>
                     <Input
                       id="cafeName"
@@ -146,7 +146,7 @@ export function CafeVisitForm({
                     setCafeMode("existing");
                   }}
                 />
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-6 sm:grid-cols-2">
                   <Field
                     label={f.district}
                     htmlFor="district"
@@ -179,15 +179,15 @@ export function CafeVisitForm({
                     />
                   </Field>
                 </div>
-                <p className="font-mono text-xs text-muted-foreground">{f.newCafeNote}</p>
+                <p className="type-meta">{f.newCafeNote}</p>
               </>
             )}
           </>
         )}
       </div>
 
-      <SectionHeading index={2} title={f.drinkSection} />
-      <div className="grid gap-5 border-b border-border py-5">
+      <SectionHeading title={f.drinkSection} />
+      <div className="grid gap-6 border-b border-line py-6">
         <Choices
           name="drink"
           legend={f.drink}
@@ -196,7 +196,7 @@ export function CafeVisitForm({
           options={CAFE_DRINKS.map((drink) => ({ value: drink, label: t.cafes.drinks[drink] }))}
         />
         {error("drink") ? (
-          <p role="alert" className="font-mono text-xs text-destructive">
+          <p role="alert" className="text-sm font-medium text-danger">
             {error("drink")}
           </p>
         ) : null}
@@ -217,7 +217,7 @@ export function CafeVisitForm({
           options={SCORES.map((score) => ({ value: String(score), label: String(score) }))}
         />
         {error("score") ? (
-          <p role="alert" className="font-mono text-xs text-destructive">
+          <p role="alert" className="text-sm font-medium text-danger">
             {error("score")}
           </p>
         ) : null}
@@ -247,11 +247,11 @@ export function CafeVisitForm({
         </Field>
       </div>
 
-      <details className="border-b border-border" open={hasDetails || undefined}>
-        <summary className="cursor-pointer py-4 font-mono text-xs font-medium tracking-wide uppercase focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none">
+      <details className="border-b border-line" open={hasDetails || undefined}>
+        <summary className="cursor-pointer py-4 font-medium text-accent-ink">
           03 — {f.detailsSection}
         </summary>
-        <div className="grid gap-5 pb-5 sm:grid-cols-2">
+        <div className="grid gap-6 pb-6 sm:grid-cols-2">
           <Field label={f.price} htmlFor="pricePaid" error={error("pricePaid")}>
             <Input
               id="pricePaid"
@@ -279,24 +279,17 @@ export function CafeVisitForm({
       </details>
 
       {state.message ? (
-        <p
-          role="alert"
-          className="mt-5 border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="mt-6 font-medium text-danger">
           {state.message}
         </p>
       ) : null}
 
       {/* As in the tasting form: on a phone the save button stays within the thumb's reach. */}
-      <div className="sticky bottom-0 z-10 -mx-5 mt-6 flex flex-wrap gap-3 border-t border-rule bg-background px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:border-0 sm:p-0">
-        <Button
-          type="submit"
-          disabled={pending}
-          className="h-11 flex-1 px-8 font-mono text-xs uppercase sm:flex-none"
-        >
+      <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex flex-wrap gap-3 border-t border-line bg-surface px-4 pt-3 pb-[calc(var(--space-3)+env(safe-area-inset-bottom))] shadow-sticky sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <Button type="submit" disabled={pending} className="flex-1 sm:flex-none">
           {pending ? f.saving : f.save}
         </Button>
-        <Button asChild variant="outline" className="h-11 font-mono text-xs uppercase">
+        <Button asChild variant="secondary">
           <Link href="/panel">{f.cancel}</Link>
         </Button>
       </div>

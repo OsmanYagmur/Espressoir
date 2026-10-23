@@ -1,15 +1,15 @@
 import { countTags, type TagCount } from "@espressoir/core";
 import type { Archive, Tasting } from "@espressoir/db";
 
-import type { RadarAxis } from "@/components/stats/radar";
-import { meanAxes } from "@/lib/taste-axes";
+import type { TasteRow } from "@/components/coffee/taste-profile";
+import { meanRows } from "@/lib/taste-axes";
 
 /** How many tags the "most used" lists show. */
 const TOP_TAGS = 8;
 
 export interface TasteSummary {
-  /** The average profile, one corner per dimension; null when nobody rated any. */
-  axes: RadarAxis[] | null;
+  /** The average profile, one row per dimension; null when nobody rated any. */
+  profile: TasteRow[] | null;
   /** The most used tags, most used first. */
   tags: TagCount[];
   /** How many of the tastings carry at least one tag. */
@@ -25,13 +25,13 @@ export interface TasteSummary {
  */
 export function tasteSummary(archive: Archive, tastings: readonly Tasting[]): TasteSummary {
   const logged = tastings.filter((tasting) => tasting.status === "logged");
-  const axes = meanAxes(logged.map((tasting) => tasting.profile));
+  const profile = meanRows(logged.map((tasting) => tasting.profile));
   const { tags, n } = countTags(
     logged.map((tasting) => tasting.tags.map((tag) => tag.slug)),
     archive.flavorTags.map((tag) => tag.slug),
   );
   return {
-    axes: axes.some((axis) => axis.value !== null) ? axes : null,
+    profile: profile.some((row) => row.value !== null) ? profile : null,
     tags: tags.slice(0, TOP_TAGS),
     taggedCount: n,
     names: new Map(archive.flavorTags.map((tag) => [tag.slug, tag.name])),

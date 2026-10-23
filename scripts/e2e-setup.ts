@@ -48,3 +48,24 @@ const onboarded = await supabase
   .eq("username", GUEST_USERNAME)
   .is("onboarded_at", null);
 if (onboarded.error) throw new Error(onboarded.error.message);
+
+// The workshop pages need a workshop that takes applications. The one the migration adds
+// has a fixed date: once that has passed, it moves two weeks ahead (same hours).
+const DAY = 24 * 60 * 60 * 1000;
+const workshops = await supabase.from("workshops").select("id, starts_at, ends_at");
+if (workshops.error) throw new Error(workshops.error.message);
+for (const workshop of workshops.data) {
+  const start = Date.parse(workshop.starts_at);
+  if (start > Date.now()) continue;
+  const shift = Math.ceil((Date.now() - start) / DAY + 14) * DAY;
+  const moved = await supabase
+    .from("workshops")
+    .update({
+      starts_at: new Date(start + shift).toISOString(),
+      ends_at: new Date(Date.parse(workshop.ends_at) + shift).toISOString(),
+      is_open: true,
+    })
+    .eq("id", workshop.id);
+  if (moved.error) throw new Error(moved.error.message);
+  console.log("✓ Atölye iki hafta ileri alındı.");
+}

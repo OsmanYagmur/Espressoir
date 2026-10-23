@@ -18,7 +18,7 @@ test("a member makes a list, fills it from two places, orders it and shares it",
   const title = `Misafirin listesi ${Date.now().toString(36)}`;
   await signIn(page, guest);
   await page.getByRole("link", { name: "Listelerim" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Listelerim.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Listelerim");
 
   // A list needs a title.
   await page.getByLabel("Başlık", { exact: true }).fill("   ");
@@ -78,7 +78,7 @@ test("a member makes a list, fills it from two places, orders it and shares it",
   expect(publicPath).toMatch(/^\/u\/e2e_guest\/liste\/misafirin-listesi-/);
   const visitor = await (await browser.newContext()).newPage();
   await visitor.goto(publicPath!);
-  await expect(visitor.getByRole("heading", { level: 1 })).toHaveText(`${title}.`);
+  await expect(visitor.getByRole("heading", { level: 1 })).toHaveText(title);
   await expect(visitor.getByText("Uçtan uca test listesi.")).toBeVisible();
   const shown = visitor.getByRole("list", { name: "Listedeki kahveler" }).getByRole("listitem");
   await expect(shown).toHaveCount(2);

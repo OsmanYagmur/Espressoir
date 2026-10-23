@@ -1,10 +1,13 @@
+import { Chip, Chips } from "@/components/ui/chip";
 import { t } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+
+/** At most five chips in a row (DESIGN.md); a tasting carries no more than that anyway. */
+const SHOWN = 5;
 
 /**
- * The flavour tags of one tasting, as small labels. One sentence rather than a list: a
- * tasting already is a list item, and read aloud this is "Tat etiketleri: Kakao, Fındık".
- * Renders nothing without tags.
+ * The flavour notes of one tasting, as note chips in small letters ("bal"). One sentence
+ * rather than a list: a tasting already is a list item, and read aloud this is "Tat
+ * notaları: kakao, fındık". Renders nothing without notes.
  */
 export function FlavorTags({
   tags,
@@ -14,18 +17,16 @@ export function FlavorTags({
   className?: string;
 }) {
   if (tags.length === 0) return null;
+  const shown = tags.slice(0, SHOWN);
   return (
-    <p className={cn("flex flex-wrap gap-1.5", className)}>
+    <Chips className={className}>
       <span className="sr-only">{t.taste.tagsLabel}: </span>
-      {tags.map((tag, index) => (
-        <span
-          key={tag.slug}
-          className="border border-border px-1.5 py-0.5 font-mono text-[0.6875rem] leading-tight"
-        >
-          {tag.name}
-          {index < tags.length - 1 ? <span className="sr-only">, </span> : null}
-        </span>
+      {shown.map((tag, index) => (
+        <Chip key={tag.slug} variant="note">
+          {tag.name.toLocaleLowerCase("tr")}
+          {index < shown.length - 1 ? <span className="sr-only">, </span> : null}
+        </Chip>
       ))}
-    </p>
+    </Chips>
   );
 }

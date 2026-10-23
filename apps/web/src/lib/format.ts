@@ -11,6 +11,11 @@ const dayFormat = new Intl.DateTimeFormat(LOCALE, {
   timeZone: "UTC",
 });
 const longDayFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: "long", timeZone: "UTC" });
+const shortDayFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
 const monthFormat = new Intl.DateTimeFormat(LOCALE, {
   month: "short",
   year: "numeric",
@@ -25,6 +30,13 @@ const countryNames = new Intl.DisplayNames([LOCALE], { type: "region" });
 /** "2025-07-08" → "8 Tem 2025" */
 export function formatDay(day: string): string {
   return dayFormat.format(new Date(`${day}T00:00:00Z`));
+}
+
+/** "2025-07-08" → "8 Tem" in that same year, "8 Tem 2025" in any other. */
+export function formatShortDay(day: string, currentYear: number): string {
+  return day.startsWith(`${currentYear}-`)
+    ? shortDayFormat.format(new Date(`${day}T00:00:00Z`))
+    : formatDay(day);
 }
 
 /** "2025-07-08" → "8 Temmuz 2025" */

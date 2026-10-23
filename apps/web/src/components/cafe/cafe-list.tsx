@@ -1,16 +1,14 @@
 import Link from "next/link";
 
 import { ScoreBadge } from "@/components/coffee/score-badge";
+import { Chip } from "@/components/ui/chip";
 import type { CafeCard } from "@/lib/data/cafes";
 import { format, t } from "@/lib/i18n";
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
-
 /**
- * Cafés as ruled rows: where, how often visited, the average. Rendered on the server for
- * the static page and again in the browser when filters change, so it stays free of
- * server-only code.
+ * Cafés as rows, each a single link: where, how often visited, the average. Rendered on
+ * the server for the static page and again in the browser when filters change, so it
+ * stays free of server-only code.
  */
 export function CafeList({
   cafes,
@@ -23,34 +21,29 @@ export function CafeList({
   label: string;
 }) {
   return (
-    <ul aria-label={label}>
+    <ul aria-label={label} className="border-t border-line">
       {cafes.map((cafe) => (
-        <li
-          key={cafe.id}
-          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 border-b border-border py-3.5 md:grid-cols-[minmax(0,1fr)_minmax(0,14rem)_auto]"
-        >
-          <div className="min-w-0">
-            <p className="py-1 font-mono text-xs text-muted-foreground">{cafe.place}</p>
-            <Heading className="font-semiwide text-lg leading-snug font-bold [overflow-wrap:anywhere]">
-              {/* Café names keep their own spelling: no CSS uppercasing anywhere. */}
-              <Link href={cafe.href} className={linkFocus}>
+        <li key={cafe.id} className="border-b border-line">
+          <Link
+            href={cafe.href}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 py-4 text-ink no-underline transition-colors hover:bg-sunk md:grid-cols-[minmax(0,1fr)_minmax(0,14rem)_auto] md:px-2"
+          >
+            <div className="min-w-0">
+              <Heading className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-xl font-semibold [overflow-wrap:anywhere]">
                 {cafe.name}
-              </Link>
-              {cafe.isReviewed ? null : (
-                <span className="label-caps ml-2 border border-dashed border-input px-1.5 py-0.5 align-middle font-mono text-xs font-normal text-muted-foreground">
-                  {t.cafes.unreviewed}
-                </span>
-              )}
-            </Heading>
-          </div>
-          <p className="font-mono text-xs text-muted-foreground max-md:order-last max-md:col-span-2 md:text-right">
-            {cafe.visitCount === 0
-              ? t.cafes.noVisits
-              : [format(t.cafes.visitCount, { count: cafe.visitCount }), cafe.lastVisitLabel]
-                  .filter(Boolean)
-                  .join(" · ")}
-          </p>
-          <ScoreBadge score={cafe.avgScore} />
+                {cafe.isReviewed ? null : <Chip className="font-sans">{t.cafes.unreviewed}</Chip>}
+              </Heading>
+              <p className="type-meta">{cafe.place}</p>
+            </div>
+            <p className="type-meta max-md:order-last max-md:col-span-2 md:text-right">
+              {cafe.visitCount === 0
+                ? t.cafes.noVisits
+                : [format(t.cafes.visitCount, { count: cafe.visitCount }), cafe.lastVisitLabel]
+                    .filter(Boolean)
+                    .join(" · ")}
+            </p>
+            <ScoreBadge score={cafe.avgScore} size="sm" />
+          </Link>
         </li>
       ))}
     </ul>

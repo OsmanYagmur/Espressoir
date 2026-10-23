@@ -32,9 +32,9 @@ export function AppCaptcha({ siteKey }: { siteKey: string | null }) {
   }, [siteKey]);
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-background p-6">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-bg p-6">
       <div className="grid w-full max-w-sm gap-4">
-        <p className="font-mono text-sm">{t.mobile.captcha}</p>
+        <p className="text-sm">{t.mobile.captcha}</p>
         {siteKey ? (
           <Turnstile
             siteKey={siteKey}

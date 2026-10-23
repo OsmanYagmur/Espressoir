@@ -79,10 +79,10 @@ function FlavorTagPicker({
 
   return (
     <fieldset>
-      <legend className="label-caps text-muted-foreground">{f.flavorTags}</legend>
-      <p className="mt-1 font-mono text-xs text-muted-foreground">
+      <legend className="type-label">{f.flavorTags}</legend>
+      <p className="mt-1 type-meta">
         {format(f.flavorTagsHint, { max: FLAVOR_TAGS_MAX })}{" "}
-        <span aria-live="polite" className={cn(full && "text-foreground")}>
+        <span aria-live="polite" className={cn(full && "text-ink")}>
           {format(f.flavorTagsCount, { count: selected.size, max: FLAVOR_TAGS_MAX })}
         </span>
       </p>
@@ -95,12 +95,10 @@ function FlavorTagPicker({
               key={group}
               role="group"
               aria-label={t.taste.groups[group]}
-              className="grid gap-1.5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-start"
+              className="grid gap-2 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-start"
             >
-              <p className="font-mono text-xs text-muted-foreground sm:pt-2.5">
-                {t.taste.groups[group]}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
+              <p className="type-meta sm:pt-3">{t.taste.groups[group]}</p>
+              <div className="flex flex-wrap gap-2">
                 {inGroup.map((tag) => {
                   const checked = selected.has(tag.slug);
                   return (
@@ -114,7 +112,7 @@ function FlavorTagPicker({
                         onChange={(event) => toggle(tag.slug, event.target.checked)}
                         className="peer sr-only"
                       />
-                      <span className="grid h-10 cursor-pointer place-items-center border border-input px-3 font-mono text-sm peer-checked:border-foreground peer-checked:bg-foreground peer-checked:text-background peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-40">
+                      <span className="inline-flex h-10 cursor-pointer items-center rounded-full border border-line-strong bg-surface px-4 text-sm font-medium transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-bg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus peer-disabled:cursor-not-allowed peer-disabled:opacity-40">
                         {tag.name}
                       </span>
                     </label>
@@ -172,12 +170,12 @@ export function TastingForm({
     ) || (value("visibility") || "public") !== "public";
 
   return (
-    <form action={formAction} onSubmit={submitWithoutReset(formAction)} className="max-w-2xl pb-10">
-      <SectionHeading index={1} title={f.coffeeSection} />
-      <div className="grid gap-5 border-b border-border py-5">
+    <form action={formAction} onSubmit={submitWithoutReset(formAction)} className="max-w-2xl pb-12">
+      <SectionHeading title={f.coffeeSection} />
+      <div className="grid gap-6 border-b border-line py-6">
         {editing ? (
           <>
-            <p className="font-semiwide text-xl font-bold">{editing.coffeeLabel}</p>
+            <p className="font-display text-xl font-semibold">{editing.coffeeLabel}</p>
             <input type="hidden" name="coffeeMode" value="existing" />
             <input type="hidden" name="coffeeId" value={value("coffeeId")} />
           </>
@@ -196,15 +194,15 @@ export function TastingForm({
             />
             {coffeeMode === "existing" && !picked && options.recent?.length ? (
               // The quickest way in: what the member had last time, one tap each.
-              <fieldset className="grid gap-1.5">
-                <legend className="label-caps mb-1.5 text-muted-foreground">{f.recent}</legend>
-                <div className="flex flex-wrap gap-1.5">
+              <fieldset className="grid gap-2">
+                <legend className="mb-2 type-label">{f.recent}</legend>
+                <div className="flex flex-wrap gap-2">
                   {options.recent.map((coffee) => (
                     <button
                       key={coffee.id}
                       type="button"
                       onClick={() => setPicked(coffee)}
-                      className="min-h-11 border border-input px-3 py-2 text-left text-sm hover:border-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      className="min-h-12 cursor-pointer rounded-md border border-line-strong bg-surface px-4 py-2 text-left transition-colors hover:bg-sunk"
                     >
                       {coffee.label}
                     </button>
@@ -225,7 +223,7 @@ export function TastingForm({
               />
             ) : (
               <>
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-6 sm:grid-cols-2">
                   <Field
                     label={f.brandName}
                     htmlFor="brandName"
@@ -269,7 +267,7 @@ export function TastingForm({
                     setCoffeeMode("existing");
                   }}
                 />
-                <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
                   <Field label={f.form} htmlFor="form" className="col-span-2 sm:col-span-1">
                     <Select
                       id="form"
@@ -337,8 +335,8 @@ export function TastingForm({
         )}
       </div>
 
-      <SectionHeading index={2} title={f.tastingSection} />
-      <div className="grid gap-5 border-b border-border py-5">
+      <SectionHeading title={f.tastingSection} />
+      <div className="grid gap-6 border-b border-line py-6">
         <Choices
           name="status"
           legend={f.status}
@@ -364,7 +362,7 @@ export function TastingForm({
               ]}
             />
             {error("score") ? (
-              <p role="alert" className="font-mono text-xs text-destructive">
+              <p role="alert" className="text-sm font-medium text-danger">
                 {error("score")}
               </p>
             ) : null}
@@ -381,7 +379,7 @@ export function TastingForm({
           </>
         ) : null}
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <Field label={f.method} htmlFor="brewMethodSlug">
             <Select
               id="brewMethodSlug"
@@ -429,16 +427,16 @@ export function TastingForm({
         </Field>
       </div>
 
-      <details className="border-b border-border" open={hasDetails || undefined}>
-        <summary className="cursor-pointer py-4 font-mono text-xs font-medium tracking-wide uppercase focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none">
+      <details className="border-b border-line" open={hasDetails || undefined}>
+        <summary className="cursor-pointer py-4 font-medium text-accent-ink">
           03 — {f.detailsSection}
         </summary>
-        <div className="grid gap-5 pb-5">
+        <div className="grid gap-6 pb-6">
           <fieldset>
-            <legend className="label-caps text-muted-foreground">{f.tasteHint}</legend>
+            <legend className="type-label">{f.tasteHint}</legend>
             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-5">
               {TASTE_DIMENSIONS.map((dimension) => (
-                <div key={dimension} className="grid gap-1.5">
+                <div key={dimension} className="grid gap-2">
                   <Label htmlFor={dimension}>{f.taste[dimension]}</Label>
                   <Select id={dimension} name={dimension} defaultValue={value(dimension)}>
                     <option value="">{f.tasteNone}</option>
@@ -474,7 +472,7 @@ export function TastingForm({
               initialAlt={value("photoAlt")}
             />
           ) : null}
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-3">
             <Field label={f.wouldBuyAgain} htmlFor="wouldBuyAgain">
               <Select id="wouldBuyAgain" name="wouldBuyAgain" defaultValue={value("wouldBuyAgain")}>
                 <option value="">{f.unknown}</option>
@@ -510,25 +508,18 @@ export function TastingForm({
       </details>
 
       {state.message ? (
-        <p
-          role="alert"
-          className="mt-5 border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="mt-6 font-medium text-danger">
           {state.message}
         </p>
       ) : null}
 
       {/* On a phone the save button stays at the bottom of the screen, within the thumb's
           reach, whatever is open above it; clear of the home bar when opened as an app. */}
-      <div className="sticky bottom-0 z-10 -mx-5 mt-6 flex flex-wrap gap-3 border-t border-rule bg-background px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:border-0 sm:p-0">
-        <Button
-          type="submit"
-          disabled={pending}
-          className="h-11 flex-1 px-8 font-mono text-xs uppercase sm:flex-none"
-        >
+      <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex flex-wrap gap-3 border-t border-line bg-surface px-4 pt-3 pb-[calc(var(--space-3)+env(safe-area-inset-bottom))] shadow-sticky sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <Button type="submit" disabled={pending} className="flex-1 sm:flex-none">
           {pending ? f.saving : f.save}
         </Button>
-        <Button asChild variant="outline" className="h-11 font-mono text-xs uppercase">
+        <Button asChild variant="secondary">
           <Link href="/panel">{f.cancel}</Link>
         </Button>
       </div>

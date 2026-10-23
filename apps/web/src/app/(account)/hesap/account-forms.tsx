@@ -19,7 +19,7 @@ import { deleteAccount, updateProfile, type AccountFormState } from "./actions";
 
 const a = t.account;
 const initialState: AccountFormState = {};
-const buttonClass = "h-11 justify-self-start px-6 font-mono text-xs uppercase";
+const buttonClass = "justify-self-start";
 
 export function ProfileForm({
   initial,
@@ -32,7 +32,7 @@ export function ProfileForm({
   const error = (name: string) => state.errors?.[name];
 
   return (
-    <form action={action} className="grid max-w-2xl gap-5 py-5">
+    <form action={action} className="grid gap-6">
       <Field
         label={a.username}
         htmlFor="username"
@@ -117,12 +117,12 @@ export function ExportDataButton() {
   }
 
   return (
-    <div className="grid max-w-2xl gap-4 py-5">
-      <p className="max-w-[62ch] leading-relaxed">{a.exportBody}</p>
+    <div className="grid gap-4">
+      <p>{a.exportBody}</p>
       {failed ? <FormMessage>{a.exportFailed}</FormMessage> : null}
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         disabled={pending}
         className={buttonClass}
         onClick={() => void download()}
@@ -137,8 +137,8 @@ export function DeleteAccountForm() {
   const [state, action, pending] = useActionState(deleteAccount, initialState);
 
   return (
-    <form action={action} className="grid max-w-2xl gap-5 py-5">
-      <p className="max-w-[62ch] leading-relaxed">{a.deleteBody}</p>
+    <form action={action} className="grid gap-6">
+      <p>{a.deleteBody}</p>
       <Field label={a.deleteConfirm} htmlFor="confirm" error={state.errors?.confirm}>
         <Input
           id="confirm"
@@ -153,7 +153,7 @@ export function DeleteAccountForm() {
         />
       </Field>
       <FormMessage>{state.message}</FormMessage>
-      <Button type="submit" variant="destructive" disabled={pending} className={buttonClass}>
+      <Button type="submit" variant="secondary" disabled={pending} className={buttonClass}>
         {pending ? a.deleting : a.deleteButton}
       </Button>
     </form>

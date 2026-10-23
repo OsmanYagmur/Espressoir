@@ -13,7 +13,7 @@ export const BIO_MAX_LENGTH = 500;
 export const USERNAME_CHANGE_DAYS = 30;
 
 /** Which text a new member accepts. Change it whenever the terms or the privacy notice do. */
-export const TERMS_VERSION = "2026-10-taslak-4";
+export const TERMS_VERSION = "2026-10-taslak-5";
 
 /** Names that would pass for a page of the site or for the site itself. */
 export const RESERVED_USERNAMES = [

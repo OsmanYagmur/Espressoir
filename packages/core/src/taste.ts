@@ -1,4 +1,4 @@
-import { TASTE_DIMENSIONS, TASTE_MAX, type TasteDimension } from "./catalog";
+import { TASTE_DIMENSIONS, type TasteDimension } from "./catalog";
 import { SMALL_SAMPLE } from "./stats";
 
 /** One tasting's taste profile; a dimension its author skipped is null. */
@@ -28,31 +28,6 @@ export function tasteMeans(profiles: readonly TasteProfile[]): TasteMean[] {
       small: n < SMALL_SAMPLE,
     };
   });
-}
-
-/** A radar chart says something once most of its corners have a value. */
-export const RADAR_MIN_CORNERS = 3;
-
-export function hasRadarShape(values: readonly (number | null)[]): boolean {
-  return values.filter((value) => value !== null).length >= RADAR_MIN_CORNERS;
-}
-
-/**
- * Where a value sits on a radar chart with `count` axes, as a point in the unit circle:
- * axis 0 points straight up and the rest follow clockwise; y grows downwards, as on screen.
- * `value` runs from 0 (centre) to `max` (the rim).
- */
-export function radarPoint(
-  index: number,
-  count: number,
-  value: number,
-  max: number = TASTE_MAX,
-): { x: number; y: number } {
-  const angle = (index / count) * 2 * Math.PI;
-  const reach = Math.min(Math.max(value / max, 0), 1);
-  // Rounded so the same input prints the same path on the server and in tests.
-  const round = (n: number) => Math.round(n * 1e4) / 1e4 + 0;
-  return { x: round(Math.sin(angle) * reach), y: round(-Math.cos(angle) * reach) };
 }
 
 export interface TagCount {

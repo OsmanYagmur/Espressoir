@@ -1,5 +1,5 @@
 import type { CafeVisit, Tasting } from "@espressoir/db";
-import { Link, router } from "expo-router";
+import { router } from "@/navigation";
 import { Image, Pressable, Text, View } from "react-native";
 
 import { drinkLabel } from "@/lib/cafes";
@@ -8,13 +8,13 @@ import { format, t } from "@/lib/i18n";
 import { smallMediaUrl } from "@/lib/media";
 import { fonts, useColors } from "@/lib/theme";
 
-import { Body, Mono, ScoreBadge } from "./ui";
+import { Body, Mono, ScoreBadge, TextLink } from "./ui";
 
 function AuthorLink({ username }: { username: string }) {
   const colors = useColors();
   return (
-    <Link
-      href={{ pathname: "/u/[username]", params: { username } }}
+    <TextLink
+      to={{ screen: "Profile", params: { username } }}
       style={{
         fontFamily: fonts.mono,
         fontSize: 12,
@@ -23,7 +23,7 @@ function AuthorLink({ username }: { username: string }) {
       }}
     >
       @{username}
-    </Link>
+    </TextLink>
   );
 }
 
@@ -96,9 +96,9 @@ export function TastingEntry({
           <Mono muted>{meta}</Mono>
         </Text>
         {showCoffee ? (
-          <Link
-            href={{
-              pathname: "/kahve/[marka]/[kahve]",
+          <TextLink
+            to={{
+              screen: "Coffee",
               params: { marka: tasting.brand.slug, kahve: tasting.coffee.slug },
             }}
             style={{ fontFamily: fonts.bodyBold, fontSize: 17, color: colors.foreground }}
@@ -107,7 +107,7 @@ export function TastingEntry({
             <Text style={{ fontFamily: fonts.mono, fontSize: 12, color: colors.mutedForeground }}>
               {tasting.brand.name}
             </Text>
-          </Link>
+          </TextLink>
         ) : null}
         {tasting.notes ? <Body>{tasting.notes}</Body> : null}
         {tasting.tags.length > 0 ? (
@@ -137,7 +137,7 @@ export function TastingEntry({
     <Pressable
       accessibilityRole="link"
       accessibilityHint={t.social.openTasting}
-      onPress={() => router.push({ pathname: "/tadim/[id]", params: { id: tasting.id } })}
+      onPress={() => router.push({ screen: "Tasting", params: { id: tasting.id } })}
       style={({ pressed }) => [row, pressed ? { backgroundColor: colors.muted } : null]}
     >
       {body}

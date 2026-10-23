@@ -282,7 +282,7 @@ export function archiveSize(rows: ArchiveRows): number {
 }
 
 /** "No such relation", as Postgres and as the API's schema cache say it. */
-const MISSING_RELATION = new Set(["42P01", "PGRST205"]);
+export const MISSING_RELATION: ReadonlySet<string> = new Set(["42P01", "PGRST205"]);
 
 /** The API caps a response at 1000 rows (supabase/config.toml: max_rows), so read in pages. */
 const PAGE_SIZE = 1000;

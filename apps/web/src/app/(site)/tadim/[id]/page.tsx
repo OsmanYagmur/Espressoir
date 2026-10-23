@@ -4,13 +4,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { TastingItem } from "@/components/coffee/tasting-item";
+import { FlavorTags } from "@/components/coffee/flavor-tags";
+import { ScoreBadge } from "@/components/coffee/score-badge";
+import { TasteProfile } from "@/components/coffee/taste-profile";
+import { brewLabel } from "@/components/coffee/tasting-card";
 import { TastingPhoto } from "@/components/coffee/tasting-photo";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
-import { Radar } from "@/components/stats/radar";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { CommentThread } from "@/components/social/comment-thread";
 import { LikeButton } from "@/components/social/like-button";
 import { ReportButton } from "@/components/social/report-button";
@@ -18,15 +20,15 @@ import { getArchive } from "@/lib/data/archive";
 import { findTasting } from "@/lib/data/selectors";
 import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath, profilePath, tastingPath } from "@/lib/routes";
-import { profileAxes } from "@/lib/taste-axes";
+import { formatDay } from "@/lib/format";
+import { profileRows } from "@/lib/taste-axes";
 
 type Props = PageProps<"/tadim/[id]">;
 
 const p = t.tastingPage;
 const PRERENDERED = 50;
 
-const linkFocus =
-  "inline-block py-1.5 underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-ink-2 underline underline-offset-3 hover:text-ink";
 
 // The most recent tastings are prerendered; older ones are rendered on their first visit.
 // The placeholder keeps an empty archive buildable (it renders the 404 page).
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function TastingPage({ params }: Props) {
   return (
-    <PageShell>
+    <PageShell width="read">
       <Suspense fallback={<PageSkeleton />}>
         <TastingDetail params={params} />
       </Suspense>
@@ -78,77 +80,67 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
   const tasting = findTasting(archive, id);
   if (!tasting) notFound();
 
-  const axes = profileAxes(tasting.profile);
-  const hasProfile = axes.some((axis) => axis.value !== null);
+  const profile = profileRows(tasting.profile);
+  const brew = brewLabel(tasting);
 
   return (
     <>
       <PageHeading
-        plain
         title={tasting.coffee.name}
         kicker={
           <nav aria-label={t.coffeeDetail.breadcrumb}>
-            {p.kicker}
-            {" / "}
-            <Link
-              href={profilePath(tasting.author.username)}
-              className={`normal-case ${linkFocus}`}
-            >
+            <Link href={profilePath(tasting.author.username)} className={link}>
               @{tasting.author.username}
             </Link>
-            {" / "}
-            {/* Brand names keep their own spelling: no CSS uppercasing. */}
-            <Link href={brandPath(tasting.brand.slug)} className={`normal-case ${linkFocus}`}>
-              {tasting.brand.name}
-            </Link>
+            {tasting.tastedAt ? (
+              <>
+                {" · "}
+                <time dateTime={tasting.tastedAt}>{formatDay(tasting.tastedAt)}</time>
+              </>
+            ) : null}
           </nav>
         }
-        aside={
-          <Link
-            href={coffeePath(tasting.brand.slug, tasting.coffee.slug)}
-            className={`uppercase ${linkFocus}`}
-          >
-            {p.backToCoffee} →
-          </Link>
-        }
-      />
-
-      <ol aria-label={p.kicker}>
-        <TastingItem tasting={tasting} showAuthor standalone />
-      </ol>
+      >
+        <div className="flex w-full flex-wrap items-end justify-between gap-4">
+          <p className="type-meta">
+            <Link href={brandPath(tasting.brand.slug)} className={link}>
+              {tasting.brand.name}
+            </Link>
+            {brew ? ` · ${brew}` : null}
+            {" · "}
+            <Link href={coffeePath(tasting.brand.slug, tasting.coffee.slug)} className={link}>
+              {p.backToCoffee}
+            </Link>
+          </p>
+          <ScoreBadge score={tasting.score} />
+        </div>
+      </PageHeading>
 
       {tasting.photo ? (
-        <figure className="border-b border-border py-4">
-          <TastingPhoto tasting={tasting} className="max-h-[80vh] w-auto" />
+        <figure className="mb-8">
+          <TastingPhoto tasting={tasting} className="max-h-[80vh] w-auto rounded-lg" />
           {tasting.photo.alt ? (
-            <figcaption className="mt-2 max-w-[62ch] font-mono text-xs text-muted-foreground">
-              {tasting.photo.alt}
-            </figcaption>
+            <figcaption className="mt-2 type-meta">{tasting.photo.alt}</figcaption>
           ) : null}
         </figure>
       ) : null}
 
-      {hasProfile || tasting.wouldBuyAgain !== null ? (
-        <section
-          aria-label={t.taste.profileTitle}
-          className="grid gap-4 border-b border-border py-4"
-        >
-          {hasProfile ? (
-            <Radar
-              axes={axes}
-              caption={format(p.profileCaption, { coffee: tasting.coffee.name })}
-            />
-          ) : null}
-          {tasting.wouldBuyAgain !== null ? (
-            <dl className="flex gap-2 font-mono text-xs">
-              <dt className="text-muted-foreground">{p.buyAgain}</dt>
-              <dd>{tasting.wouldBuyAgain ? p.yes : p.no}</dd>
-            </dl>
-          ) : null}
-        </section>
-      ) : null}
+      <div className="flex flex-col gap-6">
+        <TasteProfile rows={profile} />
+        <FlavorTags tags={tasting.tags} />
+        {tasting.notes ? (
+          // Plain text, escaped by React; line breaks the author typed are kept.
+          <p className="text-lg [overflow-wrap:anywhere] whitespace-pre-line">{tasting.notes}</p>
+        ) : null}
+        {tasting.wouldBuyAgain !== null ? (
+          <dl className="flex gap-2 type-meta">
+            <dt>{p.buyAgain}</dt>
+            <dd className="font-medium text-ink">{tasting.wouldBuyAgain ? p.yes : p.no}</dd>
+          </dl>
+        ) : null}
+      </div>
 
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-rule py-4">
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-line py-3">
         <LikeButton
           tastingId={tasting.id}
           authorId={tasting.author.id}
@@ -157,8 +149,8 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
         <ReportButton target="tasting" targetId={tasting.id} />
       </div>
 
-      <section aria-labelledby="yorumlar">
-        <SectionHeading id="yorumlar" index={1} title={t.social.commentsTitle} />
+      <Section id="yorumlar">
+        <SectionHeading id="yorumlar" title={t.social.commentsTitle} />
         <CommentThread
           tastingId={tasting.id}
           officialIds={archive.profiles
@@ -169,7 +161,7 @@ async function TastingDetail({ params }: Pick<Props, "params">) {
             )
             .map((member) => member.id)}
         />
-      </section>
+      </Section>
     </>
   );
 }

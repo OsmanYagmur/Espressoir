@@ -82,9 +82,8 @@ function useCafeMatches(
 }
 
 const optionButton =
-  "w-full border border-input px-3 py-2.5 text-left font-mono text-sm hover:border-foreground focus-visible:border-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
-const quietButton =
-  "font-mono text-xs underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+  "w-full cursor-pointer rounded-md border border-line-strong bg-surface px-4 py-3 text-left transition-colors hover:bg-sunk";
+const quietButton = "cursor-pointer text-accent-ink underline underline-offset-3";
 
 /**
  * Choosing a café that is already listed: type a few letters of its name or district,
@@ -109,10 +108,12 @@ export function CafePicker({
 
   if (picked) {
     return (
-      <div className="grid gap-1.5">
-        <span className="label-caps text-muted-foreground">{f.chosenCafe}</span>
-        <div className="flex flex-wrap items-baseline justify-between gap-3 border border-foreground px-3 py-2.5">
-          <span className="font-semiwide font-bold [overflow-wrap:anywhere]">{picked.label}</span>
+      <div className="grid gap-2">
+        <span className="type-label">{f.chosenCafe}</span>
+        <div className="flex flex-wrap items-baseline justify-between gap-3 rounded-md border border-line-strong bg-surface px-4 py-3">
+          <span className="font-display font-semibold [overflow-wrap:anywhere]">
+            {picked.label}
+          </span>
           <button type="button" className={quietButton} onClick={() => onPick(null)}>
             {f.changeCafe}
           </button>
@@ -142,7 +143,7 @@ export function CafePicker({
       <input type="hidden" name="cafeId" value="" />
       <div id="cafe-matches" aria-live="polite">
         {matches.length > 0 ? (
-          <ul aria-label={f.searchResults} className="grid gap-1.5">
+          <ul aria-label={f.searchResults} className="grid gap-2">
             {matches.map((cafe) => (
               <li key={cafe.id}>
                 <button type="button" className={optionButton} onClick={() => onPick(cafe)}>
@@ -152,7 +153,7 @@ export function CafePicker({
             ))}
           </ul>
         ) : settled ? (
-          <p className="font-mono text-sm text-muted-foreground">{f.searchEmpty}</p>
+          <p className="type-meta">{f.searchEmpty}</p>
         ) : null}
         {settled ? (
           <button
@@ -188,19 +189,21 @@ export function SimilarCafes({
   if (matches.length === 0) return null;
 
   return (
-    <div role="status" className="grid gap-2 border-2 border-brand p-3">
-      <p className="font-mono text-sm">{f.similarTitle}</p>
-      <ul aria-label={f.similarTitle} className="grid gap-1.5">
+    <div role="status" className="grid gap-2 rounded-md bg-sunk p-4">
+      <p className="text-sm">{f.similarTitle}</p>
+      <ul aria-label={f.similarTitle} className="grid gap-2">
         {matches.map((cafe) => (
           <li key={cafe.id} className="flex flex-wrap items-baseline justify-between gap-3">
-            <span className="font-semiwide font-bold [overflow-wrap:anywhere]">{cafe.label}</span>
+            <span className="font-display font-semibold [overflow-wrap:anywhere]">
+              {cafe.label}
+            </span>
             <button type="button" className={quietButton} onClick={() => onPick(cafe)}>
               {f.similarPick}
             </button>
           </li>
         ))}
       </ul>
-      <p className="font-mono text-xs text-muted-foreground">{f.similarHint}</p>
+      <p className="type-meta">{f.similarHint}</p>
     </div>
   );
 }

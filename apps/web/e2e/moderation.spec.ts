@@ -41,7 +41,7 @@ async function openOwnersTasting(page: Page): Promise<string> {
   const href = await page
     .getByRole("list", { name: "Tadımlar" })
     .getByRole("listitem")
-    .filter({ has: page.getByRole("link", { name: `@${ownerUsername}` }) })
+    .filter({ hasText: `@${ownerUsername}` })
     .getByRole("link", { name: /beğeni · \d+ yorum/ })
     .getAttribute("href");
   expect(href).toMatch(/^\/tadim\/[0-9a-f-]{36}$/);
@@ -234,7 +234,7 @@ test("the admin reviews a member's coffee and merges a duplicate into the origin
     await page.getByRole("group", { name: "Puan" }).getByText("5", { exact: true }).click();
     await page.getByLabel("Not", { exact: true }).fill(notes);
     await page.getByRole("button", { name: "Kaydet" }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${name}.`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
     return page.url();
   }
 
@@ -256,7 +256,7 @@ test("the admin reviews a member's coffee and merges a duplicate into the origin
   await expect(seen(admin, "İşlem tamamlandı.")).toBeVisible();
   await expect(rowOf(fresh)).toHaveCount(0);
   await admin.goto(freshUrl);
-  await expect(admin.getByRole("heading", { level: 1 })).toHaveText(`${fresh}.`);
+  await expect(admin.getByRole("heading", { level: 1 })).toHaveText(fresh);
   await expect(admin.getByRole("note")).toHaveCount(0);
 
   // Merged: the duplicate is gone and its tasting now belongs to the original.

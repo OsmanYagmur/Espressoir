@@ -1,5 +1,10 @@
-.expo/
 dist/
-expo-env.d.ts
-ios/
 android/
+# Written from .env by scripts/write-env.mjs.
+src/lib/env.generated.ts
+# The iOS project is in git; what Xcode and CocoaPods produce from it is not.
+ios/Pods/
+ios/build/
+ios/.xcode.env.local
+**/xcuserdata/
+*.xcuserstate

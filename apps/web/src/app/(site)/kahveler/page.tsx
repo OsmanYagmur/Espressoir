@@ -37,15 +37,9 @@ export default async function CoffeesPage() {
 
   return (
     <PageShell>
-      <PageHeading
-        title={t.coffees.title}
-        aside={<p>{t.coffees.description}</p>}
-        lead={t.coffees.lead}
-      />
+      <PageHeading title={t.coffees.title} lead={t.coffees.lead} />
       {coffees.length === 0 ? (
-        <p className="border-b border-border py-10 text-muted-foreground">
-          {t.coffees.emptyArchive}
-        </p>
+        <p className="text-ink-2">{t.coffees.emptyArchive}</p>
       ) : (
         // The explorer reads the URL, which only exists in the browser. Until it takes
         // over, the page already shows the complete list: that is what gets prerendered,
@@ -53,7 +47,7 @@ export default async function CoffeesPage() {
         <Suspense
           fallback={
             <div>
-              <p className="border-b border-rule py-3 font-mono text-xs">
+              <p className="pb-6 type-meta">
                 {format(t.coffees.resultCount, { count: coffees.length })}
               </p>
               <CoffeeList coffees={coffees} heading="h2" label={t.coffees.title} />

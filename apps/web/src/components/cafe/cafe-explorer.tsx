@@ -4,9 +4,11 @@ import { foldTurkish } from "@espressoir/core";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
+import { cardClass } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/field";
 import type { CafeCard } from "@/lib/data/cafes";
 import { format, t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 import { CafeList } from "./cafe-list";
 
@@ -60,7 +62,7 @@ export function CafeExplorer({
       <form
         role="search"
         aria-label={c.filters}
-        className="grid grid-cols-2 gap-x-3 gap-y-4 border-b border-rule py-4 md:grid-cols-4"
+        className={cn(cardClass, "grid grid-cols-2 gap-x-3 gap-y-4 md:grid-cols-4")}
         onSubmit={(event) => event.preventDefault()}
       >
         <Field label={c.search} htmlFor="cafe-q" className="col-span-2">
@@ -90,14 +92,14 @@ export function CafeExplorer({
         </Field>
       </form>
 
-      <p className="border-b border-border py-3 font-mono text-xs" role="status" aria-live="polite">
+      <p className="py-6 type-meta" role="status" aria-live="polite">
         {active > 0
           ? format(c.resultCountFiltered, { count: visible.length, total: cafes.length })
           : format(c.resultCount, { count: cafes.length })}
         {active > 0 ? (
           <button
             type="button"
-            className="ml-3 underline decoration-brand decoration-2 underline-offset-4 hover:no-underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="ml-3 cursor-pointer text-accent-ink underline underline-offset-3"
             onClick={() => update({ sehir: "", q: "" })}
           >
             {c.clear}
@@ -108,7 +110,7 @@ export function CafeExplorer({
       {visible.length > 0 ? (
         <CafeList cafes={visible} heading="h2" label={c.title} />
       ) : (
-        <p className="border-b border-border py-10 text-muted-foreground">{c.empty}</p>
+        <p className="py-8 text-ink-2">{c.empty}</p>
       )}
     </div>
   );

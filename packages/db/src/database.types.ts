@@ -2392,6 +2392,107 @@ export type Database = {
           },
         ];
       };
+      workshop_applications: {
+        Row: {
+          consent: boolean;
+          contact: string;
+          contact_key: string;
+          created_at: string;
+          experience: string;
+          id: string;
+          name: string;
+          question: string | null;
+          status: string;
+          updated_at: string;
+          workshop_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          consent: boolean;
+          contact: string;
+          contact_key?: string;
+          created_at?: string;
+          experience: string;
+          id?: string;
+          name: string;
+          question?: string | null;
+          status?: string;
+          updated_at?: string;
+          workshop_id: string;
+        };
+        Update: {
+          consent?: boolean;
+          contact?: string;
+          contact_key?: string;
+          created_at?: string;
+          experience?: string;
+          id?: string;
+          name?: string;
+          question?: string | null;
+          status?: string;
+          updated_at?: string;
+          workshop_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workshop_applications_workshop_id_fkey";
+            columns: ["workshop_id"];
+            isOneToOne: false;
+            referencedRelation: "workshop_overview";
+            referencedColumns: ["workshop_id"];
+          },
+          {
+            foreignKeyName: "workshop_applications_workshop_id_fkey";
+            columns: ["workshop_id"];
+            isOneToOne: false;
+            referencedRelation: "workshops";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      workshops: {
+        Row: {
+          capacity: number;
+          created_at: string;
+          ends_at: string;
+          id: string;
+          is_open: boolean;
+          location_text: string | null;
+          price_text: string;
+          program: string;
+          starts_at: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          capacity: number;
+          created_at?: string;
+          ends_at: string;
+          id?: string;
+          is_open?: boolean;
+          location_text?: string | null;
+          price_text: string;
+          program: string;
+          starts_at: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          capacity?: number;
+          created_at?: string;
+          ends_at?: string;
+          id?: string;
+          is_open?: boolean;
+          location_text?: string | null;
+          price_text?: string;
+          program?: string;
+          starts_at?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       brand_pages: {
@@ -2679,6 +2780,46 @@ export type Database = {
         ComputedFields: never;
         Relationships: [];
       };
+      workshop_overview: {
+        Row: {
+          capacity: number | null;
+          ends_at: string | null;
+          is_open: boolean | null;
+          location_text: string | null;
+          price_text: string | null;
+          program: string | null;
+          seats_left: number | null;
+          starts_at: string | null;
+          title: string | null;
+          workshop_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          capacity?: number | null;
+          ends_at?: string | null;
+          is_open?: boolean | null;
+          location_text?: string | null;
+          price_text?: string | null;
+          program?: string | null;
+          seats_left?: never;
+          starts_at?: string | null;
+          title?: string | null;
+          workshop_id?: string | null;
+        };
+        Update: {
+          capacity?: number | null;
+          ends_at?: string | null;
+          is_open?: boolean | null;
+          location_text?: string | null;
+          price_text?: string | null;
+          program?: string | null;
+          seats_left?: never;
+          starts_at?: string | null;
+          title?: string | null;
+          workshop_id?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       admin_delete_v1: {
@@ -2906,6 +3047,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      workshop_seats_taken: { Args: { p_workshop_id: string }; Returns: number };
     };
     Enums: {
       brew_category: "espresso" | "filter" | "immersion" | "capsule" | "turkish";

@@ -74,6 +74,13 @@ Giriş kodu isteği herkese açık bir uçtur; korumasız kalırsa biri başkala
 3. Giriş sayfasında doğrulama kutusunun göründüğünü kontrol et.
 4. **Secret key** → Supabase → **Authentication → Attack Protection → Bot and Abuse Protection** → **Enable Captcha protection**, sağlayıcı **Turnstile**. Dev ve prod'un ikisinde de.
 
+**Kapatmak** (örneğin uygulamadaki doğrulama takılırsa): koruma Supabase projesinin tamamı için geçerlidir, yalnızca uygulamadan kaldırılamaz; kapatınca site de doğrulamasız girer.
+
+1. Supabase → **Authentication → Attack Protection** → **Enable Captcha protection**'ı kapat → **Save**. Uygulama ve site o anda doğrulamasız girer; uygulamada yeniden kurulum gerekmez.
+2. İsteğe bağlı: Vercel'den `NEXT_PUBLIC_TURNSTILE_SITE_KEY`'i sil ve **Redeploy**. Silmezsen sitedeki kutu görünmeye devam eder; işe yaramaz ama zararsızdır.
+
+Sıra yine önemli: sitede anahtar yokken Supabase'te koruma açıksa site girişi reddeder. Kayıt kapalıyken risk küçüktür (hesabı olmayan adrese kod gitmez, Supabase girişleri IP başına sınırlar); **herkese kayıt açılmadan önce yeniden aç.**
+
 ## 6. Google ile giriş (isteğe bağlı)
 
 1. [console.cloud.google.com](https://console.cloud.google.com) → yeni proje (`espressoir`).

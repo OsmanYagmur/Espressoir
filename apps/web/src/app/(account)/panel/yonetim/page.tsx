@@ -12,8 +12,9 @@ import { Suspense } from "react";
 
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Input, Select } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireAdmin } from "@/lib/auth";
@@ -40,6 +41,7 @@ import {
   reviewCoffee,
   setHidden,
 } from "./actions";
+import { WorkshopsAdmin } from "./workshops";
 
 export const metadata: Metadata = {
   title: t.admin.title,
@@ -50,10 +52,8 @@ export const metadata: Metadata = {
 type Props = PageProps<"/panel/yonetim">;
 
 const a = t.admin;
-const small = "h-9 px-3 font-mono text-xs uppercase";
-const field = "h-9 text-sm";
-const linkFocus =
-  "underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const field = "h-10";
+const link = "text-accent-ink underline underline-offset-3";
 
 const excerpt = (text: string | null, length = 140) =>
   text ? (text.length > length ? `${text.slice(0, length)}…` : text) : "";
@@ -234,17 +234,11 @@ function PhotoForm({ target }: { target: Pick<Target, "type" | "id" | "photo"> }
     <form action={removePhoto} className="flex flex-wrap items-center gap-2">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- already the right size
-        <img
-          src={src}
-          alt=""
-          width={48}
-          height={48}
-          className="size-12 border border-border object-cover"
-        />
+        <img src={src} alt="" width={48} height={48} className="size-12 rounded-md object-cover" />
       ) : null}
       <input type="hidden" name="targetType" value={target.type} />
       <input type="hidden" name="targetId" value={target.id} />
-      <Button type="submit" variant="outline" className={small}>
+      <Button type="submit" variant="secondary" size="sm">
         {t.photo.admin.remove}
       </Button>
     </form>
@@ -266,7 +260,7 @@ function HideForm({ target, hidden }: { target: Pick<Target, "type" | "id">; hid
           className={`${field} w-44`}
         />
       )}
-      <Button type="submit" variant="outline" className={small}>
+      <Button type="submit" variant="secondary" size="sm">
         {hidden ? a.unhide : a.hide}
       </Button>
     </form>
@@ -278,11 +272,11 @@ function RemoveForm({ target }: { target: Pick<Target, "type" | "id"> }) {
     <form action={removeContent} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="targetType" value={target.type} />
       <input type="hidden" name="targetId" value={target.id} />
-      <label className="flex items-center gap-1.5 font-mono text-xs">
-        <input type="checkbox" name="sure" required className="accent-foreground" />
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="sure" required className="accent-accent" />
         {a.sure}
       </label>
-      <Button type="submit" variant="destructive" className={small}>
+      <Button type="submit" variant="secondary" size="sm">
         {a.remove}
       </Button>
     </form>
@@ -321,7 +315,7 @@ function RestrictForm({ userId }: { userId?: string }) {
         maxLength={MODERATION_NOTE_MAX_LENGTH}
         className={`${field} w-44`}
       />
-      <Button type="submit" variant="outline" className={small}>
+      <Button type="submit" variant="secondary" size="sm">
         {a.restrict}
       </Button>
     </form>
@@ -332,7 +326,7 @@ function ReviewCafeForm({ cafeId }: { cafeId: string }) {
   return (
     <form action={reviewCafe}>
       <input type="hidden" name="cafeId" value={cafeId} />
-      <Button type="submit" className={small}>
+      <Button type="submit" size="sm">
         {a.review}
       </Button>
     </form>
@@ -340,7 +334,7 @@ function ReviewCafeForm({ cafeId }: { cafeId: string }) {
 }
 
 function Empty({ children }: { children: string }) {
-  return <p className="border-b border-border py-5 text-muted-foreground">{children}</p>;
+  return <p className="text-ink-2">{children}</p>;
 }
 
 // An invitation's link runs out within the hour, so the time it was sent matters.
@@ -367,8 +361,8 @@ async function Invitations() {
 
   return (
     <>
-      <form action={inviteMember} className="grid gap-3 border-b border-border py-4">
-        <p className="max-w-[62ch] text-sm text-muted-foreground">{a.invites.hint}</p>
+      <form action={inviteMember} className="grid gap-3 pb-2">
+        <p className="type-meta">{a.invites.hint}</p>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             type="email"
@@ -381,27 +375,27 @@ async function Invitations() {
             required
             className={`${field} w-72 max-w-full`}
           />
-          <Button type="submit" className={small}>
+          <Button type="submit" size="sm">
             {a.invites.send}
           </Button>
         </div>
       </form>
 
-      <p className="label-caps pt-4 text-muted-foreground">{a.invites.pendingTitle}</p>
+      <p className="pt-6 type-label">{a.invites.pendingTitle}</p>
       {error ? (
         <Empty>{a.invites.listFailed}</Empty>
       ) : pending.length === 0 ? (
         <Empty>{a.invites.pendingEmpty}</Empty>
       ) : (
-        <ul aria-label={a.invites.pendingTitle}>
+        <ul aria-label={a.invites.pendingTitle} className="border-t border-line">
           {pending.map((user) => (
             <li
               key={user.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
             >
               <p className="min-w-0 [overflow-wrap:anywhere]">
-                <span className="font-mono text-sm">{user.email}</span>{" "}
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className="text-sm">{user.email}</span>{" "}
+                <span className="type-meta">
                   {format(a.invites.sentAt, {
                     date: sentFormat.format(new Date(user.invited_at!)),
                   })}
@@ -410,13 +404,13 @@ async function Invitations() {
               <div className="flex flex-wrap items-center gap-2">
                 <form action={inviteMember}>
                   <input type="hidden" name="email" value={user.email} />
-                  <Button type="submit" variant="outline" className={small}>
+                  <Button type="submit" variant="secondary" size="sm">
                     {a.invites.resend}
                   </Button>
                 </form>
                 <form action={cancelInvitation}>
                   <input type="hidden" name="userId" value={user.id} />
-                  <Button type="submit" variant="outline" className={small}>
+                  <Button type="submit" variant="secondary" size="sm">
                     {a.invites.cancel}
                   </Button>
                 </form>
@@ -446,41 +440,35 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
   );
 
   return (
-    <ul aria-label={a.reportsTitle}>
+    <ul aria-label={a.reportsTitle} className="border-t border-line">
       {data.map((report) => {
         const target = targets.get(`${report.target_type}:${report.target_id}`);
         const reporter = one(report.reporter)?.username;
         return (
-          <li key={report.id} className="grid gap-3 border-b border-border py-4">
+          <li key={report.id} className="grid gap-3 border-b border-line py-4">
             <div>
-              <p className="font-mono text-xs text-muted-foreground">
-                <span className="mr-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
-                  {a.targets[report.target_type]}
-                </span>
+              <p className="type-meta">
+                <Chip className="mr-2">{a.targets[report.target_type]}</Chip>
                 {t.social.reportReasons[report.reason]} · {day(report.created_at)} ·{" "}
                 {format(a.reportedBy, { reporter: reporter ? `@${reporter}` : a.reporterGone })}
               </p>
               {target ? (
-                <p className="mt-1.5 [overflow-wrap:anywhere]">
+                <p className="mt-2 [overflow-wrap:anywhere]">
                   {target.username && target.type !== "profile" ? (
-                    <span className="font-mono text-xs">@{target.username} · </span>
+                    <span className="text-sm">@{target.username} · </span>
                   ) : null}
                   {target.summary}{" "}
                   {target.href ? (
-                    <Link
-                      href={target.href}
-                      prefetch={false}
-                      className={`font-mono text-xs ${linkFocus}`}
-                    >
+                    <Link href={target.href} prefetch={false} className={link}>
                       {a.open}
                     </Link>
                   ) : null}
                 </p>
               ) : (
-                <p className="mt-1.5 text-muted-foreground">{a.targetGone}</p>
+                <p className="mt-2 text-ink-2">{a.targetGone}</p>
               )}
               {report.details ? (
-                <p className="mt-1 max-w-[62ch] border-l-2 border-rule pl-3 text-sm whitespace-pre-line">
+                <p className="mt-1 max-w-read rounded-md bg-sunk p-4 whitespace-pre-line">
                   {report.details}
                 </p>
               ) : null}
@@ -510,16 +498,10 @@ async function Reports({ supabase }: { supabase: TypedSupabaseClient }) {
                 maxLength={MODERATION_NOTE_MAX_LENGTH}
                 className={`${field} w-56`}
               />
-              <Button type="submit" name="status" value="resolved" className={small}>
+              <Button type="submit" name="status" value="resolved" size="sm">
                 {a.resolve}
               </Button>
-              <Button
-                type="submit"
-                name="status"
-                value="dismissed"
-                variant="outline"
-                className={small}
-              >
+              <Button type="submit" name="status" value="dismissed" variant="secondary" size="sm">
                 {a.dismiss}
               </Button>
             </form>
@@ -553,96 +535,104 @@ async function Catalog({ supabase }: { supabase: TypedSupabaseClient }) {
 
   return (
     <>
-      <SectionHeading index={6} title={a.catalogTitle} aside={pending.length} />
-      {pending.length === 0 ? (
-        <Empty>{a.catalogEmpty}</Empty>
-      ) : (
-        <ul aria-label={a.catalogTitle}>
-          {pending.map((coffee) => (
-            <li key={coffee.id} className="grid gap-3 border-b border-border py-4">
-              <p className="[overflow-wrap:anywhere]">
-                <Link
-                  href={coffeePath(coffee.brand_slug!, coffee.coffee_slug!)}
-                  prefetch={false}
-                  className={`font-semiwide font-bold ${linkFocus}`}
-                >
-                  {coffee.label}
-                </Link>{" "}
-                <span className="font-mono text-xs text-muted-foreground">
-                  {format(t.coffee.tastingCount, { count: coffee.tasting_count ?? 0 })}
-                </span>
-              </p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                <form action={reviewCoffee}>
-                  <input type="hidden" name="coffeeId" value={coffee.id} />
-                  <Button type="submit" className={small}>
-                    {a.review}
-                  </Button>
-                </form>
-                <form action={mergeCoffee} className="flex flex-wrap items-center gap-2">
-                  <input type="hidden" name="from" value={coffee.id} />
-                  <Select
-                    name="into"
-                    aria-label={a.mergeInto}
-                    required
-                    defaultValue=""
-                    className={`${field} w-64`}
+      <Section id="katalog">
+        <SectionHeading
+          id="katalog"
+          title={a.catalogTitle}
+          aside={<span className="type-figure">{pending.length}</span>}
+        />
+        {pending.length === 0 ? (
+          <Empty>{a.catalogEmpty}</Empty>
+        ) : (
+          <ul aria-label={a.catalogTitle} className="border-t border-line">
+            {pending.map((coffee) => (
+              <li key={coffee.id} className="grid gap-3 border-b border-line py-4">
+                <p className="[overflow-wrap:anywhere]">
+                  <Link
+                    href={coffeePath(coffee.brand_slug!, coffee.coffee_slug!)}
+                    prefetch={false}
+                    className={`font-display font-semibold ${link}`}
                   >
-                    <option value="">
-                      {a.mergeInto}: {a.choose}
-                    </option>
-                    {all
-                      .filter((other) => other.id !== coffee.id)
-                      .map((other) => (
-                        <option key={other.id} value={other.id}>
-                          {other.label}
-                        </option>
-                      ))}
-                  </Select>
-                  <label className="flex items-center gap-1.5 font-mono text-xs">
-                    <input type="checkbox" name="sure" required className="accent-foreground" />
-                    {a.sure}
-                  </label>
-                  <Button type="submit" variant="outline" className={small}>
-                    {a.merge}
-                  </Button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+                    {coffee.label}
+                  </Link>{" "}
+                  <span className="type-meta">
+                    {format(t.coffee.tastingCount, { count: coffee.tasting_count ?? 0 })}
+                  </span>
+                </p>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <form action={reviewCoffee}>
+                    <input type="hidden" name="coffeeId" value={coffee.id} />
+                    <Button type="submit" size="sm">
+                      {a.review}
+                    </Button>
+                  </form>
+                  <form action={mergeCoffee} className="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="from" value={coffee.id} />
+                    <Select
+                      name="into"
+                      aria-label={a.mergeInto}
+                      required
+                      defaultValue=""
+                      className={`${field} w-64`}
+                    >
+                      <option value="">
+                        {a.mergeInto}: {a.choose}
+                      </option>
+                      {all
+                        .filter((other) => other.id !== coffee.id)
+                        .map((other) => (
+                          <option key={other.id} value={other.id}>
+                            {other.label}
+                          </option>
+                        ))}
+                    </Select>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="sure" required className="accent-accent" />
+                      {a.sure}
+                    </label>
+                    <Button type="submit" variant="secondary" size="sm">
+                      {a.merge}
+                    </Button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
 
-      <SectionHeading index={7} title={a.brandsTitle} />
-      <form action={mergeBrand} className="grid max-w-2xl gap-3 border-b border-border py-4">
-        <p className="max-w-[62ch] text-sm text-muted-foreground">{a.brandsHint}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          {(["from", "into"] as const).map((name) => (
-            <Select
-              key={name}
-              name={name}
-              aria-label={name === "from" ? a.mergeFrom : a.mergeTarget}
-              required
-              defaultValue=""
-              className={`${field} w-56`}
-            >
-              <option value="">{name === "from" ? a.mergeFrom : a.mergeTarget}</option>
-              {brands.data.map((brand) => (
-                <option key={brand.id} value={brand.id}>
-                  {brand.name}
-                </option>
-              ))}
-            </Select>
-          ))}
-          <label className="flex items-center gap-1.5 font-mono text-xs">
-            <input type="checkbox" name="sure" required className="accent-foreground" />
-            {a.sure}
-          </label>
-          <Button type="submit" variant="outline" className={small}>
-            {a.merge}
-          </Button>
-        </div>
-      </form>
+      <Section id="markalar">
+        <SectionHeading id="markalar" title={a.brandsTitle} />
+        <form action={mergeBrand} className="grid gap-3">
+          <p className="type-meta">{a.brandsHint}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {(["from", "into"] as const).map((name) => (
+              <Select
+                key={name}
+                name={name}
+                aria-label={name === "from" ? a.mergeFrom : a.mergeTarget}
+                required
+                defaultValue=""
+                className={`${field} w-56`}
+              >
+                <option value="">{name === "from" ? a.mergeFrom : a.mergeTarget}</option>
+                {brands.data.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </option>
+                ))}
+              </Select>
+            ))}
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="sure" required className="accent-accent" />
+              {a.sure}
+            </label>
+            <Button type="submit" variant="secondary" size="sm">
+              {a.merge}
+            </Button>
+          </div>
+        </form>
+      </Section>
     </>
   );
 }
@@ -676,19 +666,19 @@ async function Cafes({ supabase }: { supabase: TypedSupabaseClient }) {
 
   return (
     <>
-      <p className="max-w-[62ch] py-3 text-sm text-muted-foreground">{a.cafesHint}</p>
-      <ul aria-label={a.cafesTitle}>
+      <p className="mb-4 type-meta">{a.cafesHint}</p>
+      <ul aria-label={a.cafesTitle} className="border-t border-line">
         {pending.map((cafe) => (
-          <li key={cafe.id} className="grid gap-3 border-b border-border py-4">
+          <li key={cafe.id} className="grid gap-3 border-b border-line py-4">
             <p className="[overflow-wrap:anywhere]">
               <Link
                 href={cafe.href}
                 prefetch={false}
-                className={`font-semiwide font-bold ${linkFocus}`}
+                className={`font-display font-semibold ${link}`}
               >
                 {cafe.label}
               </Link>{" "}
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="type-meta">
                 {format(t.cafes.visitCount, { count: cafe.visits })}
               </span>
             </p>
@@ -719,11 +709,11 @@ async function Cafes({ supabase }: { supabase: TypedSupabaseClient }) {
                       </option>
                     ))}
                 </Select>
-                <label className="flex items-center gap-1.5 font-mono text-xs">
-                  <input type="checkbox" name="sure" required className="accent-foreground" />
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" name="sure" required className="accent-accent" />
                   {a.sure}
                 </label>
-                <Button type="submit" variant="outline" className={small}>
+                <Button type="submit" variant="secondary" size="sm">
                   {a.merge}
                 </Button>
               </form>
@@ -748,7 +738,7 @@ async function Verifications({ supabase }: { supabase: TypedSupabaseClient }) {
   if (error || data.length === 0) return <Empty>{a.verificationsEmpty}</Empty>;
 
   return (
-    <ul aria-label={a.verificationsTitle}>
+    <ul aria-label={a.verificationsTitle} className="border-t border-line">
       {data.map((request) => {
         const brand = one(request.brand);
         const cafe = one(request.cafe);
@@ -759,25 +749,25 @@ async function Verifications({ supabase }: { supabase: TypedSupabaseClient }) {
             ? cafeHref({ cityCode: cafe.city_code, slug: cafe.slug })
             : null;
         return (
-          <li key={request.id} className="grid gap-3 border-b border-border py-4">
+          <li key={request.id} className="grid gap-3 border-b border-line py-4">
             <div>
-              <p className="font-mono text-xs text-muted-foreground">
-                <span className="mr-2 border border-foreground px-1.5 py-0.5 text-foreground uppercase">
+              <p className="type-meta">
+                <Chip className="mr-2">
                   {brand ? t.business.panel.kinds.brand : t.business.panel.kinds.cafe}
-                </span>
+                </Chip>
                 {applicant ? (
-                  <Link href={profilePath(applicant)} prefetch={false} className={linkFocus}>
+                  <Link href={profilePath(applicant)} prefetch={false} className={link}>
                     {format(a.applicant, { username: applicant })}
                   </Link>
                 ) : null}{" "}
                 · {day(request.created_at)}
               </p>
-              <p className="mt-1.5 [overflow-wrap:anywhere]">
+              <p className="mt-2 [overflow-wrap:anywhere]">
                 {href ? (
                   <Link
                     href={href}
                     prefetch={false}
-                    className={`font-semiwide font-bold ${linkFocus}`}
+                    className={`font-display font-semibold ${link}`}
                   >
                     {brand?.name ?? cafe?.name}
                   </Link>
@@ -789,14 +779,14 @@ async function Verifications({ supabase }: { supabase: TypedSupabaseClient }) {
                       href={request.website}
                       target="_blank"
                       rel="nofollow ugc noopener noreferrer"
-                      className={`font-mono text-xs ${linkFocus}`}
+                      className={link}
                     >
                       {request.website}
                     </a>
                   </>
                 ) : null}
               </p>
-              <p className="mt-1 max-w-[62ch] border-l-2 border-rule pl-3 text-sm [overflow-wrap:anywhere] whitespace-pre-line">
+              <p className="mt-1 max-w-read rounded-md bg-sunk p-4 [overflow-wrap:anywhere] whitespace-pre-line">
                 {request.message}
               </p>
             </div>
@@ -809,16 +799,10 @@ async function Verifications({ supabase }: { supabase: TypedSupabaseClient }) {
                 maxLength={MODERATION_NOTE_MAX_LENGTH}
                 className={`${field} w-56`}
               />
-              <Button type="submit" name="answer" value="approve" className={small}>
+              <Button type="submit" name="answer" value="approve" size="sm">
                 {a.approve}
               </Button>
-              <Button
-                type="submit"
-                name="answer"
-                value="reject"
-                variant="outline"
-                className={small}
-              >
+              <Button type="submit" name="answer" value="reject" variant="secondary" size="sm">
                 {a.reject}
               </Button>
             </form>
@@ -840,15 +824,15 @@ async function Officials({ supabase }: { supabase: TypedSupabaseClient }) {
   if (error || data.length === 0) return <Empty>{a.officialsEmpty}</Empty>;
 
   return (
-    <ul aria-label={a.officialsTitle}>
+    <ul aria-label={a.officialsTitle} className="border-t border-line">
       {data.map((row) => (
         <li
           key={row.id}
-          className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+          className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
         >
           <p className="min-w-0 [overflow-wrap:anywhere]">
             <span className="font-semibold">{one(row.brand)?.name ?? one(row.cafe)?.name}</span>{" "}
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="type-meta">
               @{one(row.member)?.username} · {day(row.created_at)}
             </span>
           </p>
@@ -861,11 +845,11 @@ async function Officials({ supabase }: { supabase: TypedSupabaseClient }) {
               maxLength={MODERATION_NOTE_MAX_LENGTH}
               className={`${field} w-44`}
             />
-            <label className="flex items-center gap-1.5 font-mono text-xs">
-              <input type="checkbox" name="sure" required className="accent-foreground" />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="sure" required className="accent-accent" />
               {a.sure}
             </label>
-            <Button type="submit" variant="outline" className={small}>
+            <Button type="submit" variant="secondary" size="sm">
               {a.revoke}
             </Button>
           </form>
@@ -940,17 +924,15 @@ async function Hidden({ supabase }: { supabase: TypedSupabaseClient }) {
   if (rows.length === 0) return <Empty>{a.hiddenEmpty}</Empty>;
 
   return (
-    <ul aria-label={a.hiddenTitle}>
+    <ul aria-label={a.hiddenTitle} className="border-t border-line">
       {rows.map((row) => (
         <li
           key={`${row.type}:${row.id}`}
-          className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+          className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
         >
           <p className="min-w-0 [overflow-wrap:anywhere]">
-            <span className="mr-2 border border-foreground px-1.5 py-0.5 font-mono text-xs uppercase">
-              {a.targets[row.type]}
-            </span>
-            {row.username ? <span className="font-mono text-xs">@{row.username} · </span> : null}
+            <Chip className="mr-2">{a.targets[row.type]}</Chip>
+            {row.username ? <span className="text-sm">@{row.username} · </span> : null}
             {row.summary}
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -975,15 +957,15 @@ async function Restricted({ supabase }: { supabase: TypedSupabaseClient }) {
       {!data || data.length === 0 ? (
         <Empty>{a.restrictedEmpty}</Empty>
       ) : (
-        <ul aria-label={a.restrictedTitle}>
+        <ul aria-label={a.restrictedTitle} className="border-t border-line">
           {data.map((row) => (
             <li
               key={row.profile_id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-3"
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
             >
               <p>
-                <span className="font-mono text-sm">@{one(row.profile)?.username}</span>{" "}
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className="text-sm">@{one(row.profile)?.username}</span>{" "}
+                <span className="type-meta">
                   {format(a.restrictedUntil, { date: day(row.restricted_until!) })}
                   {row.restricted_reason ? ` · ${row.restricted_reason}` : ""}
                 </span>
@@ -991,7 +973,7 @@ async function Restricted({ supabase }: { supabase: TypedSupabaseClient }) {
               <form action={restrictMember}>
                 <input type="hidden" name="userId" value={row.profile_id} />
                 <input type="hidden" name="days" value="" />
-                <Button type="submit" variant="outline" className={small}>
+                <Button type="submit" variant="secondary" size="sm">
                   {a.unrestrict}
                 </Button>
               </form>
@@ -999,8 +981,8 @@ async function Restricted({ supabase }: { supabase: TypedSupabaseClient }) {
           ))}
         </ul>
       )}
-      <div className="border-b border-border py-4">
-        <p className="label-caps mb-2 text-muted-foreground">{a.restrictTitle}</p>
+      <div className="pt-6">
+        <p className="mb-2 type-label">{a.restrictTitle}</p>
         <RestrictForm />
       </div>
     </>
@@ -1016,13 +998,13 @@ async function Log({ supabase }: { supabase: TypedSupabaseClient }) {
   if (!data || data.length === 0) return <Empty>{a.logEmpty}</Empty>;
 
   return (
-    <ul aria-label={a.logTitle} className="font-mono text-xs">
+    <ul aria-label={a.logTitle} className="border-t border-line text-sm">
       {data.map((entry) => (
-        <li key={entry.id} className="border-b border-border py-2">
-          <span className="text-muted-foreground">{day(entry.created_at)}</span> · @
+        <li key={entry.id} className="border-b border-line py-2">
+          <span className="text-ink-2">{day(entry.created_at)}</span> · @
           {one(entry.admin)?.username ?? "—"}{" "}
           {a.actions[entry.action as keyof typeof a.actions] ?? entry.action}
-          {entry.note ? <span className="text-muted-foreground"> · {entry.note}</span> : null}
+          {entry.note ? <span className="text-ink-2"> · {entry.note}</span> : null}
         </li>
       ))}
     </ul>
@@ -1049,12 +1031,12 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
 
   return (
     <>
-      <nav className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border py-4 font-mono text-xs">
-        <Link href="/panel" className={`uppercase ${linkFocus}`}>
+      <nav className="flex flex-wrap items-baseline justify-between gap-3">
+        <Link href="/panel" className={link}>
           {a.back}
         </Link>
         {stored ? (
-          <p className="text-muted-foreground">
+          <p className="type-meta">
             {format(t.photo.admin.usage, {
               files: stored.files,
               size: Math.round((Number(stored.bytes) / 1024 / 1024) * 10) / 10,
@@ -1063,35 +1045,52 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
         ) : null}
       </nav>
       {reason ? (
-        <p
-          role="alert"
-          className="mt-4 border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-        >
+        <p role="alert" className="mt-6 font-medium text-danger">
           {format(a.failed, { reason })}
         </p>
       ) : tamam ? (
-        <p role="status" className="mt-4 border-l-2 border-rule pl-3 font-mono text-sm">
+        <p role="status" className="mt-6 rounded-md bg-leaf-soft p-4 font-medium text-leaf">
           {a.done}
         </p>
       ) : null}
 
-      <SectionHeading index={1} title={a.invites.title} />
-      <Invitations />
-      <SectionHeading index={2} title={a.reportsTitle} />
-      <Reports supabase={supabase} />
-      <SectionHeading index={3} title={a.verificationsTitle} />
-      <Verifications supabase={supabase} />
-      <SectionHeading index={4} title={a.hiddenTitle} />
-      <Hidden supabase={supabase} />
-      <SectionHeading index={5} title={a.restrictedTitle} />
-      <Restricted supabase={supabase} />
+      <Section id="davetler">
+        <SectionHeading id="davetler" title={a.invites.title} />
+        <Invitations />
+      </Section>
+      <Section id="atolyeler">
+        <SectionHeading id="atolyeler" title={a.workshops.title} hint={a.workshops.hint} />
+        <WorkshopsAdmin supabase={supabase} />
+      </Section>
+      <Section id="sikayetler">
+        <SectionHeading id="sikayetler" title={a.reportsTitle} />
+        <Reports supabase={supabase} />
+      </Section>
+      <Section id="dogrulamalar">
+        <SectionHeading id="dogrulamalar" title={a.verificationsTitle} />
+        <Verifications supabase={supabase} />
+      </Section>
+      <Section id="gizlenenler">
+        <SectionHeading id="gizlenenler" title={a.hiddenTitle} />
+        <Hidden supabase={supabase} />
+      </Section>
+      <Section id="kisitlananlar">
+        <SectionHeading id="kisitlananlar" title={a.restrictedTitle} />
+        <Restricted supabase={supabase} />
+      </Section>
       <Catalog supabase={supabase} />
-      <SectionHeading index={8} title={a.cafesTitle} />
-      <Cafes supabase={supabase} />
-      <SectionHeading index={9} title={a.officialsTitle} />
-      <Officials supabase={supabase} />
-      <SectionHeading index={10} title={a.logTitle} />
-      <Log supabase={supabase} />
+      <Section id="kafeler">
+        <SectionHeading id="kafeler" title={a.cafesTitle} />
+        <Cafes supabase={supabase} />
+      </Section>
+      <Section id="resmi-hesaplar">
+        <SectionHeading id="resmi-hesaplar" title={a.officialsTitle} />
+        <Officials supabase={supabase} />
+      </Section>
+      <Section id="kayit">
+        <SectionHeading id="kayit" title={a.logTitle} />
+        <Log supabase={supabase} />
+      </Section>
     </>
   );
 }
@@ -1099,8 +1098,8 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
 export default function AdminPage({ searchParams }: Props) {
   return (
     <PageShell>
-      <PageHeading title={a.title} />
-      <Suspense fallback={<Skeleton className="my-6 h-96" />}>
+      <PageHeading title={a.title} lead={a.description} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <AdminPanel searchParams={searchParams} />
       </Suspense>
     </PageShell>

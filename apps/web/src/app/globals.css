@@ -1,127 +1,143 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+/*
+ * Every colour, space, radius and font family comes from design/tokens.css (rules:
+ * design/DESIGN.md). It sits in a layer of its own so that the fonts next/font loads (its
+ * variables are set on <html>, outside any layer) win over the fallback stacks written
+ * there, and so that it wins over Tailwind's theme layer where the two share a name.
+ */
+@import "../../../../design/tokens.css" layer(tokens);
 
-@custom-variant dark (&:is(.dark *));
+/* The theme switch writes data-theme on <html>; tokens.css reads the same attribute. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /*
- * Two looks over the same markup, chosen on <html data-look> (see lib/look.ts):
- *   form  the original tasting form, exactly as designed;
- *   sade  the same form read aloud: what can be clicked looks clickable, pages say what
- *         they are for, and the main thing on screen outweighs its details.
- * Use `sade:` / `form:` like any variant. Whatever only one look shows is hidden in the
- * other (`form:hidden`, `sade:hidden`), so both stay complete.
+ * The Tailwind theme is made of the tokens only: Tailwind's own palette, radii, shadows and
+ * type sizes are switched off, so a class can only name what the design defines.
+ * `inline`: utilities read the token itself, which the dark theme redefines.
  */
-@custom-variant sade (&:where([data-look="sade"] *));
-@custom-variant form (&:where([data-look="form"] *));
-
-/*
- * Espressoir — "tasting form" design: a cupping sheet / lab notebook.
- * Off-white paper, black ink, hard rules instead of cards, one accent (signal red).
- * Wide grotesk (Archivo) for headings, IBM Plex Mono for labels and data.
- * Every text/background pair is checked against WCAG AA (≥ 4.5:1).
- * To retheme, change the values here only.
- */
-:root {
-  --radius: 0px;
-
-  --background: oklch(0.967 0.004 106);
-  --foreground: oklch(0.2 0 0);
-  --card: oklch(0.967 0.004 106);
-  --card-foreground: var(--foreground);
-  --popover: oklch(0.985 0.003 106);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.2 0 0);
-  --primary-foreground: oklch(0.967 0.004 106);
-  --secondary: oklch(0.925 0.005 106);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.925 0.005 106);
-  --muted-foreground: oklch(0.5 0.008 106);
-  --accent: oklch(0.925 0.005 106);
-  --accent-foreground: oklch(0.2 0 0);
-  --destructive: oklch(0.55 0.2 29);
-  /* Hairlines between rows; --rule is the strong ink line between sections. */
-  --border: color-mix(in oklch, var(--foreground) 18%, transparent);
-  --rule: var(--foreground);
-  --input: color-mix(in oklch, var(--foreground) 35%, transparent);
-  --ring: oklch(0.55 0.2 29);
-
-  --brand: oklch(0.55 0.2 29);
-  --brand-foreground: oklch(1 0 0);
-}
-
-.dark {
-  --background: oklch(0.185 0.004 80);
-  --foreground: oklch(0.94 0.006 95);
-  --card: oklch(0.185 0.004 80);
-  --card-foreground: var(--foreground);
-  --popover: oklch(0.22 0.005 80);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.94 0.006 95);
-  --primary-foreground: oklch(0.185 0.004 80);
-  --secondary: oklch(0.24 0.005 80);
-  --secondary-foreground: oklch(0.94 0.006 95);
-  --muted: oklch(0.24 0.005 80);
-  --muted-foreground: oklch(0.7 0.008 95);
-  --accent: oklch(0.24 0.005 80);
-  --accent-foreground: oklch(0.94 0.006 95);
-  --destructive: oklch(0.66 0.2 29);
-  --ring: oklch(0.66 0.2 29);
-
-  --brand: oklch(0.66 0.2 29);
-  --brand-foreground: oklch(0.185 0.004 80);
-}
-
 @theme inline {
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-rule: var(--rule);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-crema: var(--crema);
+  --color-on-crema: var(--on-crema);
+  --color-leaf: var(--leaf);
+  --color-leaf-soft: var(--leaf-soft);
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
 
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
-  --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
+  /* The 4px scale: p-1 = --space-1 (4px) … p-16 = --space-16 (64px). */
+  --spacing: var(--space-1);
+
+  --radius-*: initial;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+
+  --shadow-*: initial;
+  --shadow-sticky: var(--shadow-sticky);
+
+  --font-*: initial;
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* The type scale of DESIGN.md (size / line height); the styles below combine them. */
+  --text-*: initial;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 20px;
+  --text-xl--line-height: 24px;
+  --text-2xl: 22px;
+  --text-2xl--line-height: 28px;
+  --text-3xl: 24px;
+  --text-3xl--line-height: 28px;
+  --text-4xl: 28px;
+  --text-4xl--line-height: 34px;
+  --text-5xl: 32px;
+  --text-5xl--line-height: 40px;
+  --text-6xl: 40px;
+  --text-6xl--line-height: 44px;
+  --text-7xl: 56px;
+  --text-7xl--line-height: 60px;
+
+  --breakpoint-xs: 35rem;
+
+  /* Reading column and card grids. */
+  --container-read: 40rem;
+  --container-grid: 67.5rem;
+
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: ease-out;
+}
+
+/* Type styles (DESIGN.md → Tipografi). */
+@utility type-display {
+  @apply font-display text-6xl font-semibold tracking-[-0.01em] md:text-7xl;
+}
+@utility type-title {
+  @apply font-display text-4xl font-semibold md:text-5xl;
+}
+@utility type-card-title {
+  @apply font-display text-2xl font-semibold;
+}
+@utility type-lead {
+  @apply text-lg text-ink-2;
+}
+@utility type-label {
+  @apply text-sm font-semibold;
+}
+@utility type-meta {
+  @apply text-sm text-ink-2;
+}
+@utility type-figure {
+  @apply font-mono text-sm tabular-nums;
 }
 
 @layer base {
-  /* Opened from the home screen, the page reaches under the rounded corners and the home
-     bar (viewport-fit=cover in the layout): the content keeps clear of them. */
-  body {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  * {
-    @apply border-border outline-ring/50;
-  }
-
   html {
     -webkit-text-size-adjust: 100%;
   }
 
+  /* Opened from the home screen, the page reaches under the rounded corners and the home
+     bar (viewport-fit=cover in the layout): the content keeps clear of them. */
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    margin: 0;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    @apply bg-bg font-sans text-base text-ink antialiased;
+  }
+
+  *,
+  ::before,
+  ::after {
+    @apply border-line;
+  }
+
+  /* Every interactive element: a 2px ring, 2px away from it. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-focus;
   }
 
   h1,
@@ -135,39 +151,6 @@
   }
 
   ::selection {
-    background: var(--brand);
-    color: var(--brand-foreground);
-  }
-
-  /* Sade: every link in the content is underlined in the accent colour, so nobody has to
-     hover to find out what leads somewhere. Buttons and chips (`data-plain`) opt out. */
-  [data-look="sade"] main a:not([data-slot="button"], [data-plain]) {
-    text-decoration-line: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.22em;
-    text-decoration-color: color-mix(in oklch, var(--brand) 80%, transparent);
-  }
-  [data-look="sade"] main a:not([data-slot="button"], [data-plain]):hover {
-    color: var(--brand);
-    text-decoration-thickness: 2px;
-  }
-}
-
-@layer utilities {
-  /* Archivo's width axis: expanded for display type, slightly wide for titles. */
-  .font-wide {
-    font-stretch: 125%;
-  }
-  .font-semiwide {
-    font-stretch: 112%;
-  }
-  /* Form-style field label: small mono caps. Use only on UI copy, never on product names
-     (CSS uppercasing follows the page language, so lang="tr" turns "i" into "İ"). */
-  .label-caps {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    @apply bg-accent-soft text-accent-ink;
   }
 }

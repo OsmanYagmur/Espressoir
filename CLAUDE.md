@@ -1,7 +1,9 @@
 # CLAUDE.md
 
 Espressoir: a coffee-tasting archive (owner's Notion notes) growing into a coffee social network
-(web now, Expo/React Native app later). Full brief: `PROJECT_BRIEF.md` (Turkish).
+(web, and a React Native app for iOS). Full brief: `PROJECT_BRIEF.md` (Turkish).
+
+Tasarım kuralları: design/DESIGN.md, içerik: design/icerik.md. Yeni arayüz kodu bu kurallara ve design/tokens.css'e uymalı.
 
 @AGENTS.md
 
@@ -36,6 +38,7 @@ pnpm test:e2e                                 # needs a prior build; port 3100
 pnpm format / format:check
 pnpm db:new <name> | db:push:dev | db:push:prod
 pnpm types:gen [--db-url <url>]               # default: from supabase/migrations via PGlite
+pnpm tokens:gen                               # design/tokens.css colours → lib/design-tokens.ts
 pnpm admin:bootstrap [--env prod]             # owner account (signup is closed)
 pnpm user:invite [--env prod] <email>…        # invitation e-mail (the only way in for now)
 pnpm export:analytics [--env prod|--offline]  # public tastings under pseudonyms → data/analytics/
@@ -56,7 +59,8 @@ Playwright suite, signed-in flows included, against `supabase start` on the runn
 ```
 apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'navigation'
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
-                             /u/[username]/liste/[slug],
+                             /u/[username]/liste/[slug], /atolye, /atolye/[id] (+ actions.ts:
+                             the application), /bilgi, /bilgi/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
                              /panel/yonetim (admin), /hesap,
@@ -64,20 +68,28 @@ apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
-apps/web/src/app/            root layout, 404/error/loading, icon, sitemap, robots, OG image
+apps/web/src/app/            root layout (fonts), 404/error/loading, icon + apple-icon (drawn),
+                             sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*,
                              /bildirimler, /giris only
-apps/web/src/components/     ui/, site/ (chrome, legal page), coffee/, stats/ (charts),
-                             panel/ (forms, coffee picker), account/ (header link, Turnstile,
-                             form message), social/ (follow, feed, like, comments, report)
+apps/web/src/components/     ui/ (button, chip, card, field, dropdown), site/ (header, footer,
+                             page heading, legal page), coffee/ (TastingCard, ScoreBadge,
+                             TasteProfile), stats/ (charts), workshop/ (EventCard, ApplyForm),
+                             info/ (InfoCard), panel/ (forms, coffee picker), account/ (account
+                             menu, Turnstile, form message), social/ (follow, feed, like,
+                             comments, report)
+apps/web/src/content/        atolye/ (workshop programs, TS, one per kind), bilgi/ (articles,
+                             one Markdown file each; README says the format)
 apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
                              session-cookie.ts (useHasSession: "is someone signed in?" for islands)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
-                             pure views from @espressoir/db)
-apps/mobile/                 Expo app: src/app (routes: tabs Akış/Kahveler/Kafeler/Ekle/Hesap,
-                             tadim/[id], tadim/yeni, ziyaret/yeni, bildirimler, oneriler, u/…),
-                             src/components, src/lib (supabase, archive, session, theme,
-                             notifications, photo, site); docs/mobile.md
+                             pure views from @espressoir/db), workshops.ts (their own cached
+                             read), articles.ts, today.ts (the year, cached)
+apps/mobile/                 React Native app (no Expo): index.js, src/App.tsx (navigators),
+                             src/navigation.ts (routes, router), src/screens, src/components,
+                             src/lib (supabase, archive, session, theme, notifications, photo,
+                             site, env), ios/ (Xcode project, scene delegate, EspressoirNative
+                             pod), scripts/ (write-env, ios-device); docs/mobile.md
 apps/web/e2e/                archive.spec (public, sample data) · panel.spec, account.spec,
                              community.spec, moderation.spec (need Supabase + its mail catcher)
                              · helpers.ts
@@ -91,6 +103,8 @@ scripts/                     db-push, gen-types, import-notion (+ notion/), admi
                              accounts, contract)
 supabase/                    migrations/, rollbacks/, templates/ (auth e-mails),
                              tests/local-shim.sql
+design/                      DESIGN.md (rules), tokens.css (every value), components.css
+                             (reference only), icerik.md (copy and coffee facts)
 docs/                        setup-supabase, setup-auth, deploy-vercel, backup
 data/                        owner's Notion export + reports (git-ignored)
 ```
@@ -124,17 +138,21 @@ data/                        owner's Notion export + reports (git-ignored)
   `generateStaticParams` (required by `ensureStatic`; return a placeholder when the archive is
   empty). Client components that read the URL (`usePathname`, `useSearchParams`) also need a
   Suspense boundary. The coffee list filters in the browser; its state lives in the URL.
-- Charts are server-rendered HTML/CSS (no chart library): one ink series, value labels, a table
-  twin under each, `n` beside every mean, n < 3 faded + hollow + tagged (`SMALL_SAMPLE`).
+- Charts are server-rendered HTML/CSS (no chart library): one series (`ink-2`), value labels, a
+  table twin under each, `n` beside every mean, n < 3 faded and tagged "Az tadım"
+  (`SMALL_SAMPLE`). A mean score is a number and one accent bar, like every score.
 - Client components shared with the server must not format with `Intl` (hydration); prepare
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
-- **One secret at app runtime, for one screen.** `SUPABASE_SECRET_KEY` is read only by
+- **Two secrets at app runtime, each for one job.** `SUPABASE_SECRET_KEY` is read only by
   `lib/supabase/admin.ts` (`server-only`), only for the invitation screen's Auth admin calls,
   only after `requireAdmin()` (owner-approved exception, 2D). Never use that client on the app's
   own tables; everything else still runs with the publishable key and the caller's session.
-  Vercel holds it as a **Secret** (prod key on Production, dev key on Preview); the public
-  values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
+  `RESEND_API_KEY` (with `WORKSHOP_NOTIFY_EMAIL`) is read only by `lib/workshop-mail.ts`, to
+  tell the owner about a new workshop application (owner-approved 2026-10-23); without it
+  nothing is sent. Vercel holds secrets as **Secret** (prod key on Production, dev key on
+  Preview); the public values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a
+  Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
@@ -148,7 +166,7 @@ data/                        owner's Notion export + reports (git-ignored)
   `opengraph-image` modules for every page's metadata, so a throw at their module scope breaks
   all on-demand pages, not just the image: keep such loads guarded (`lib/og.tsx`).
 - Workspace packages ship TS source (`transpilePackages`); keep `core`/`db`/`i18n` free of Next
-  and DOM APIs so Expo can reuse them.
+  and DOM APIs so the React Native app can reuse them.
 - `fold_tr()` (SQL) and `foldTurkish()` (TS) must stay identical; slugs use `slugify()`.
 - Notion import (`scripts/notion/`): pure plan (`plan.ts`) → transactional apply (`apply.ts`);
   insert-only and idempotent via `tastings.source_ref`; everything it "knows" lives in
@@ -159,23 +177,32 @@ data/                        owner's Notion export + reports (git-ignored)
   edit an applied migration; expand → migrate → contract (old app versions stay in the wild);
   version RPCs (`_v2`) instead of changing signatures. Regenerate types after each migration
   (CI fails on stale `database.types.ts`).
-- **Design = "tasting form"** (owner picked it over two alternatives; the earlier cream/serif look
-  read as AI-made): off-white paper, black ink, hard rules instead of rounded cards, one accent
-  (signal red `--brand`), Archivo (wide via `.font-wide`) + IBM Plex Mono (labels/data,
-  `.label-caps`), radius 0, numbered section headings (`SectionHeading`). Tokens only in
-  `apps/web/src/app/globals.css` (AA-checked, light + dark). Score colour never carries meaning
-  alone — the number is always shown.
-- **Two looks over that design, same markup** (2D; the owner found the form hard to read but
-  wants it kept): `sade` (default) and `form` (the original, untouched), on `<html data-look>`.
-  Style with the `sade:` / `form:` variants; what only one look shows is hidden in the other
-  (`form:hidden`, `sade:hidden`). Sade's three rules: links in the content are underlined in the
-  accent (opt out with `data-plain` or a `Button`), a page says what it is for (the `lead` of
-  `PageHeading`, the `hint` of `SectionHeading`), the main thing outweighs its details. The choice is per browser
-  (`localStorage`, applied before paint by `LOOK_SCRIPT`; `lib/look.ts`), switched from the
-  header menu. **A change to the form look needs the owner's say-so**; new pages must read well
-  in both.
-- CSS `uppercase` follows `lang="tr"` (i → İ). Uppercase only Turkish UI copy; never coffee or
-  brand names (render those as written), and give English brand text `lang="en"`.
+- **Design = `design/DESIGN.md`** (replaced the "tasting form" and its two looks on
+  2026-10-23, at the owner's request): cream paper (`--bg`), espresso ink (`--ink`), one
+  cinnamon accent (`--accent`) for the primary button, the active menu line, score bars and the
+  focus ring only. Every colour, space, radius and font family comes from `design/tokens.css`,
+  imported by `app/globals.css` into a layer of its own and mapped onto Tailwind's theme
+  (`bg-surface`, `text-ink-2`, `border-line`, `rounded-lg`, `shadow-sticky`…); Tailwind's own
+  palette, radii, shadows and type sizes are switched off, so a class can only name a token.
+  Spacing uses the token steps (1, 2, 3, 4, 6, 8, 12, 16). Type styles are utilities
+  (`type-display`, `type-title`, `type-card-title`, `type-lead`, `type-label`, `type-meta`,
+  `type-figure`). Fraunces (titles, names), Archivo (everything else), IBM Plex Mono (numbers
+  only), loaded by next/font into `--font-display/sans/mono`. No uppercase labels, no numbered
+  headings, smallest text 14px, Lucide icons (1.5 stroke, 20px), no emoji.
+- **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm` is
+  the header's "Giriş" only). Cards are framed by `--line`, never by a shadow; the one shadow
+  is the phone's sticky bar. A TastingCard is a single link; lists of coffees, cafés and
+  suggestions are rows that are each one link. Scores never change colour.
+- **Light and dark** come from the same tokens: `data-theme` on `<html>` (next-themes) or the
+  system preference; the switch is in the footer. Places that cannot read CSS variables (theme
+  colour, manifest, share images, the global error page, the drawn icons) read
+  `lib/design-tokens.ts`, generated by `pnpm tokens:gen`; a test fails while it disagrees with
+  `tokens.css`.
+- **Menu:** Tadımlar (`/akis`), Atölye, Bilgi, then "Giriş" or the member's picture, whose menu
+  holds Profil, Panel, Bildirimler (with the unread count), Kahveler, Kafeler, İstatistik,
+  Hesap, Yönetim. Visitors find Kahveler, Kafeler, İstatistik and Hakkında in the footer.
+- Coffee, brand, café and member names are written as they are (no CSS uppercasing anywhere);
+  give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
 
 Accounts (Phase 2A):
@@ -190,8 +217,10 @@ Accounts (Phase 2A):
 - **The sign-in code's length is the Supabase project's setting** (8 digits on the cloud
   projects, 6 in the local stack): the form accepts 6–10 and no copy states a number.
 - **CAPTCHA:** when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set every auth call carries a Turnstile
-  token (single use: reset after each call). It must be set exactly when Supabase's CAPTCHA
-  protection is on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
+  token (single use: reset after each call). It must be set whenever Supabase's CAPTCHA
+  protection is on (set while protection is off is harmless: the token is ignored), so turn
+  protection off in Supabase first and remove the key after, and the other way round to turn
+  it on. The local stack runs with Cloudflare's test keys, so CI goes through it too.
 - **`profiles` is public; `profile_private` is not** (accepted terms, username changes,
   restrictions): own row + admins may read, only SECURITY DEFINER functions write. Put nothing
   private on `profiles`.
@@ -206,8 +235,9 @@ Accounts (Phase 2A):
 - `requireUser()` sends signed-out visitors to `/giris` and members without a username to
   `/hesap/kurulum`; `requireSession()` is for the onboarding page only. The test helper
   `createUser()` returns onboarded users unless told `onboarded: false`.
-- **The header's account link reads the session cookie**, nothing else: public pages must not
-  pull in the Supabase client.
+- **The header's account menu decides from the session cookie** whether to show "Giriş" or a
+  member's picture: a visitor's browser never loads the Supabase client; a member's loads it on
+  demand to fill the menu (`AccountMenu`).
 - **Legal texts** are `packages/i18n/src/legal-tr.ts`, shown with a draft banner until the owner
   has had them reviewed. Changing them means bumping `TERMS_VERSION` in `@espressoir/core`.
 - Members are part of the archive read (`archive.profiles`).
@@ -293,12 +323,12 @@ Taste (Phase 3A):
 - **Taste numbers are derived, not stored:** `tasteMeans` and `countTags` (`@espressoir/core`)
   over the archive's tastings, via `lib/data/taste-summary.ts`. Each taste dimension has its own
   `n`, because people only fill in what they noticed.
-- **`Radar` (`components/stats/radar.tsx`)** is server-rendered SVG under the chart rules: every
-  corner prints its value (and `n` for a mean), small samples are hollow and faded, a table twin
-  sits underneath, and the SVG's label spells the numbers out. Fewer than three corners
-  (`hasRadarShape`) render as a list instead.
-- **Tags inside a tasting are a sentence, not a list** (`FlavorTags`): a tasting is already a
-  list item, and nested items would be counted with it (tests, screen readers).
+- **`TasteProfile` (`components/coffee/taste-profile.tsx`)** replaced the radar (2026-10-23):
+  each dimension five dots and a word (Hafif/Orta/Yoğun…), read aloud as "Gövde: 2/5, hafif";
+  a mean also prints its value and `n`, small samples faded. Dimensions without a value are
+  left out. Bitiş is shown too, after DESIGN.md's four.
+- **Tags inside a tasting are a sentence, not a list** (`FlavorTags`, note chips in small
+  letters): a tasting is already a list item, and nested items would be counted with it.
 - **Sample data** gets taste profiles and tags from `scripts/lib/sample-taste.ts`, applied only
   when the imported file is the fixture; a Notion export has no such columns.
 - **The archive read is measured:** `getArchive()` warns past `ARCHIVE_SPLIT_BYTES` (1 MB), and
@@ -348,9 +378,9 @@ Notifications (Phase 3C):
   `NOTIFICATIONS_KEPT` (200) per member are kept.
 - **`type` is text with a check** (`NOTIFICATION_TYPES`; a test compares the two), not an enum:
   see the note on enum values under Lists.
-- **No open connection.** The header's bell (`NotificationLink`) shows only to browsers with a
-  session cookie, loads the Supabase client on demand and counts unread rows on every page
-  change and when the tab comes back into view. `/bildirimler` marks what it shows as read
+- **No open connection.** The header's account menu (`AccountMenu`) shows only to browsers with
+  a session cookie, loads the Supabase client on demand and counts unread rows on every page
+  change and when the tab comes back into view (a dot on the picture, the number in the menu). `/bildirimler` marks what it shows as read
   from a client effect (`MarkRead`), never during rendering: a page fetched ahead must not
   swallow notifications.
 
@@ -472,32 +502,70 @@ Verified business accounts (Phase 4B):
   account carry "Resmi yanıt" (`CommentThread`'s `officialIds`). Visits have no comments,
   so cafés get the badge and the page, not replies.
 
-The mobile app (Phase 4C):
+The mobile app (Phase 4C; plain React Native since 2026-10-17):
 
-- **`apps/mobile`: Expo SDK 57, Expo Router (`src/app`), runs in Expo Go** (no store, no
-  native build). React 19.2.3 and React Native 0.86 as the SDK pins them, and
-  `react-native-reanimated` / `react-native-worklets` / `react-dom` pinned to the versions
-  inside Expo Go (a newer JS copy of a native module crashes there). pnpm's isolated installs
-  work since SDK 54; Metro configures the monorepo itself (no `metro.config.js`).
-- **It shares, never copies, the rules:** the pure archive views moved to `@espressoir/db`
+- **`apps/mobile` is plain React Native 0.86 with React Navigation** — no Expo. The owner
+  dropped Expo on 2026-10-17 after Expo Go 57 demanded an Expo account on a physical iPhone
+  and Expo's prebuild template lagged iOS 27. The iOS project lives in git (`ios/`); what
+  Xcode and CocoaPods produce from it does not (`ios/Pods`, `ios/build`, xcuserdata,
+  `.xcode.env.local`).
+- **Navigation:** `src/navigation.ts` types every screen (`RootStackParamList`,
+  `TabParamList`) and exports `router` (push/replace/back through a container ref, usable
+  from any component), `useParams` and `useScreenTitle`; `src/App.tsx` declares the native
+  stack (modals for sign-in and the two forms) and the tabs. Links are `RowLink` /
+  `TextLink` with a typed `to`. A route is `{ screen, params }`, never a path string.
+- **The tab bar is iOS's own** (`createNativeBottomTabNavigator` from
+  `@react-navigation/bottom-tabs/unstable`, on react-native-screens): the rounded,
+  translucent Liquid Glass bar on iOS 26+, SF Symbol icons (filled when selected), the
+  unread badge on Hesap, minimised while scrolling down. The owner asked for Apple's look
+  there (2026-10-17); the rest of the app keeps the tasting-form design.
+- **iOS 27 needs the scene life cycle:** an app built with the iOS 27 SDK that still makes
+  its window in the app delegate is killed at launch (`NoSceneLifecycleAdoption`; the iOS 26
+  simulator does not show it). `ios/Espressoir/AppDelegate.swift` creates the React Native
+  factory only; `SceneDelegate` creates the window and starts React Native in it;
+  Info.plist declares the scene manifest. React Native's own 0.86 template does not do this
+  either: keep it when upgrading.
+- **It shares, never copies, the rules:** the pure archive views live in `@espressoir/db`
   (`selectors.ts`; the web's `lib/data/selectors.ts` re-exports them), the suggestions
   logic is `suggestCoffees` (`@espressoir/db`, `suggestions.ts`; each app only words the
   reasons), copy is `t.mobile` and the rest of `@espressoir/i18n`. Keep `core`/`db`/`i18n`
   free of Next and DOM APIs.
-- **Settings are `apps/mobile/.env`** (git-ignored; `.env.example`): the Supabase URL and
-  publishable key, and `EXPO_PUBLIC_SITE_URL`. Public values only. `docs/mobile.md` says how
-  to open the app on a phone.
-- **Sign-in CAPTCHA comes from the site:** the app opens `/uygulama/dogrulama` in a WebView
-  (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots) and
-  takes the Turnstile token it posts (`window.ReactNativeWebView`); without a site key the
-  page says "disabled" at once. One Turnstile widget serves both projects (hostnames
-  `espressoir.com`, `vercel.app`, `localhost`).
-- **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark),
-  Archivo and IBM Plex Mono from `@expo-google-fonts` (only the weights used). Names stay
-  as written (no uppercasing of brands, places, usernames). List rows navigate with
-  `router.push` from a Pressable: `Link asChild` drops a style function.
-- **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle`, `expo export` for iOS;
-  no Xcode) besides lint and typecheck.
+- **Settings are `apps/mobile/.env`** (git-ignored; `.env.example`): `APP_SUPABASE_URL`,
+  `APP_SUPABASE_PUBLISHABLE_KEY`, `APP_SITE_URL`. Public values only.
+  `scripts/write-env.mjs` writes them into `src/lib/env.generated.ts` (git-ignored; from
+  `.env.example` when there is no `.env`, as in CI) before start, ios, bundle and
+  typecheck, so they are baked into the build. `APP_SITE_URL` is never localhost (on a
+  phone that is the phone): the CAPTCHA page failed to load once because of it.
+- **Monorepo plumbing:** `metro.config.js` watches the workspace root and resolves from the
+  app's and the root's node_modules; `babel.config.js` maps `@/` to `src/`
+  (module-resolver, same as tsconfig `paths`). Workspace packages ship TS source.
+- **Native modules** are autolinked from package.json (image picker, webview, date picker,
+  async storage, screens, safe area, get-random-values). Our own native code is the
+  `EspressoirNative` pod (`ios/EspressoirNative`, linked in the Podfile): `ImageShrinker`,
+  which resizes and re-encodes a picture as JPEG. The Podfile raises every pod to iOS 17
+  (Xcode 27 refuses targets below 15; some resource bundles ask for 9.0).
+- **Sign-in CAPTCHA comes from the site, and only when Supabase asks:** a sign-in request
+  goes out without a token; when Supabase refuses it with `captcha_failed` (protection on; a
+  refused request sends no mail), the app opens `/uygulama/dogrulama` in a WebView
+  (`AppCaptcha`, full-screen over the site's chrome, `noindex`, disallowed in robots), takes
+  the Turnstile token it posts (`window.ReactNativeWebView`) and sends the request again.
+  With protection off the sheet never shows. Its WebView lets frames load any address
+  (Turnstile's own; the default list turns away everything but http, https and
+  about:blank, in every frame) and keeps the page itself on the site. One Turnstile widget
+  serves both projects (hostnames `espressoir.com`, `vercel.app`, `localhost`).
+- **Design:** the website's tokens converted to hex (`src/lib/theme.ts`, light and dark);
+  Archivo and IBM Plex Mono as files in `assets/fonts` (linked with `react-native-asset`,
+  listed in Info.plist `UIAppFonts`, used by PostScript name). Names stay as written (no
+  uppercasing of brands, places, usernames).
+- **Installing:** `pnpm --filter @espressoir/mobile ios:device` (`scripts/ios-device.mjs`)
+  finds the cabled iPhone with `devicectl`, runs `pod install` when the Podfile changed,
+  builds Release with `xcodebuild` (DerivedData outside the iCloud Desktop), installs and
+  launches. Signed with the owner's free Apple ID (team `X7AATGWM6G`): re-install every 7
+  days. The shared scheme's Run is Release, so ▶ in Xcode gives the same standalone app.
+  Development: `start` (Metro) + `ios` (Debug on the simulator). CocoaPods on this Mac
+  lives in a conda env (`cocoapods`) behind `/opt/anaconda3/bin/pod`.
+- **CI bundles the app** (`pnpm --filter @espressoir/mobile bundle` = `react-native bundle`
+  for iOS; no Xcode) besides lint and typecheck.
 
 Writing from the app (Phase 4D):
 
@@ -505,15 +573,16 @@ Writing from the app (Phase 4D):
   after `tastingInputSchema`, `log_cafe_visit_v1` after `cafeVisitInputSchema`,
   `set_tasting_photo_v1` for the picture; error codes are worded in `src/lib/errors.ts`, the
   same mapping as the panel. Forms are modals (`tadim/yeni`, `ziyaret/yeni`), reached from the
-  "Ekle" tab and from a coffee's or café's page (`?kahve=` / `?kafe=` prefills; in the app a
-  query is fine, there is no prefetching router). `MemberGate` asks signed-out visitors to
+  "Ekle" tab and from a coffee's or café's page (`NewTasting { kahve }` / `NewVisit { kafe }`
+  prefill). `MemberGate` asks signed-out visitors to
   sign in and members without a username to finish on the site: the database would refuse
   them anyway (`can_post()`).
 - **Duplicate check while typing something new** (`LookAlikes` in `components/pickers.tsx`):
   the same trigram search as the website, a café only within its city.
-- **Photos are prepared on the phone** (`src/lib/photo.ts`): picked with `exif: false`,
-  resized with expo-image-manipulator (1600 px, twin 480 px, same format), re-encoded as WebP
-  (JPEG where WebP cannot be written) until under `PHOTO_MAX_BYTES`. Re-encoding drops the
+- **Photos are prepared on the phone** (`src/lib/photo.ts`): picked with
+  react-native-image-picker (`includeExtra: false`, HEIC handed over as JPEG), resized by
+  `ImageShrinker` (1600 px, twin 480 px), re-encoded as JPEG until under `PHOTO_MAX_BYTES`
+  (the Expo-era build wrote WebP; the iOS encoder here writes JPEG, which the site takes). Re-encoding drops the
   metadata, and `hasCameraMetadata` (`@espressoir/core`; JPEG APP1 Exif/XMP, WebP EXIF/XMP
   chunks) checks the bytes anyway: a picture that still carries any is refused, not uploaded.
   Checked on the simulator: a 4288×2848 source with EXIF came out 1600 px, 105 KB, clean.
@@ -524,11 +593,11 @@ Writing from the app (Phase 4D):
   app calls it best effort (`src/lib/site.ts`): a failure only means the site catches up
   within the hour. `expireArchive()` is the Route Handler twin of `refreshArchive()`
   (`revalidateTag(…, { expire: 0 })` now and again two seconds later; `updateTag` works only
-  in Server Actions). The app's `EXPO_PUBLIC_SITE_URL` must be the site of the same Supabase
+  in Server Actions). The app's `APP_SITE_URL` must be the site of the same Supabase
   project, or the token is not recognised there.
 - **Dates are the archive's day** (`src/lib/today.ts`, `siteConfig.timeZone`), so "today" on
   the phone is the same day the website would say.
-- Expo's generated files (`.expo/`, the `dist/` of `bundle`) are git- and Prettier-ignored.
+- The `dist/` of `bundle` and `src/lib/env.generated.ts` are git- and Prettier-ignored.
 
 Social in the app (Phase 4E):
 
@@ -542,7 +611,7 @@ Social in the app (Phase 4E):
   (`socialErrorKind`); each app words them (`lib/errors.ts` in the app).
 - **Tabs:** Akış (index: everyone / following / cafés), Kahveler, Kafeler, Ekle, Hesap.
   Öneriler moved out of the tabs (a stack screen opened from Hesap).
-- **A tasting's page** (`app/tadim/[id].tsx`) reads the row with the viewer's session
+- **A tasting's page** (`screens/tasting.tsx`) reads the row with the viewer's session
   (`loadTasting`), so followers-only and own private tastings open for those allowed.
   Likes, comments (one reply level, edit, delete via `delete_comment_v1`), reports and the
   "official reply" badge (members whose `officialFor` includes the tasting's brand) work
@@ -550,14 +619,39 @@ Social in the app (Phase 4E):
 - **The unread count** (`lib/notifications.tsx`) is read when a tab gains focus
   (`screenListeners`) and when the app returns to the foreground; no connection stays
   open, as on the website. The notifications screen marks read "up to" when it was shown.
-  (While the count still followed `usePathname` in the root layout, pushes stopped working
-  in Expo Go after a Fast Refresh and worked again after a full reload; it was moved to
-  the tabs anyway. If navigation freezes while developing, reload before suspecting code.)
 - **Own profile:** the profile screen reads the member's own tastings and lists with their
   session (all visibilities, wishlist included) and re-reads them whenever the archive
   is refreshed; everyone else sees the public archive.
 - **Writes that show on the website** (lists, want-to-try, deleting a tasting) call
   `refreshSite()` afterwards; likes, comments and follows do not, as on the website.
+
+Workshops and articles (2026-10-23):
+
+- **`workshops` and `workshop_applications`** (migration `20261023120000_workshops`). A workshop
+  row is a date with its capacity, price text, public location text and `is_open`; `program`
+  names the text the page shows (`content/atolye/<key>.ts`, registered in its `index.ts`). The
+  admin panel (Yönetim → Atölyeler) adds and edits workshops and answers applications: plain
+  table writes as the signed-in admin, allowed by `is_admin()` policies (not moderation, so
+  not logged).
+- **Anyone applies, nobody reads:** anon and members insert the form's columns only (column
+  grants); there is no select policy but the admin's. `prepare_workshop_application` (SECURITY
+  DEFINER trigger) tidies the input, refuses a closed or started workshop
+  (`workshop_closed`), stamps `created_at`, stops floods (20 per workshop per 10 minutes,
+  `rate_limited`), locks the workshop row and sets `status`: `pending`, or `waitlist` once the
+  seats are taken. One application per phone number / handle (`contact_key`). No `can_post()`:
+  applying is not posting and visitors apply too.
+- **The page reads only the seats left:** `workshop_overview` (capacity − applications not
+  rejected, the waitlist included, never below zero) through `workshop_seats_taken()`. Its own
+  cached read (`getOpenWorkshops`, tag `workshops`), refreshed by `refreshWorkshops()` after an
+  application or an admin change, so the archive is not re-rendered for it.
+- **The application is a Server Action** (`app/(site)/atolye/actions.ts`): honeypot field
+  (`website`), Zod (`workshopApplicationInputSchema`), insert with the public key, then the
+  owner's notification mail in `after()`. A full workshop keeps its form (waitlist). Workshop
+  form fields avoid form properties: `workshopTitle`, not `title`.
+- **Articles are files:** `apps/web/src/content/bilgi/<slug>.md`, a `key: value` header and
+  plain paragraphs, parsed by `parseArticle` (`@espressoir/core`, no package) and shipped with
+  the server functions (`outputFileTracingIncludes`). A broken file stops the build with a
+  sentence. Coffee facts come from `design/icerik.md` only.
 
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
@@ -581,7 +675,8 @@ Social in the app (Phase 4E):
   - [x] 2C interaction + moderation: comments (one reply level), likes, `/tadim/[id]`, reports,
         admin panel (hide, delete, restrict, review, merge).
   - [x] 2D (owner's addition): invitation screen in the admin panel; the plainer `sade` look
-        as default with the original `form` look one menu click away.
+        as default with the original `form` look one menu click away (both replaced by the
+        2026-10-23 redesign).
 - [x] Phase 3 — social depth. Plan approved 2026-10-13; decisions below. Six steps, each its
       own branch + PR:
   - [x] 3A taste: tag picker in the form, radar chart on a tasting, community profile and most
@@ -597,7 +692,7 @@ Social in the app (Phase 4E):
   - [x] 3F cafés (owner's addition, 2026-10-13; decided 2026-10-14): members add cafés (city,
         district, pasted map link) and rate what they drank there; `/kafeler`, a café's page
         with an average per drink, visits on profiles and in the feed; review and merge.
-- [x] Phase 4 — recommendations, verified accounts, the Expo app. Plan approved 2026-10-15
+- [x] Phase 4 — recommendations, verified accounts, the mobile app. Plan approved 2026-10-15
       (`~/.claude/plans/soft-hatching-comet.md` on the owner's machine; decisions below). Five
       steps, each its own branch + PR; the next one starts only with the owner's go:
   - [x] 4A recommendations: the site's own model on `/panel/oneriler`, `pnpm export:analytics`
@@ -605,14 +700,20 @@ Social in the app (Phase 4E):
   - [x] 4B verified roaster/café accounts: a member applies from the brand's or café's page,
         an admin approves; badge, editing the business page, a badge on their replies;
         an official account cannot score its own coffee or café.
-  - [x] 4C app foundation: `apps/mobile` (Expo Router, Expo Go), e-mail code sign-in through a
+  - [x] 4C app foundation: `apps/mobile` (Expo at first, plain React Native since 2026-10-17), e-mail code sign-in through a
         Turnstile page on the site, browsing coffees, cafés, profiles and suggestions.
   - [x] 4D writing from the app: quick tasting form, café visits, photos resized on the phone,
         `POST /api/arsiv-tazele` so the site shows them at once.
   - [x] 4E social in the app: feed, likes, comments, notifications, own profile, lists.
+- [ ] Redesign, workshop and articles (owner's request, 2026-10-23; branch
+      `redesign-workshop-info`): the design of `design/DESIGN.md` everywhere on the website
+      (the mobile app keeps its own theme for now), `/atolye` with the application form and an
+      admin section, `/bilgi` with four articles. Decided with the owner: one date per
+      workshop, capacity and price editable in the admin panel, e-mail notification through
+      Resend, a KVKK paragraph without a retention period, integer scores (no 0.5 steps).
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
-email + password login in Phase 1; Expo for mobile (hence the monorepo); CI tests run on an
+email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
 ephemeral Supabase on the GitHub runner instead of the cloud dev project.
 
 Phase 2 decisions (owner-approved; they become conventions as each step lands):
@@ -655,18 +756,21 @@ Phase 3 decisions (owner-approved 2026-10-13):
 Phase 4 decisions (owner-approved 2026-10-15):
 
 - **Order:** the brief's Phase 4 first (recommendations + export, verified accounts), then the
-  Expo app. **No English UI** in this phase.
+  mobile app. **No English UI** in this phase.
 - **Recommendations:** an explainable model on the site, a pseudonymous export, and an import
   for the owner's own model. **Verified accounts:** badge and link, editing the business page,
   a badge on replies, members apply and the owner approves.
-- **The app runs in Expo Go** (free; no store, no push, no Google sign-in there). First
+- **The app is built locally with Xcode and installed by cable** (free; no store, no push, no Google sign-in; Expo Go until 2026-10-17). First
   version: adding tastings and café visits, browsing, feed/likes/comments/notifications,
   profile and lists.
 
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 4C has none. After any branch switch, look for iCloud's
+  `db:push:prod`). 4C has none. The workshop migration is on dev (2026-10-23), not on prod.
+- Workshop: set the real date, price and place in Yönetim → Atölyeler (the first row holds
+  placeholders); for the e-mail, `RESEND_API_KEY` (Secret) and `WORKSHOP_NOTIFY_EMAIL` on
+  Vercel (docs/deploy-vercel.md). After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and
   once with a red check: say both plainly in every PR.
 
@@ -683,6 +787,11 @@ Still open on the owner's side (remind, don't do for them):
   signup stays closed to the public until then.
 - `www.espressoir.com` serves the site instead of redirecting to the apex: set it to redirect
   in Vercel → Domains.
+- **CAPTCHA:** the owner asked (2026-10-17) to drop the robot check from the app, where it
+  hung. Protection is per Supabase project, so dropping it is the owner's switch on prod
+  (docs/setup-auth.md §5) and covers the website too. Acceptable while signup is closed (no
+  code goes to an address without an account; Supabase limits sign-ins per IP). **Turn it on
+  again before signup opens**, and try the app's sheet on a phone then.
 
 Phase 1 choices worth knowing: `comments`, `likes` and `reports` tables wait for Phase 2 (only
 `follows` exists now, because the "followers" visibility needs it); catalog inserts are open to

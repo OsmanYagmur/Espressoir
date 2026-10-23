@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { TastingItem } from "@/components/coffee/tasting-item";
+import { TastingCard } from "@/components/coffee/tasting-card";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import { useHasSession } from "@/lib/session-cookie";
 import { cn } from "@/lib/utils";
 
-import { FEED_PAGE_SIZE as PAGE } from "./feed-config";
+import { FEED_LIST_CLASS, FEED_PAGE_SIZE as PAGE } from "./feed-config";
 import type { FeedCursor, FeedSource } from "./feed-data";
 
 const f = t.feed;
@@ -59,12 +59,22 @@ function useOlderPages(source: FeedSource, start: FeedCursor | null, startIsLast
 }
 
 /** Entries rendered in the browser. Nothing here is hydrated, so dates may be formatted. */
-function OlderList({ items, label }: { items: Tasting[]; label: string }) {
+function OlderList({
+  items,
+  label,
+  currentYear,
+}: {
+  items: Tasting[];
+  label: string;
+  currentYear: number;
+}) {
   if (items.length === 0) return null;
   return (
-    <ol aria-label={label}>
+    <ol aria-label={label} className={cn(FEED_LIST_CLASS, "mt-4")}>
       {items.map((tasting) => (
-        <TastingItem key={tasting.id} tasting={tasting} showCoffee showAuthor clampNotes />
+        <li key={tasting.id}>
+          <TastingCard tasting={tasting} currentYear={currentYear} />
+        </li>
       ))}
     </ol>
   );
@@ -73,23 +83,17 @@ function OlderList({ items, label }: { items: Tasting[]; label: string }) {
 function More({ state, shown, onMore }: { state: Older; shown: boolean; onMore: () => void }) {
   if (state.failed) {
     return (
-      <p role="alert" className="py-5 font-mono text-sm text-destructive">
+      <p role="alert" className="py-6 font-medium text-danger">
         {f.failed}
       </p>
     );
   }
   if (state.done) {
-    return shown ? <p className="py-5 font-mono text-xs text-muted-foreground">{f.end}</p> : null;
+    return shown ? <p className="py-6 type-meta">{f.end}</p> : null;
   }
   return (
-    <div className="py-5">
-      <Button
-        type="button"
-        variant="outline"
-        disabled={state.loading}
-        className="h-11 px-6 font-mono text-xs uppercase"
-        onClick={onMore}
-      >
+    <div className="py-6">
+      <Button type="button" variant="secondary" disabled={state.loading} onClick={onMore}>
         {state.loading ? f.loading : f.more}
       </Button>
     </div>
@@ -101,26 +105,28 @@ function EveryoneFeed({
   first,
   cursor,
   complete,
+  currentYear,
 }: {
   first: React.ReactNode;
   cursor: FeedCursor | null;
   complete: boolean;
+  currentYear: number;
 }) {
   const { state, more } = useOlderPages("tasting_feed", cursor, complete);
   if (cursor === null) {
-    return <p className="border-b border-border py-8 text-muted-foreground">{f.empty}</p>;
+    return <p className="py-8 text-ink-2">{f.empty}</p>;
   }
   return (
     <>
       {first}
-      <OlderList items={state.items} label={f.everyone} />
+      <OlderList items={state.items} label={f.everyone} currentYear={currentYear} />
       <More state={state} shown onMore={more} />
     </>
   );
 }
 
 /** "People I follow": personal, so it is read in the browser after the page has loaded. */
-function FollowingFeed() {
+function FollowingFeed({ currentYear }: { currentYear: number }) {
   const signedIn = useHasSession();
   const [first, setFirst] = useState<Tasting[] | "failed" | null>(null);
   const loaded = Array.isArray(first) ? first : [];
@@ -149,9 +155,9 @@ function FollowingFeed() {
 
   if (!signedIn) {
     return (
-      <div className="grid justify-items-start gap-4 border-b border-border py-8">
-        <p className="text-muted-foreground">{f.signInFirst}</p>
-        <Button asChild className="h-11 px-6 font-mono text-xs uppercase">
+      <div className="flex flex-col items-start gap-4 py-8">
+        <p className="text-ink-2">{f.signInFirst}</p>
+        <Button asChild variant="secondary">
           <Link href="/giris" prefetch={false}>
             {f.signIn}
           </Link>
@@ -161,24 +167,24 @@ function FollowingFeed() {
   }
   if (first === null) {
     return (
-      <p role="status" className="py-8 font-mono text-sm text-muted-foreground">
+      <p role="status" className="py-8 text-ink-2">
         {f.loading}
       </p>
     );
   }
   if (first === "failed") {
     return (
-      <p role="alert" className="py-8 font-mono text-sm text-destructive">
+      <p role="alert" className="py-8 font-medium text-danger">
         {f.failed}
       </p>
     );
   }
   if (first.length === 0) {
-    return <p className="border-b border-border py-8 text-muted-foreground">{f.followingEmpty}</p>;
+    return <p className="py-8 text-ink-2">{f.followingEmpty}</p>;
   }
   return (
     <>
-      <OlderList items={[...first, ...state.items]} label={f.following} />
+      <OlderList items={[...first, ...state.items]} label={f.following} currentYear={currentYear} />
       <More state={state} shown onMore={more} />
     </>
   );
@@ -187,17 +193,14 @@ function FollowingFeed() {
 /** "Cafés": the latest visits, rendered on the server; the café list holds the rest. */
 function CafesFeed({ cafes }: { cafes: React.ReactNode }) {
   if (cafes === null) {
-    return <p className="border-b border-border py-8 text-muted-foreground">{f.cafesEmpty}</p>;
+    return <p className="py-8 text-ink-2">{f.cafesEmpty}</p>;
   }
   return (
     <>
       {cafes}
-      <p className="py-5 font-mono text-xs">
-        <Link
-          href="/kafeler"
-          className="underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-        >
-          {f.cafesMore} →
+      <p className="py-6">
+        <Link href="/kafeler" className="text-accent-ink underline underline-offset-3">
+          {f.cafesMore}
         </Link>
       </p>
     </>
@@ -216,6 +219,7 @@ export function Feed({
   cafes,
   cursor,
   complete,
+  currentYear,
 }: {
   first: React.ReactNode;
   /** Null when there are no visits yet. */
@@ -224,6 +228,8 @@ export function Feed({
   cursor: FeedCursor | null;
   /** The first page already holds everything. */
   complete: boolean;
+  /** For the dates of the cards read in the browser ("23 Eki"). */
+  currentYear: number;
 }) {
   const router = useRouter();
   const tab: Tab = TAB_PARAM[useSearchParams().get("sekme") ?? ""] ?? "everyone";
@@ -240,7 +246,7 @@ export function Feed({
 
   return (
     <>
-      <div role="tablist" aria-label={f.tabsLabel} className="flex border-b border-rule">
+      <div role="tablist" aria-label={f.tabsLabel} className="mb-6 flex gap-6 border-b border-line">
         {tabs.map(({ id, label, href }) => (
           <button
             key={id}
@@ -249,12 +255,7 @@ export function Feed({
             id={`sekme-${id}`}
             aria-selected={tab === id}
             aria-controls="akis-paneli"
-            className={cn(
-              "-mb-px border-b-2 px-4 py-3 font-mono text-xs font-medium tracking-wide uppercase focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-              tab === id
-                ? "border-brand"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
+            className="-mb-px cursor-pointer border-b-2 border-transparent py-3 font-medium text-ink-2 transition-colors hover:text-ink aria-selected:border-accent aria-selected:text-ink"
             onClick={() => router.replace(href, { scroll: false })}
           >
             {label}
@@ -263,9 +264,14 @@ export function Feed({
       </div>
       <div role="tabpanel" id="akis-paneli" aria-labelledby={`sekme-${tab}`}>
         {tab === "everyone" ? (
-          <EveryoneFeed first={first} cursor={cursor} complete={complete} />
+          <EveryoneFeed
+            first={first}
+            cursor={cursor}
+            complete={complete}
+            currentYear={currentYear}
+          />
         ) : tab === "following" ? (
-          <FollowingFeed />
+          <FollowingFeed currentYear={currentYear} />
         ) : (
           <CafesFeed cafes={cafes} />
         )}

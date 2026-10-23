@@ -1,8 +1,11 @@
+import { generated } from "./env.generated";
+
 /**
- * The app's settings, from apps/mobile/.env (see .env.example). Public values only: the
- * same ones the website hands every browser. Expo inlines EXPO_PUBLIC_* at bundle time.
+ * The app's settings, from apps/mobile/.env (see .env.example), written into
+ * env.generated.ts by scripts/write-env.mjs before every build. Public values only: the same
+ * ones the website hands every browser.
  */
-function read(name: string, value: string | undefined): string {
+function read(name: string, value: string): string {
   if (!value) {
     throw new Error(`${name} eksik: apps/mobile/.env dosyasını .env.example'dan oluştur.`);
   }
@@ -10,10 +13,7 @@ function read(name: string, value: string | undefined): string {
 }
 
 export const env = {
-  supabaseUrl: read("EXPO_PUBLIC_SUPABASE_URL", process.env.EXPO_PUBLIC_SUPABASE_URL),
-  supabaseKey: read(
-    "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  ),
-  siteUrl: read("EXPO_PUBLIC_SITE_URL", process.env.EXPO_PUBLIC_SITE_URL),
+  supabaseUrl: read("APP_SUPABASE_URL", generated.supabaseUrl),
+  supabaseKey: read("APP_SUPABASE_PUBLISHABLE_KEY", generated.supabaseKey),
+  siteUrl: read("APP_SITE_URL", generated.siteUrl),
 };

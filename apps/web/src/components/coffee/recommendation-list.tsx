@@ -4,9 +4,6 @@ import { cn } from "@/lib/utils";
 
 import { ScoreBadge } from "./score-badge";
 
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
-
 export interface RecommendationRow {
   coffeeId: string;
   href: React.ComponentProps<typeof Link>["href"];
@@ -19,9 +16,9 @@ export interface RecommendationRow {
 }
 
 /**
- * Suggested coffees as ruled rows: brand, name, the reason, the community's average.
- * Links are not fetched ahead: this page sits in the signed-in area, where saves refresh
- * the archive (see lib/data/refresh-archive.ts).
+ * Suggested coffees as rows, each a single link: the name, the roaster, the reason, the
+ * community's average. Links are not fetched ahead: this page sits in the signed-in
+ * area, where saves refresh the archive (see lib/data/refresh-archive.ts).
  */
 export function RecommendationList({
   rows,
@@ -33,22 +30,23 @@ export function RecommendationList({
   className?: string;
 }) {
   return (
-    <ol aria-label={label} className={className}>
+    <ol aria-label={label} className={cn("border-t border-line", className)}>
       {rows.map((row) => (
-        <li
-          key={row.coffeeId}
-          className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border py-3.5"
-        >
-          <div className="min-w-0">
-            <p className="py-1 font-mono text-xs text-muted-foreground">{row.brandName}</p>
-            <h3 className="font-semiwide text-lg leading-snug font-bold [overflow-wrap:anywhere]">
-              <Link href={row.href} prefetch={false} className={cn(linkFocus)}>
+        <li key={row.coffeeId} className="border-b border-line">
+          <Link
+            href={row.href}
+            prefetch={false}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-4 text-ink no-underline transition-colors hover:bg-sunk md:px-2"
+          >
+            <div className="min-w-0">
+              <h3 className="font-display text-lg font-semibold [overflow-wrap:anywhere]">
                 {row.coffeeName}
-              </Link>
-            </h3>
-            <p className="mt-1 font-mono text-xs">{row.reason}</p>
-          </div>
-          <ScoreBadge score={row.avgScore} />
+              </h3>
+              <p className="type-meta">{row.brandName}</p>
+              <p className="mt-1">{row.reason}</p>
+            </div>
+            <ScoreBadge score={row.avgScore} size="sm" />
+          </Link>
         </li>
       ))}
     </ol>

@@ -3,14 +3,12 @@ import Link from "next/link";
 
 import { ScoreBadge } from "@/components/coffee/score-badge";
 import { ReportButton } from "@/components/social/report-button";
+import { cardClass } from "@/components/ui/card";
 import { cafeHref, placeOf } from "@/lib/data/cafes";
-import { formatDay } from "@/lib/format";
+import { formatShortDay } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { profilePath } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
 
 /** "Flat white" or "Filtre kahve · Etiyopya V60". */
 export function drinkLabel(visit: Pick<CafeVisit, "drink" | "drinkName">): string {
@@ -18,67 +16,60 @@ export function drinkLabel(visit: Pick<CafeVisit, "drink" | "drinkName">): strin
 }
 
 /**
- * One visit as a form entry, like a tasting: who and when on the label line, the drink as
- * the title, the note beneath, the score boxed on the right. With `showCafe` the café and
- * its place come first (feeds, profiles); on the café's own page they are left out.
+ * One café visit as a card, like a tasting: the café (or, on its own page, the drink) and
+ * the score, the note, then who and when. A visit has no page of its own, so the card is
+ * not a link; it carries its own report button.
  */
-export function VisitItem({
+export function VisitCard({
   visit,
+  currentYear,
   showCafe = false,
   showAuthor = false,
-  clampNotes = false,
 }: {
   visit: CafeVisit;
+  /** Dates in this year leave the year out ("23 Eki"). */
+  currentYear: number;
   showCafe?: boolean;
   showAuthor?: boolean;
-  clampNotes?: boolean;
 }) {
   return (
-    <li className="grid grid-cols-[minmax(0,1fr)_54px] gap-4 border-b border-border py-4 sade:py-5">
-      <div className="min-w-0">
-        <p className="font-mono text-xs text-muted-foreground">
+    <article className={cn(cardClass, "flex h-full flex-col gap-3")}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          {showCafe ? (
+            <h3 className="mb-1 type-card-title [overflow-wrap:anywhere]">
+              <Link href={cafeHref(visit.cafe)} className="text-ink no-underline hover:underline">
+                {visit.cafe.name}
+              </Link>
+            </h3>
+          ) : null}
+          <p className={showCafe ? "type-meta" : "type-label"}>
+            {showCafe ? `${placeOf(visit.cafe)} · ${drinkLabel(visit)}` : drinkLabel(visit)}
+          </p>
+        </div>
+        <ScoreBadge score={visit.score} />
+      </div>
+      {visit.notes ? (
+        // Plain text, escaped by React; line breaks the author typed are kept.
+        <p className="line-clamp-3 [overflow-wrap:anywhere] whitespace-pre-line">{visit.notes}</p>
+      ) : null}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line pt-3 type-meta">
+        <span>
           {showAuthor ? (
             <>
               <Link
                 href={profilePath(visit.author.username)}
-                className={cn("text-foreground", linkFocus)}
+                className="text-ink-2 no-underline hover:text-ink hover:underline"
               >
                 @{visit.author.username}
               </Link>
               {" · "}
             </>
           ) : null}
-          <time dateTime={visit.visitedOn}>{formatDay(visit.visitedOn)}</time>
-          {showCafe ? ` · ${placeOf(visit.cafe)}` : null}
-        </p>
-        <h3 className="font-semiwide mt-1 text-xl leading-tight font-bold [overflow-wrap:anywhere] sade:mt-1.5 sade:text-[1.4rem]">
-          {showCafe ? (
-            <>
-              <Link href={cafeHref(visit.cafe)} className={linkFocus}>
-                {visit.cafe.name}
-              </Link>{" "}
-              <span className="font-mono text-xs font-normal text-muted-foreground">
-                {drinkLabel(visit)}
-              </span>
-            </>
-          ) : (
-            drinkLabel(visit)
-          )}
-        </h3>
-        {visit.notes ? (
-          // Plain text, escaped by React; line breaks the author typed are kept.
-          <p
-            className={cn(
-              "mt-1.5 max-w-[62ch] text-[0.95rem] leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line",
-              clampNotes && "line-clamp-3",
-            )}
-          >
-            {visit.notes}
-          </p>
-        ) : null}
-        <ReportButton target="cafe_visit" targetId={visit.id} className="mt-1" />
+          <time dateTime={visit.visitedOn}>{formatShortDay(visit.visitedOn, currentYear)}</time>
+        </span>
+        <ReportButton target="cafe_visit" targetId={visit.id} />
       </div>
-      <ScoreBadge score={visit.score} />
-    </li>
+    </article>
   );
 }

@@ -1,3 +1,4 @@
+import { SCORE_MAX } from "@espressoir/core";
 import { ImageResponse } from "next/og";
 
 import { getArchive } from "@/lib/data/archive";
@@ -15,25 +16,39 @@ function scoreText(score: number): string {
   return Number.isInteger(score) ? String(score) : score.toFixed(1).replace(".", ",");
 }
 
-// The same stamp logic as the site's score badge: red for 9–10, solid ink for 8, an
-// outline below that. The number is always there, so colour is never the only signal.
-function scoreBox(score: number | null) {
-  const base = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 190,
-    height: 190,
-    fontFamily: OG_FONTS.display,
-    fontSize: 112,
-  } as const;
-  if (score === null) {
-    return { ...base, border: `5px dashed ${OG_COLORS.muted}`, color: OG_COLORS.muted };
-  }
-  const rounded = Math.round(score);
-  if (rounded >= 9) return { ...base, background: OG_COLORS.brand, color: OG_COLORS.white };
-  if (rounded >= 8) return { ...base, background: OG_COLORS.ink, color: OG_COLORS.paper };
-  return { ...base, border: `5px solid ${OG_COLORS.ink}` };
+/** The score as on the page: the number, "/10" and one bar in the accent, score × 10 %. */
+function Score({ score }: { score: number | null }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", width: 240 }}>
+      <div style={{ display: "flex", alignItems: "baseline", fontFamily: OG_FONTS.mono }}>
+        <div style={{ fontSize: 120, color: score === null ? OG_COLORS["ink-3"] : OG_COLORS.ink }}>
+          {score === null ? "—" : scoreText(score)}
+        </div>
+        <div
+          style={{ fontSize: 40, color: OG_COLORS["ink-2"], marginLeft: 6 }}
+        >{`/${SCORE_MAX}`}</div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          height: 12,
+          marginTop: 12,
+          borderRadius: 6,
+          background: OG_COLORS.sunk,
+        }}
+      >
+        {score === null ? null : (
+          <div
+            style={{
+              width: `${(score / SCORE_MAX) * 100}%`,
+              borderRadius: 6,
+              background: OG_COLORS.accent,
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 // One card per coffee, drawn at build time like the pages themselves.
@@ -54,7 +69,7 @@ export default async function Image({
 
   if (!coffee) {
     return new ImageResponse(
-      <OgFrame label={t.states.notFoundCode}>
+      <OgFrame label={t.og.label}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <OgTitle text={t.states.notFoundTitle} fontSize={84} />
         </div>
@@ -71,14 +86,15 @@ export default async function Image({
   ].filter((fact): fact is string => fact !== null);
   const { avgScore } = coffee.stats;
   // Long names get smaller type so they stay within three lines.
-  const nameSize = coffee.name.length <= 14 ? 124 : coffee.name.length <= 26 ? 96 : 74;
+  const nameSize = coffee.name.length <= 14 ? 104 : coffee.name.length <= 26 ? 84 : 64;
 
   return new ImageResponse(
     <OgFrame
-      label={(coffee.stats.tastingCount > 0
-        ? format(t.coffee.tastingCount, { count: coffee.stats.tastingCount })
-        : t.coffee.wishlist
-      ).toLocaleUpperCase("tr")}
+      label={
+        coffee.stats.tastingCount > 0
+          ? format(t.coffee.tastingCount, { count: coffee.stats.tastingCount })
+          : t.coffee.wishlist
+      }
     >
       <div
         style={{
@@ -90,15 +106,17 @@ export default async function Image({
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", flex: 1, paddingRight: 48 }}>
-          <div style={{ fontSize: 34, color: OG_COLORS.muted, marginBottom: 14 }}>
+          <div style={{ fontSize: 34, color: OG_COLORS["ink-2"], marginBottom: 14 }}>
             {coffee.brand.name}
           </div>
           <OgTitle text={coffee.name} fontSize={nameSize} />
           {facts.length > 0 ? (
-            <div style={{ fontSize: 28, marginTop: 26 }}>{facts.join(" · ")}</div>
+            <div style={{ fontSize: 30, marginTop: 26, color: OG_COLORS["ink-2"] }}>
+              {facts.join(" · ")}
+            </div>
           ) : null}
         </div>
-        <div style={scoreBox(avgScore)}>{avgScore === null ? "–" : scoreText(avgScore)}</div>
+        <Score score={avgScore} />
       </div>
     </OgFrame>,
     { ...OG_SIZE, fonts },

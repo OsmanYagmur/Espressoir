@@ -20,9 +20,9 @@ export function Choices({
   columns: string;
 }) {
   return (
-    <fieldset className="grid gap-1.5">
-      <legend className="label-caps mb-1.5 text-muted-foreground">{legend}</legend>
-      <div className={cn("grid gap-1.5", columns)}>
+    <fieldset className="grid gap-2">
+      <legend className="mb-2 type-label">{legend}</legend>
+      <div className={cn("grid gap-2", columns)}>
         {options.map((option) => (
           <label key={option.value} className="relative">
             <input
@@ -34,7 +34,7 @@ export function Choices({
                 ? { checked: value === option.value, onChange: () => onChange(option.value) }
                 : { defaultChecked: defaultValue === option.value })}
             />
-            <span className="grid h-11 cursor-pointer place-items-center border border-input px-2 text-center font-mono text-sm peer-checked:border-foreground peer-checked:bg-foreground peer-checked:text-background peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50">
+            <span className="grid h-12 cursor-pointer place-items-center rounded-md border border-line-strong bg-surface px-2 text-center transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:text-bg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus">
               {option.label}
             </span>
           </label>

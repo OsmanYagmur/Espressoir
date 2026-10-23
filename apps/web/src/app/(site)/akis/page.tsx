@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { VisitItem } from "@/components/cafe/visit-item";
-import { TastingItem } from "@/components/coffee/tasting-item";
+import { VisitCard } from "@/components/cafe/visit-item";
+import { TastingCard } from "@/components/coffee/tasting-card";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { Feed } from "@/components/social/feed";
-import { FEED_PAGE_SIZE } from "@/components/social/feed-config";
+import { FEED_LIST_CLASS, FEED_PAGE_SIZE } from "@/components/social/feed-config";
 import { getArchive } from "@/lib/data/archive";
 import { latestVisits } from "@/lib/data/cafes";
+import { getCurrentYear } from "@/lib/data/today";
 import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FeedPage() {
-  const archive = await getArchive();
+  const [archive, currentYear] = await Promise.all([getArchive(), getCurrentYear()]);
   // Newest entries first: a feed is about what was just added, not when it was tasted.
   const logged = archive.tastings
     .filter((tasting) => tasting.status === "logged")
@@ -29,9 +30,11 @@ export default async function FeedPage() {
   // Rendered here, on the server, and handed to the client component as is: dates are
   // formatted once, and the first page costs the browser no JavaScript.
   const first = (
-    <ol aria-label={t.feed.everyone}>
+    <ol aria-label={t.feed.everyone} className={FEED_LIST_CLASS}>
       {page.map((tasting) => (
-        <TastingItem key={tasting.id} tasting={tasting} showCoffee showAuthor clampNotes />
+        <li key={tasting.id}>
+          <TastingCard tasting={tasting} currentYear={currentYear} />
+        </li>
       ))}
     </ol>
   );
@@ -41,16 +44,18 @@ export default async function FeedPage() {
   const visits = latestVisits(archive, FEED_PAGE_SIZE);
   const cafes =
     visits.length === 0 ? null : (
-      <ol aria-label={t.feed.cafes}>
+      <ol aria-label={t.feed.cafes} className={FEED_LIST_CLASS}>
         {visits.map((visit) => (
-          <VisitItem key={visit.id} visit={visit} showCafe showAuthor clampNotes />
+          <li key={visit.id}>
+            <VisitCard visit={visit} currentYear={currentYear} showCafe showAuthor />
+          </li>
         ))}
       </ol>
     );
 
   return (
-    <PageShell>
-      <PageHeading title={t.feed.title} aside={<p>{t.feed.intro}</p>} lead={t.feed.lead} />
+    <PageShell width="read">
+      <PageHeading title={t.feed.title} lead={t.feed.lead} />
       {/* The open tab is in the URL, which the prerendered page does not know: until the
           browser takes over, everyone sees the public first page. */}
       <Suspense fallback={first}>
@@ -59,6 +64,7 @@ export default async function FeedPage() {
           cafes={cafes}
           cursor={last ? { createdAt: last.createdAt, id: last.id } : null}
           complete={logged.length <= FEED_PAGE_SIZE}
+          currentYear={currentYear}
         />
       </Suspense>
     </PageShell>

@@ -12,7 +12,7 @@ const CONTACT = "[iletişim e-postası eklenecek]";
 export const legalTr = {
   draftBanner:
     "Taslak: bu metin henüz hukuki incelemeden geçmedi ve yürürlüğe girmeden önce değişebilir.",
-  updated: "Son güncelleme: 11 Ekim 2026",
+  updated: "Son güncelleme: 23 Ekim 2026",
   related: "İlgili metinler",
   kvkk: {
     title: "KVKK aydınlatma metni",
@@ -51,6 +51,16 @@ export const legalTr = {
         items: [],
       },
       {
+        title: "Atölye başvuruları",
+        paragraphs: [
+          "Atölye başvuru formunu doldurduğunda, hesabın olsun ya da olmasın, şu veriler işlenir: adın, sana ulaşabilmem için yazdığın telefon numarası ya da Instagram kullanıcı adın, kahveyle aranı anlatan seçimin ve varsa sorun.",
+          "Bu veriler yalnızca başvurunu değerlendirmek, yerini onaylamak ya da seni yedek listeye almak ve atölyeyle ilgili sana yazmak için kullanılır. Hukuki sebep, formdaki onay kutusuyla verdiğin açık rızadır (KVKK md. 5/1); rızanı istediğin zaman geri alabilirsin.",
+          "Başvuruları yalnızca site sahibi görür; sitede herkes yalnızca atölyede kaç yer kaldığını görür. Yeni bir başvuru geldiğinde site sahibine Resend üzerinden, başvurudaki bilgileri içeren bir bildirim e-postası gider.",
+          `Başvurunun silinmesini istersen: ${CONTACT}.`,
+        ],
+        items: [],
+      },
+      {
         title: "Verilerin aktarılması",
         paragraphs: [
           "Veriler satılmaz ve reklam amacıyla kimseyle paylaşılmaz. Sitenin çalışması için aşağıdaki hizmet sağlayıcılar kullanılır; bu sağlayıcıların sunucuları Türkiye dışında olduğundan veriler yurt dışına aktarılmış olur:",
@@ -58,7 +68,7 @@ export const legalTr = {
         items: [
           "Supabase: veritabanı ve kimlik doğrulama. Veriler Frankfurt (Almanya) bölgesinde tutulur.",
           "Vercel: sitenin barındırılması ve dağıtımı.",
-          "Resend: giriş kodu ve davet e-postalarının gönderimi.",
+          "Resend: giriş kodu, davet ve atölye başvurusu bildirimi e-postalarının gönderimi.",
           "Cloudflare (Turnstile): giriş formunda bot koruması.",
           "Google: yalnızca Google ile giriş yapmayı seçersen.",
         ],

@@ -8,12 +8,7 @@ import { t } from "@/lib/i18n";
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button
-      type="submit"
-      variant="outline"
-      disabled={pending}
-      className="h-11 border-destructive font-mono text-xs text-destructive uppercase hover:bg-destructive hover:text-white"
-    >
+    <Button type="submit" variant="secondary" disabled={pending}>
       {pending ? t.panel.form.deleting : label}
     </Button>
   );

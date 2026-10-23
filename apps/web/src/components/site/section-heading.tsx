@@ -1,51 +1,54 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Numbered form-section heading: "01 — Son tadımlar", with an optional note on the right.
- * `hint` is a sentence about what the section holds; only the sade look prints it.
+ * A section's heading: a short sentence in the title style, an optional link or note on
+ * the right ("Tümünü gör") and an optional sentence under it saying what the section
+ * holds.
  */
 export function SectionHeading({
-  index,
   title,
   aside,
   hint,
   id,
+  level = 2,
   className,
 }: {
-  index: number;
   title: string;
   aside?: React.ReactNode;
-  hint?: string;
+  hint?: React.ReactNode;
   id?: string;
+  /** h3 for a section inside a section, set in the card-title style. */
+  level?: 2 | 3;
   className?: string;
 }) {
-  const heading = (
-    <h2
-      id={id}
-      className={cn(
-        "flex items-baseline justify-between gap-4 border-b border-rule pt-4 pb-2.5 font-mono text-xs font-medium tracking-wide uppercase",
-        // Sade: sections are set apart by space and a heavier line, so the eye finds them.
-        "sade:border-b-2 sade:pt-7 sade:text-[0.8125rem]",
-        className,
-      )}
-    >
-      <span>
-        <span className="sade:text-muted-foreground">{String(index).padStart(2, "0")} — </span>
-        {title}
-      </span>
-      {aside ? (
-        <span className="font-medium tracking-normal text-muted-foreground normal-case">
-          {aside}
-        </span>
-      ) : null}
-    </h2>
-  );
-  if (!hint) return heading;
-
+  const Heading = level === 2 ? "h2" : "h3";
   return (
-    <>
-      {heading}
-      <p className="max-w-[62ch] pt-2.5 text-sm text-muted-foreground form:hidden">{hint}</p>
-    </>
+    <div className={cn("mb-4 flex flex-col gap-2", className)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <Heading id={id} className={level === 2 ? "type-title" : "type-card-title"}>
+          {title}
+        </Heading>
+        {aside ? <div className="type-meta">{aside}</div> : null}
+      </div>
+      {hint ? <p className="max-w-read type-meta">{hint}</p> : null}
+    </div>
+  );
+}
+
+/** A section of a page, spaced from the one before it (48px, 64px from 768px). */
+export function Section({
+  id,
+  className,
+  children,
+}: {
+  /** The id of its heading, which names the section. */
+  id: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className={cn("mt-12 md:mt-16", className)}>
+      {children}
+    </section>
   );
 }

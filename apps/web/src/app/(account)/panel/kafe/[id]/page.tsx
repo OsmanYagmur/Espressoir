@@ -39,9 +39,9 @@ async function EditVisit({ params }: PageProps<"/panel/kafe/[id]">) {
 
   if (!visit) {
     return (
-      <div className="border-b border-border py-8">
-        <p className="text-muted-foreground">{t.cafes.panel.notFound}</p>
-        <Link href="/panel" className="mt-3 inline-block font-mono text-xs uppercase underline">
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-ink-2">{t.cafes.panel.notFound}</p>
+        <Link href="/panel" className="text-accent-ink underline underline-offset-3">
           {t.panel.back}
         </Link>
       </div>
@@ -75,7 +75,7 @@ async function EditVisit({ params }: PageProps<"/panel/kafe/[id]">) {
           visibility: visit.visibility,
         }}
       />
-      <div className="max-w-2xl border-t border-rule pt-5 pb-10">
+      <div className="mt-12 border-t border-line pt-6">
         <DeleteTasting
           action={deleteCafeVisit.bind(null, visit.id)}
           label={t.cafes.panel.delete}
@@ -88,9 +88,9 @@ async function EditVisit({ params }: PageProps<"/panel/kafe/[id]">) {
 
 export default function EditCafeVisitPage(props: PageProps<"/panel/kafe/[id]">) {
   return (
-    <PageShell>
-      <PageHeading title={t.cafes.panel.editTitle} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
+    <PageShell width="read">
+      <PageHeading title={t.cafes.panel.editTitle} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <EditVisit {...props} />
       </Suspense>
     </PageShell>

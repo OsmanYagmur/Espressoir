@@ -21,6 +21,7 @@ import { parseCsvRecords } from "./notion/csv";
 import { buildImportPlan } from "./notion/plan";
 
 const OUTPUT = resolve(repoRoot, "data/archive-snapshot.json");
+const WORKSHOPS_OUTPUT = resolve(repoRoot, "data/workshops-snapshot.json");
 const SAMPLE = resolve(repoRoot, "scripts/notion/fixtures/sample-export.csv");
 const OWN_EXPORT = resolve(repoRoot, "data/notion-export.csv");
 
@@ -56,6 +57,14 @@ if (csvFile === SAMPLE) {
 }
 
 const rows = await readArchiveRowsAsVisitor(db);
+// The workshop the migration adds, two weeks ahead of whenever the snapshot is made, so the
+// workshop pages always have one to show.
+await db.query(
+  "update public.workshops set starts_at = date_trunc('day', now()) + interval '14 days 11 hours', ends_at = date_trunc('day', now()) + interval '14 days 13 hours 30 minutes'",
+);
+const workshops = (
+  await db.query<{ row: unknown }>("select to_jsonb(o) as row from public.workshop_overview o")
+).rows.map(({ row }) => row);
 await db.close();
 
 // Fail here, not in the browser, if the snapshot would not satisfy the app.
@@ -63,6 +72,7 @@ const archive = parseArchive(rows);
 
 mkdirSync(dirname(OUTPUT), { recursive: true });
 writeFileSync(OUTPUT, JSON.stringify(rows, null, 2));
+writeFileSync(WORKSHOPS_OUTPUT, JSON.stringify(workshops, null, 2));
 console.log(
   `✓ ${relative(repoRoot, OUTPUT)}: ${archive.coffees.length} kahve, ${archive.tastings.length} tadım, ${archive.profiles.length} profil (kaynak: ${relative(repoRoot, csvFile)})`,
 );

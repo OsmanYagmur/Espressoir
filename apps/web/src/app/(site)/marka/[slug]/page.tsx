@@ -10,7 +10,7 @@ import { FieldStrip } from "@/components/site/field-strip";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { toCoffeeCards } from "@/lib/coffee-cards";
 import { getArchive } from "@/lib/data/archive";
 import { brandSummaries, toListItems } from "@/lib/data/selectors";
@@ -20,8 +20,8 @@ import { brandPath, coffeePath } from "@/lib/routes";
 
 type Props = PageProps<"/marka/[slug]">;
 
-const linkFocus =
-  "inline-block py-1.5 underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+// py-2 makes the small breadcrumb link tall enough to tap.
+const crumb = "inline-block py-2 text-ink-2 underline underline-offset-3 hover:text-ink";
 
 export async function generateStaticParams() {
   const brands = brandSummaries(await getArchive());
@@ -80,11 +80,10 @@ async function BrandDetail({ params }: Pick<Props, "params">) {
   return (
     <>
       <PageHeading
-        plain
         title={brand.name}
         kicker={
           <nav aria-label={t.coffeeDetail.breadcrumb}>
-            <Link href="/kahveler" className={linkFocus}>
+            <Link href="/kahveler" className={crumb}>
               {t.nav.coffees}
             </Link>
             {" / "}
@@ -121,7 +120,10 @@ async function BrandDetail({ params }: Pick<Props, "params">) {
             label: t.brand.fields.best,
             value: brand.best ? formatAverage(brand.best.stats.avgScore!) : "—",
             note: brand.best ? (
-              <Link href={coffeePath(brand.slug, brand.best.slug)} className={linkFocus}>
+              <Link
+                href={coffeePath(brand.slug, brand.best.slug)}
+                className="text-accent-ink underline underline-offset-3"
+              >
                 {brand.best.name}
               </Link>
             ) : undefined,
@@ -129,10 +131,10 @@ async function BrandDetail({ params }: Pick<Props, "params">) {
           },
         ]}
       />
-      <section aria-labelledby="kahveleri">
-        <SectionHeading id="kahveleri" index={1} title={t.brand.coffeesTitle} />
+      <Section id="kahveleri">
+        <SectionHeading id="kahveleri" title={t.brand.coffeesTitle} />
         <CoffeeList coffees={coffees} showBrand={false} label={t.brand.coffeesTitle} />
-      </section>
+      </Section>
     </>
   );
 }

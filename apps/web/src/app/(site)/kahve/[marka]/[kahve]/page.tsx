@@ -6,20 +6,23 @@ import { Suspense } from "react";
 
 import { CoffeeList } from "@/components/coffee/coffee-list";
 import { ScoreBadge } from "@/components/coffee/score-badge";
-import { TastingItem } from "@/components/coffee/tasting-item";
+import { TasteProfile } from "@/components/coffee/taste-profile";
+import { TastingCard } from "@/components/coffee/tasting-card";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { CoffeeActions } from "@/components/social/coffee-actions";
 import { ReportButton } from "@/components/social/report-button";
-import { Radar } from "@/components/stats/radar";
 import { ScoreColumns } from "@/components/stats/score-columns";
+import { Card } from "@/components/ui/card";
+import { Chip } from "@/components/ui/chip";
 import { TagCounts } from "@/components/stats/tag-counts";
 import { toCoffeeCards } from "@/lib/coffee-cards";
 import { getArchive } from "@/lib/data/archive";
 import { findCoffee, similarCoffees, tastingsOf, toListItems } from "@/lib/data/selectors";
 import { tasteSummary } from "@/lib/data/taste-summary";
+import { getCurrentYear } from "@/lib/data/today";
 import { countryName, formatAverage, formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath } from "@/lib/routes";
@@ -29,9 +32,8 @@ type Props = PageProps<"/kahve/[marka]/[kahve]">;
 
 const SIMILAR_COUNT = 4;
 
-// py-1.5 makes the small breadcrumb links tall enough to tap.
-const linkFocus =
-  "inline-block py-1.5 underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+// py-2 makes the small breadcrumb links tall enough to tap.
+const crumb = "inline-block py-2 text-ink-2 underline underline-offset-3 hover:text-ink";
 
 // Every coffee gets its own prerendered page. A coffee added later is rendered on its
 // first visit and stored. The placeholder keeps an empty archive buildable (it renders
@@ -190,171 +192,154 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
   const rows = details(coffee);
   const { stats } = coffee;
   const taste = tasteSummary(archive, logged);
-  let section = 0;
+  const currentYear = await getCurrentYear();
 
   return (
     <>
       <JsonLd coffee={coffee} tastings={logged} />
       <PageHeading
-        plain
         title={coffee.name}
         kicker={
           <nav aria-label={t.coffeeDetail.breadcrumb}>
-            <Link href="/kahveler" className={linkFocus}>
+            <Link href="/kahveler" className={crumb}>
               {t.nav.coffees}
             </Link>
             {" / "}
-            {/* Brand names keep their own spelling: no CSS uppercasing. */}
-            <Link href={brandPath(coffee.brand.slug)} className={`normal-case ${linkFocus}`}>
+            <Link href={brandPath(coffee.brand.slug)} className={crumb}>
               {coffee.brand.name}
             </Link>
           </nav>
         }
-        aside={
-          <div className="flex items-end gap-4 md:justify-end">
-            <p>
-              {stats.tastingCount === 0 ? (
-                t.coffee.wishlist
-              ) : (
-                <>
-                  {format(t.coffee.tastingCount, { count: stats.tastingCount })}
-                  {stats.lastTastedAt ? (
-                    <>
-                      <br />
-                      {t.coffee.fields.lastTasted}: {formatDay(stats.lastTastedAt)}
-                    </>
-                  ) : null}
-                  {stats.ratedCount > 1 ? (
-                    <>
-                      <br />
-                      {t.coffee.fields.average}, {format(t.coffee.ratedBy, { n: stats.ratedCount })}
-                    </>
-                  ) : null}
-                </>
-              )}
-            </p>
-            <ScoreBadge score={stats.avgScore} size="lg" />
-          </div>
-        }
-      />
+      >
+        <ScoreBadge score={stats.avgScore} />
+        <p className="type-meta">
+          {stats.tastingCount === 0
+            ? t.coffee.wishlist
+            : [
+                format(t.coffee.tastingCount, { count: stats.tastingCount }),
+                stats.lastTastedAt
+                  ? `${t.coffee.fields.lastTasted}: ${formatDay(stats.lastTastedAt)}`
+                  : null,
+                stats.ratedCount > 1
+                  ? `${t.coffee.fields.average}, ${format(t.coffee.ratedBy, { n: stats.ratedCount })}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+        </p>
+      </PageHeading>
 
       {coffee.isReviewed ? null : (
         // Added by a member and not checked by an admin yet: say so, in words.
-        <p role="note" className="border-b border-rule py-3 font-mono text-xs leading-relaxed">
-          <span className="mr-2 border border-foreground px-1.5 py-0.5 uppercase">
-            {t.coffee.unreviewed}
-          </span>
+        <p role="note" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 type-meta">
+          <Chip>{t.coffee.unreviewed}</Chip>
           {t.coffee.unreviewedNote}
         </p>
       )}
-      {/* Wrong brand, a duplicate, a made-up coffee: members can point it out. */}
-      <ReportButton target="coffee" targetId={coffee.id} className="border-b border-border py-2" />
       <CoffeeActions coffeeId={coffee.id} />
 
-      <div className="grid md:grid-cols-[minmax(0,1fr)_340px]">
-        <section aria-labelledby="tadimlar" className="md:border-r md:border-rule md:pr-6">
-          <SectionHeading id="tadimlar" index={++section} title={t.coffeeDetail.tastingsTitle} />
+      <div className="grid gap-x-12 md:grid-cols-[minmax(0,1fr)_340px]">
+        <Section id="tadimlar">
+          <SectionHeading id="tadimlar" title={t.coffeeDetail.tastingsTitle} />
           {logged.length === 0 ? (
-            <p className="border-b border-border py-6 text-muted-foreground">
-              {t.coffeeDetail.notTastedYet}
-            </p>
+            <p className="text-ink-2">{t.coffeeDetail.notTastedYet}</p>
           ) : (
-            <ol aria-label={t.coffeeDetail.tastingsTitle}>
+            <ol aria-labelledby="tadimlar" className="flex flex-col gap-4">
               {logged.map((tasting) => (
-                <TastingItem key={tasting.id} tasting={tasting} showAuthor />
+                <li key={tasting.id}>
+                  <TastingCard tasting={tasting} currentYear={currentYear} showCoffee={false} />
+                </li>
               ))}
             </ol>
           )}
           {/* Wishlist entries are not tastings: they are counted, not listed. */}
           {wanting > 0 ? (
-            <p className="border-b border-border py-3 font-mono text-xs text-muted-foreground">
-              {format(t.coffeeDetail.wantCount, { count: wanting })}
-            </p>
+            <p className="mt-4 type-meta">{format(t.coffeeDetail.wantCount, { count: wanting })}</p>
           ) : null}
-        </section>
+        </Section>
 
-        <aside className="md:pl-6">
+        <aside>
           {rows.length > 0 ? (
-            <>
-              <SectionHeading index={++section} title={t.coffeeDetail.detailsTitle} />
-              <dl className="font-mono text-[0.8rem]">
-                {rows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-border py-2"
-                  >
-                    <dt className="text-muted-foreground">{row.label}</dt>
-                    <dd className="text-right font-medium">{row.value}</dd>
-                    {row.hint ? (
-                      <dd className="mt-0.5 w-full text-xs text-muted-foreground">{row.hint}</dd>
-                    ) : null}
-                  </div>
-                ))}
-              </dl>
-            </>
+            <Section id="bilgiler">
+              <SectionHeading id="bilgiler" title={t.coffeeDetail.detailsTitle} />
+              <Card>
+                <dl>
+                  {rows.map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex flex-wrap items-baseline justify-between gap-x-4 border-b border-line py-2 first:pt-0 last:border-0 last:pb-0"
+                    >
+                      <dt className="type-meta">{row.label}</dt>
+                      <dd className="text-right font-medium">{row.value}</dd>
+                      {row.hint ? <dd className="mt-1 w-full type-meta">{row.hint}</dd> : null}
+                    </div>
+                  ))}
+                </dl>
+              </Card>
+            </Section>
           ) : null}
 
           {stats.ratedCount > 1 ? (
-            <>
+            <Section id="dagilim">
               <SectionHeading
-                index={++section}
+                id="dagilim"
                 title={t.coffeeDetail.distributionTitle}
-                aside={format(t.coffee.ratedBy, { n: stats.ratedCount })}
-                className={rows.length > 0 ? "mt-6" : undefined}
+                aside={
+                  <span className="type-figure">
+                    {format(t.coffee.ratedBy, { n: stats.ratedCount })}
+                  </span>
+                }
               />
-              <ScoreColumns counts={stats.distribution} className="mt-2 mb-7 h-32" />
-            </>
+              <ScoreColumns counts={stats.distribution} className="h-32" />
+            </Section>
           ) : null}
 
-          {taste.axes ? (
-            <>
+          {taste.profile ? (
+            <Section id="tat-profili">
               <SectionHeading
-                index={++section}
+                id="tat-profili"
                 title={t.taste.community.title}
                 hint={t.taste.community.hint}
-                className="mt-6"
               />
-              <Radar
-                axes={taste.axes}
-                caption={format(t.taste.community.caption, { coffee: coffee.name })}
-                className="pt-3 pb-5"
-              />
-            </>
+              <TasteProfile rows={taste.profile} />
+            </Section>
           ) : null}
 
           {taste.tags.length > 0 ? (
-            <>
+            <Section id="tatlar">
               <SectionHeading
-                index={++section}
+                id="tatlar"
                 title={t.taste.community.tagsTitle}
-                aside={format(t.taste.community.tagsAside, { n: taste.taggedCount })}
+                aside={
+                  <span className="type-figure">
+                    {format(t.taste.community.tagsAside, { n: taste.taggedCount })}
+                  </span>
+                }
                 hint={t.taste.community.tagsHint}
-                className="mt-6"
               />
-              <div className="pb-5">
-                <TagCounts
-                  tags={taste.tags}
-                  names={taste.names}
-                  caption={t.taste.community.tagsCaption}
-                />
-              </div>
-            </>
+              <TagCounts
+                tags={taste.tags}
+                names={taste.names}
+                caption={t.taste.community.tagsCaption}
+              />
+            </Section>
           ) : null}
         </aside>
       </div>
 
       {coffee.description ? (
-        <p className="max-w-[62ch] border-b border-border py-5 whitespace-pre-line">
-          {coffee.description}
-        </p>
+        <p className="mt-12 max-w-read whitespace-pre-line">{coffee.description}</p>
       ) : null}
 
       {similar.length > 0 ? (
-        <section aria-labelledby="benzer" className="mt-8">
-          <SectionHeading id="benzer" index={++section} title={t.coffeeDetail.similarTitle} />
+        <Section id="benzer">
+          <SectionHeading id="benzer" title={t.coffeeDetail.similarTitle} />
           <CoffeeList coffees={similar} label={t.coffeeDetail.similarTitle} />
-        </section>
+        </Section>
       ) : null}
+
+      {/* Wrong brand, a duplicate, a made-up coffee: members can point it out. */}
+      <ReportButton target="coffee" targetId={coffee.id} className="mt-12" />
     </>
   );
 }

@@ -10,8 +10,6 @@ import { useHasSession } from "@/lib/session-cookie";
 const f = t.follow;
 type Relation = "self" | "following" | "not-following";
 
-const buttonClass = "h-10 px-5 font-mono text-xs uppercase";
-
 /**
  * Follow or unfollow the member whose page this is. The page is static and the same for
  * everyone, so the button works out in the browser who is looking: visitors get a link to
@@ -47,7 +45,7 @@ export function FollowButton({ userId }: { userId: string }) {
 
   if (!signedIn) {
     return (
-      <Button asChild variant="outline" className={buttonClass}>
+      <Button asChild variant="secondary">
         <Link href="/giris" prefetch={false}>
           {f.follow}
         </Link>
@@ -80,19 +78,18 @@ export function FollowButton({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="grid justify-items-start gap-1.5 md:justify-items-end">
+    <div className="grid justify-items-start gap-2 md:justify-items-end">
       <Button
         type="button"
-        variant={following ? "outline" : "default"}
+        variant="secondary"
         disabled={pending}
         aria-pressed={following}
-        className={buttonClass}
         onClick={() => void toggle()}
       >
         {following ? f.unfollow : f.follow}
       </Button>
       {error ? (
-        <p role="alert" className="font-mono text-xs text-destructive">
+        <p role="alert" className="text-sm font-medium text-danger">
           {error}
         </p>
       ) : null}

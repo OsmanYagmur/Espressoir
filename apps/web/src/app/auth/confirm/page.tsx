@@ -25,13 +25,10 @@ async function Confirm({ searchParams }: Pick<Props, "searchParams">) {
   if (typeof tokenHash !== "string" || !tokenHash) {
     return (
       <div className="grid max-w-sm gap-4 py-6">
-        <p role="alert" className="border-l-2 border-destructive pl-3 font-mono text-sm">
+        <p role="alert" className="border-l-2 border-danger pl-3 text-sm">
           {t.auth.link.invalid}
         </p>
-        <Link
-          href="/giris"
-          className="font-mono text-xs underline underline-offset-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-        >
+        <Link href="/giris" className="text-sm underline underline-offset-3">
           {t.auth.link.back}
         </Link>
       </div>
@@ -48,7 +45,7 @@ export default function ConfirmPage({ searchParams }: Props) {
   return (
     <PageShell>
       <PageHeading title={t.auth.link.title} />
-      <SectionHeading index={1} title={t.auth.title} />
+      <SectionHeading title={t.auth.title} />
       <Suspense fallback={<Skeleton className="my-6 h-24 max-w-sm" />}>
         <Confirm searchParams={searchParams} />
       </Suspense>

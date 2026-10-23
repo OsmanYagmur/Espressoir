@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { Turnstile, type TurnstileHandle } from "@/components/account/turnstile";
-import { SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { AUTH_CALLBACK_PATH, authConfig } from "@/lib/auth-config";
@@ -28,7 +27,7 @@ function messageFor(error: AuthError, fallback: string): string {
 }
 
 const quietButton =
-  "font-mono text-xs underline underline-offset-4 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50";
+  "cursor-pointer text-accent-ink underline underline-offset-3 disabled:opacity-50";
 
 /**
  * Sign-in runs in the browser, straight against Supabase Auth: the auth server then sees
@@ -162,7 +161,6 @@ export function LoginForm() {
   }
 
   const enteringCode = mode === "code" && step === "verify";
-  const submitClass = "h-11 font-mono text-xs uppercase";
   const submitLabel =
     mode === "code" && step === "request"
       ? pending
@@ -174,15 +172,14 @@ export function LoginForm() {
 
   return (
     <>
-      <SectionHeading
-        index={1}
-        title={mode === "code" ? t.auth.codeSection : t.auth.passwordSection}
-      />
-      <div className="grid max-w-sm gap-5 py-6">
+      <h2 className="mb-4 type-card-title">
+        {mode === "code" ? t.auth.codeSection : t.auth.passwordSection}
+      </h2>
+      <div className="grid gap-6">
         {/* One form for every step: the children keep their places, so the CAPTCHA widget
             stays mounted (and its token valid) while the fields around it change. */}
         <form
-          className="grid gap-5"
+          className="grid gap-6"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
@@ -199,7 +196,7 @@ export function LoginForm() {
                 autoComplete="one-time-code"
                 maxLength={12}
                 autoFocus
-                className="text-lg tracking-[0.3em]"
+                className="font-mono text-lg tracking-[0.3em]"
               />
             </Field>
           ) : (
@@ -227,18 +224,12 @@ export function LoginForm() {
             </Field>
           ) : null}
           {info && enteringCode ? (
-            <p
-              role="status"
-              className="border-l-2 border-rule pl-3 font-mono text-sm leading-relaxed"
-            >
+            <p role="status" className="rounded-md bg-sunk p-4">
               {info} {t.auth.codeSentLink}
             </p>
           ) : null}
           {error ? (
-            <p
-              role="alert"
-              className="border-l-2 border-destructive pl-3 font-mono text-sm text-destructive"
-            >
+            <p role="alert" className="font-medium text-danger">
               {error}
             </p>
           ) : null}
@@ -246,17 +237,15 @@ export function LoginForm() {
             <div>
               <Turnstile ref={turnstile} siteKey={siteKey} onToken={setCaptchaToken} />
               {waitingForCaptcha && !pending ? (
-                <p className="mt-1 font-mono text-xs text-muted-foreground">
-                  {t.auth.captchaPending}
-                </p>
+                <p className="mt-1 type-meta">{t.auth.captchaPending}</p>
               ) : null}
             </div>
           ) : null}
-          <Button type="submit" disabled={blocked} className={submitClass}>
+          <Button type="submit" block disabled={blocked}>
             {submitLabel}
           </Button>
           {enteringCode ? (
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-muted-foreground">
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
               <button
                 type="button"
                 className={quietButton}
@@ -272,13 +261,13 @@ export function LoginForm() {
           ) : null}
         </form>
 
-        <div className="grid gap-3 border-t border-border pt-5">
+        <div className="grid gap-4 border-t border-line pt-6">
           {authConfig.googleEnabled ? (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
+              block
               disabled={pending}
-              className={submitClass}
               onClick={() => void signInWithGoogle()}
             >
               {t.auth.google}
@@ -286,7 +275,7 @@ export function LoginForm() {
           ) : null}
           <button
             type="button"
-            className={`${quietButton} justify-self-start text-muted-foreground`}
+            className={`${quietButton} justify-self-start`}
             onClick={() => switchTo(mode === "code" ? "password" : "code")}
           >
             {mode === "code" ? t.auth.usePassword : t.auth.useCode}

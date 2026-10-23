@@ -56,9 +56,9 @@ async function NewVisit({ cafe }: { cafe: Promise<string | null> }) {
  */
 export function NewVisitPage({ cafe }: { cafe: Promise<string | null> }) {
   return (
-    <PageShell>
-      <PageHeading title={t.cafes.panel.newTitle} />
-      <Suspense fallback={<Skeleton className="mt-6 h-96" />}>
+    <PageShell width="read">
+      <PageHeading title={t.cafes.panel.newTitle} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <NewVisit cafe={cafe} />
       </Suspense>
     </PageShell>

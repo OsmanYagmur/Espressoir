@@ -33,12 +33,15 @@ const dark: typeof light = {
 export type Colors = typeof light;
 
 export const fonts = {
-  /** Headings: Archivo ExtraBold (the site sets it wider; a phone keeps the plain width). */
-  heading: "Archivo_800ExtraBold",
-  body: "Archivo_400Regular",
-  bodyBold: "Archivo_700Bold",
+  /**
+   * PostScript names of the fonts in assets/fonts (bundled by the iOS project, UIAppFonts).
+   * Headings: Archivo ExtraBold (the site sets it wider; a phone keeps the plain width).
+   */
+  heading: "Archivo-ExtraBold",
+  body: "Archivo-Regular",
+  bodyBold: "Archivo-Bold",
   /** Labels and data. */
-  mono: "IBMPlexMono_500Medium",
+  mono: "IBMPlexMono-Medium",
 };
 
 export function useColors(): Colors {

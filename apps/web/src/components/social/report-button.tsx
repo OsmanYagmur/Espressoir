@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 
 const s = t.social;
 
-const quietButton =
-  "font-mono text-xs underline underline-offset-4 hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+// Quiet: a word, underlined on hover; reporting is rare and must not compete with reading.
+const quietButton = "cursor-pointer text-sm text-ink-2 underline underline-offset-3 hover:text-ink";
 
 /**
  * "Report this" for a tasting, a comment, a member or a coffee: a link that opens a short
@@ -77,13 +77,13 @@ export function ReportButton({
   return (
     <div className={cn("grid gap-2", className)}>
       {outcome?.tone === "done" ? (
-        <p role="status" className="font-mono text-xs">
+        <p role="status" className="text-sm text-ink-2">
           {outcome.text}
         </p>
       ) : (
         <button
           type="button"
-          className={cn(quietButton, "justify-self-start text-muted-foreground")}
+          className={cn(quietButton, "justify-self-start")}
           aria-expanded={open}
           aria-controls={formId}
           onClick={() => setOpen((current) => !current)}
@@ -94,43 +94,38 @@ export function ReportButton({
       {open ? (
         <form
           id={formId}
-          className="grid max-w-md gap-3 border border-input p-3"
+          className="grid max-w-md gap-4 rounded-md border border-line bg-surface p-4"
           onSubmit={(event) => {
             event.preventDefault();
             void submit(new FormData(event.currentTarget));
           }}
         >
-          <fieldset className="grid gap-1.5">
-            <legend className="label-caps mb-1.5 text-muted-foreground">{s.reportTitle}</legend>
+          <fieldset className="grid gap-2">
+            <legend className="mb-2 type-label">{s.reportTitle}</legend>
             {REPORT_REASONS.map((reason) => (
-              <label key={reason} className="flex items-start gap-2 text-sm">
+              <label key={reason} className="flex items-start gap-3">
                 <input
                   type="radio"
                   name="reason"
                   value={reason}
                   required
-                  className="mt-1 accent-foreground"
+                  className="mt-1 size-4 accent-accent"
                 />
                 {s.reportReasons[reason]}
               </label>
             ))}
           </fieldset>
-          <label className="grid gap-1.5">
-            <span className="label-caps text-muted-foreground">{s.reportDetails}</span>
+          <label className="grid gap-2">
+            <span className="type-label">{s.reportDetails}</span>
             <Textarea name="details" maxLength={REPORT_DETAILS_MAX_LENGTH} className="min-h-20" />
           </label>
           {outcome?.tone === "error" ? (
-            <p role="alert" className="font-mono text-xs text-destructive">
+            <p role="alert" className="text-sm font-medium text-danger">
               {outcome.text}
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-4">
-            <Button
-              type="submit"
-              variant="outline"
-              disabled={pending}
-              className="h-10 px-5 font-mono text-xs uppercase"
-            >
+            <Button type="submit" variant="secondary" disabled={pending}>
               {pending ? s.sending : s.reportSend}
             </Button>
             <button type="button" className={quietButton} onClick={() => setOpen(false)}>

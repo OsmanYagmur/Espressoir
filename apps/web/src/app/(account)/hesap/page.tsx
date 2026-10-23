@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
-import { SectionHeading } from "@/components/site/section-heading";
+import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/auth";
@@ -23,8 +23,7 @@ export const metadata: Metadata = {
 };
 
 const a = t.account;
-const linkFocus =
-  "underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
+const link = "text-accent-ink underline underline-offset-3";
 
 async function Account() {
   const { user, supabase } = await requireUser();
@@ -40,57 +39,63 @@ async function Account() {
 
   return (
     <>
-      <nav className="flex flex-wrap gap-x-5 gap-y-1 border-b border-border py-4 font-mono text-xs uppercase">
-        <Link href="/panel" className={linkFocus}>
+      <nav className="flex flex-wrap gap-x-6 gap-y-2">
+        <Link href="/panel" className={link}>
           {a.back}
         </Link>
-        <Link href={profilePath(profile.username)} className={linkFocus}>
+        <Link href={profilePath(profile.username)} prefetch={false} className={link}>
           {a.viewProfile}
         </Link>
       </nav>
 
-      <SectionHeading index={1} title={a.profileSection} aside={`@${profile.username}`} />
-      <ProfileForm
-        initial={{
-          username: profile.username,
-          displayName: profile.display_name ?? "",
-          bio: profile.bio ?? "",
-        }}
-      />
+      <Section id="profil">
+        <SectionHeading id="profil" title={a.profileSection} aside={`@${profile.username}`} />
+        <ProfileForm
+          initial={{
+            username: profile.username,
+            displayName: profile.display_name ?? "",
+            bio: profile.bio ?? "",
+          }}
+        />
+      </Section>
 
       {avatar.error ? null : (
-        <>
-          <SectionHeading index={2} title={t.photo.avatar.section} />
+        <Section id="fotograf">
+          <SectionHeading id="fotograf" title={t.photo.avatar.section} />
           <AvatarField initialPath={avatar.data.avatar_path} username={profile.username} />
-        </>
+        </Section>
       )}
 
-      <SectionHeading index={3} title={a.exportSection} />
-      <ExportDataButton />
+      <Section id="verilerin">
+        <SectionHeading id="verilerin" title={a.exportSection} />
+        <ExportDataButton />
+      </Section>
 
-      <SectionHeading index={4} title={a.sessionSection} />
-      <div className="grid max-w-2xl gap-4 py-5">
-        {user.email ? (
-          <p className="font-mono text-sm">{format(a.signedInWith, { email: user.email })}</p>
-        ) : null}
-        <form action={signOut}>
-          <Button type="submit" variant="outline" className="h-11 px-6 font-mono text-xs uppercase">
-            {t.auth.signOut}
-          </Button>
-        </form>
-      </div>
+      <Section id="oturum">
+        <SectionHeading id="oturum" title={a.sessionSection} />
+        <div className="flex flex-col items-start gap-4">
+          {user.email ? <p>{format(a.signedInWith, { email: user.email })}</p> : null}
+          <form action={signOut}>
+            <Button type="submit" variant="secondary">
+              {t.auth.signOut}
+            </Button>
+          </form>
+        </div>
+      </Section>
 
-      <SectionHeading index={5} title={a.deleteSection} />
-      <DeleteAccountForm />
+      <Section id="hesabi-sil">
+        <SectionHeading id="hesabi-sil" title={a.deleteSection} />
+        <DeleteAccountForm />
+      </Section>
     </>
   );
 }
 
 export default function AccountPage() {
   return (
-    <PageShell>
-      <PageHeading title={a.title} />
-      <Suspense fallback={<Skeleton className="my-6 h-96 max-w-2xl" />}>
+    <PageShell width="read">
+      <PageHeading title={a.title} size="title" />
+      <Suspense fallback={<Skeleton className="h-96" />}>
         <Account />
       </Suspense>
     </PageShell>
