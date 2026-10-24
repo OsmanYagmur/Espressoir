@@ -107,7 +107,7 @@
   }
 }
 
-/* A bar fills from its left end (with `origin-left`): score, seats, the logo's E. */
+/* A bar fills from its left end (with `origin-left`): score, seats, the logo's rows. */
 @keyframes fill-bar {
   from {
     transform: scaleX(0);
