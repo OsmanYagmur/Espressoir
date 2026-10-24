@@ -16,7 +16,7 @@ export const tr = {
   nav: {
     label: "Ana menü",
     home: "Ana sayfa",
-    feed: "Tadımlar",
+    feed: "Tadım notları",
     workshop: "Atölye",
     info: "Bilgi",
     coffees: "Kahveler",
@@ -32,6 +32,7 @@ export const tr = {
     notifications: "Bildirimler",
     account: "Hesap",
     admin: "Yönetim",
+    workshops: "Atölyeler",
   },
   theme: {
     label: "Renkler",
@@ -40,15 +41,18 @@ export const tr = {
     system: "Sistem",
   },
   home: {
-    heroTitle: "İçtiğin her kahveyi kaydet.",
-    heroLead: "Puanla, iki cümle not düş, arkadaşlarının ne içtiğine bak.",
+    heroTitle: "Kahveyi biraz daha yakından tanı.",
+    heroLead:
+      "Demleme rehberleri, çekirdek ve kavrum üzerine kısa yazılar, arkadaşlarının tadım notları.",
     cta: {
-      workshop: "Atölyeye başvur",
-      addTasting: "Tadım ekle",
+      read: "Okumaya başla",
       how: "Nasıl çalışır?",
     },
+    guidesTitle: "Demleme rehberleri",
+    guidesHint: "Her yöntemin tarifi, adım adım.",
+    guidesAll: "Bütün yazılar",
     workshopTitle: "Sıradaki atölye",
-    latestTitle: "Son tadımlar",
+    latestTitle: "Son tadım notları",
     latestAll: "Tümünü gör",
     latestEmpty: "Henüz tadım yok. İlk fincanını ekle.",
     infoTitle: "Merak ettiklerin",
@@ -60,7 +64,7 @@ export const tr = {
   workshop: {
     title: "Atölye",
     description:
-      "Kahveye giriş atölyeleri: küçük gruplarla demleme pratiği ve tadım. Tarih, kontenjan ve başvuru formu.",
+      "Kahve 101, kahveye giriş atölyesi: küçük gruplarla demleme pratiği ve tadım. Tarih, kontenjan ve başvuru formu.",
     emptyTitle: "Şu an açık bir atölye yok.",
     emptyLead: "Yeni bir atölye açılınca burada olacak. O zamana kadar bilgi yazılarına göz at.",
     emptyLink: "Bilgi yazılarına git",
@@ -85,9 +89,9 @@ export const tr = {
     success: "Başvurun alındı. İki gün içinde sana yazacağım.",
     otherTitle: "Diğer atölyeler",
     form: {
-      name: "Adın",
-      contact: "Sana nasıl ulaşalım?",
-      contactHint: "Telefon numaran ya da Instagram kullanıcı adın.",
+      name: "Adın soyadın",
+      contact: "Telefon numaran",
+      contactHint: "Yerini onaylamak için bu numaradan sana ulaşacağım.",
       experience: "Kahveyle aran nasıl?",
       experiences: {
         new: { title: "Yeni başlıyorum", hint: "Kahveyi seviyorum ama pek bilgim yok." },
@@ -99,9 +103,8 @@ export const tr = {
       },
       question: "Merak ettiğin bir şey var mı?",
       optional: "(isteğe bağlı)",
-      consent:
-        "Bu bilgilerin başvurumu değerlendirmek ve bana ulaşmak için kullanılmasına onay veriyorum.",
-      consentLink: "Verilerin nasıl işlenir?",
+      consent: "Bilgilerimin başvurum için kullanılmasını onaylıyorum.",
+      consentLink: "Aydınlatma metni",
       honeypot: "Bu alanı boş bırak",
       submit: "Başvur",
       submitWaitlist: "Haber ver",
@@ -109,13 +112,14 @@ export const tr = {
     },
     errors: {
       invalid: "Formda düzeltilecek alanlar var.",
-      nameRequired: "Adını yaz.",
+      nameRequired: "Adını ve soyadını yaz.",
       nameTooLong: "Ad en fazla {max} karakter olabilir.",
       contactInvalid: "Bir telefon numarası ya da Instagram kullanıcı adı yaz.",
+      phoneInvalid: "Bir telefon numarası yaz, örneğin 0555 123 45 67.",
       experienceRequired: "Sana en yakın seçeneği seç.",
       questionTooLong: "Sorun en fazla {max} karakter olabilir.",
       consentRequired: "Devam etmek için onay kutusunu işaretle.",
-      duplicate: "Bu iletişim bilgisiyle bu atölyeye zaten başvurmuşsun.",
+      duplicate: "Bu telefon numarasıyla bu atölyeye zaten başvurmuşsun.",
       closed: "Bu atölyenin başvuruları kapandı.",
       rateLimited: "Şu an çok sayıda başvuru geliyor. Birkaç dakika sonra tekrar dene.",
       failed: "Başvurun gönderilemedi. Biraz sonra tekrar dene.",
@@ -134,8 +138,23 @@ export const tr = {
   },
   info: {
     title: "Bilgi",
-    description: "Kahveye dair kısa yazılar: çekirdek, tazelik, öğütme ve demleme oranı.",
-    lead: "Kahveyi biraz daha tanımak için kısa yazılar. Her biri birkaç dakikada okunur.",
+    description:
+      "Demleme rehberleri ve kahveye dair kısa yazılar: V60, AeroPress, moka pot, espresso, French press, Türk kahvesi, soğuk demleme; çekirdek, kavrum, öğütme ve su.",
+    lead: "Demleme rehberleri ve kahveyi biraz daha tanımak için kısa yazılar. Her biri birkaç dakikada okunur.",
+    topics: {
+      demleme: "Demleme rehberleri",
+      cekirdek: "Çekirdek ve kavrum",
+      temel: "Temel bilgiler",
+    },
+    recipe: {
+      title: "Tarif",
+      dose: "Kahve",
+      water: "Su",
+      temperature: "Sıcaklık",
+      time: "Süre",
+      grind: "Öğütme",
+      grindShort: "{grind} öğütme",
+    },
     readingTime: "{minutes} dakikalık okuma",
     readMore: "Devamını oku",
     listLabel: "Yazılar",
@@ -788,7 +807,7 @@ export const tr = {
   },
   feed: {
     lead: "Herkesin son tadımları, en yenisi üstte. Takip ettiklerinin tadımları ayrı sekmede.",
-    title: "Tadımlar",
+    title: "Tadım notları",
     description:
       "Espressoir üyelerinin son tadımları: kim, hangi kahveyi, nasıl demledi, kaç puan verdi.",
     /** The mobile app's feed says this under its title. */
@@ -1144,7 +1163,7 @@ export const tr = {
     shortName: "Espressoir",
     shortcuts: {
       newTasting: "Tadım ekle",
-      feed: "Tadımlar",
+      feed: "Tadım notları",
     },
   },
   photo: {
@@ -1247,6 +1266,7 @@ export const tr = {
     profile: "Profilim",
     account: "Hesap",
     admin: "Yönetim",
+    workshops: "Atölyeler",
     hidden: "Gizlendi",
     hiddenNote: "Bir yönetici bu tadımı gizledi; yalnızca sen görüyorsun.",
     restricted:

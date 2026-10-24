@@ -1,4 +1,5 @@
 import type { Workshop } from "@espressoir/db";
+import { ChevronDownIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -143,16 +144,26 @@ export function WorkshopDetail({
           </>
         ) : null}
 
+        {/* Each question opens its answer: the browser's own disclosure, so it works without
+            JavaScript, with the keyboard and with a screen reader. */}
         <Section id="sss">
           <SectionHeading id="sss" title={w.faqTitle} />
-          <dl className="flex flex-col gap-4">
+          <ul className="border-y border-line">
             {faq.map((item) => (
-              <div key={item.question} className="flex flex-col gap-1">
-                <dt className="font-semibold">{item.question}</dt>
-                <dd className="text-ink-2">{item.answer}</dd>
-              </div>
+              <li key={item.question} className="border-line not-first:border-t">
+                <details className="group">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-sm py-4 font-semibold transition-colors hover:text-ink-2 [&::-webkit-details-marker]:hidden">
+                    {item.question}
+                    <ChevronDownIcon
+                      aria-hidden
+                      className="size-5 flex-none text-ink-2 transition-transform group-open:rotate-180"
+                    />
+                  </summary>
+                  <p className="pb-4 text-ink-2">{item.answer}</p>
+                </details>
+              </li>
             ))}
-          </dl>
+          </ul>
         </Section>
 
         <div className="sticky bottom-0 z-10 -mx-4 mt-12 border-t border-line bg-surface px-4 pt-3 pb-[calc(var(--space-3)+env(safe-area-inset-bottom))] shadow-sticky md:hidden">
@@ -177,7 +188,7 @@ export function WorkshopDetail({
                 key={other.id}
                 workshop={other}
                 action="details"
-                href={`/atolye/${other.id}` as Route}
+                href={`/workshop/${other.id}` as Route}
               />
             ))}
           </div>

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isWorkshopContact, summarizeApplications, type ApplicationFacts } from "./workshop";
+import {
+  isWorkshopContact,
+  isWorkshopPhone,
+  summarizeApplications,
+  type ApplicationFacts,
+} from "./workshop";
 
 describe("isWorkshopContact", () => {
   it("takes a phone number or an Instagram handle", () => {
@@ -15,6 +20,35 @@ describe("isWorkshopContact", () => {
     expect(isWorkshopContact("ada@example.com")).toBe(false);
     expect(isWorkshopContact("bir iki üç")).toBe(false);
     expect(isWorkshopContact("")).toBe(false);
+  });
+});
+
+describe("isWorkshopPhone", () => {
+  it("takes a Turkish number written any usual way, or a foreign one with its code", () => {
+    for (const phone of [
+      "0555 123 45 67",
+      "555 123 45 67",
+      "+90 (555) 123-45-67",
+      "905551234567",
+      "0212 345 67 89",
+      "+44 20 7946 0958",
+    ]) {
+      expect(isWorkshopPhone(phone), phone).toBe(true);
+      expect(isWorkshopContact(phone), phone).toBe(true);
+    }
+  });
+
+  it("refuses handles, short or misdialled numbers", () => {
+    for (const phone of [
+      "@kahvesever",
+      "kahvesever",
+      "0555 123 45",
+      "0655 123 45 67",
+      "+1 23",
+      "",
+    ]) {
+      expect(isWorkshopPhone(phone), phone).toBe(false);
+    }
   });
 });
 

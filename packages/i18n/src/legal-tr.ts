@@ -54,10 +54,10 @@ export const legalTr = {
       {
         title: "Atölye başvuruları",
         paragraphs: [
-          "Atölye başvuru formunu doldurduğunda, hesabın olsun ya da olmasın, şu veriler işlenir: adın, sana ulaşabilmem için yazdığın telefon numarası ya da Instagram kullanıcı adın, kahveyle aranı anlatan seçimin ve varsa sorun.",
+          "Atölye başvuru formunu doldurduğunda, hesabın olsun ya da olmasın, şu veriler işlenir: adın ve soyadın, sana ulaşabilmem için yazdığın telefon numaran, kahveyle aranı anlatan seçimin ve varsa sorun.",
           "Bu veriler yalnızca başvurunu değerlendirmek, yerini onaylamak ya da seni yedek listeye almak ve atölyeyle ilgili sana yazmak için kullanılır. Hukuki sebep, formdaki onay kutusuyla verdiğin açık rızadır (KVKK md. 5/1); rızanı istediğin zaman geri alabilirsin.",
           "Başvuruları yalnızca site sahibi görür; sitede herkes yalnızca atölyede kaç yer kaldığını görür. Yeni bir başvuru geldiğinde site sahibine Resend üzerinden, başvurudaki bilgileri içeren bir bildirim e-postası gider.",
-          "Formu doldurmadan, site sahibiyle telefonda ya da yüz yüze anlaşarak katılırsan aynı bilgiler (adın, iletişim bilgin, kahveyle aran, varsa bir not) senin onayınla yönetim panelinden kaydedilir. Atölyeden sonra katılıp katılmadığın da işaretlenebilir; bu bilgi yalnızca atölyelerin planlanması için kullanılır.",
+          "Formu doldurmadan, site sahibiyle telefonda ya da yüz yüze anlaşarak katılırsan aynı bilgiler (adın, telefon numaran ya da Instagram kullanıcı adın, kahveyle aran, varsa bir not) senin onayınla yönetim panelinden kaydedilir. Atölyeden sonra katılıp katılmadığın da işaretlenebilir; bu bilgi yalnızca atölyelerin planlanması için kullanılır.",
           `Başvurunun silinmesini istersen: ${CONTACT}.`,
         ],
         items: [],

@@ -2,7 +2,8 @@
 title: Kahve ne kadar taze olmalı?
 summary: En iyi dönemi kavrulduktan sonraki ilk birkaç hafta. Paketteki son kullanma tarihine değil, kavrum tarihine bak.
 readingMinutes: 1
-order: 2
+order: 23
+topic: cekirdek
 image: bilgi-tazelik
 ---
 

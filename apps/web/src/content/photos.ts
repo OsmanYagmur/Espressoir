@@ -60,6 +60,82 @@ export const PHOTOS = {
     source:
       "https://unsplash.com/photos/coffee-beans-are-being-weighed-on-a-digital-scale-dZAb0Km1ELY",
   },
+  "bilgi-v60": {
+    width: 1280,
+    height: 720,
+    alt: "Turuncu bir V60'a ince uçlu demlikle sıcak su dökülüyor.",
+    author: "Ali Olfian",
+    source:
+      "https://unsplash.com/photos/a-person-pours-orange-juice-into-a-glass-pitcher-j7ZqjZhXnv8",
+  },
+  "bilgi-french-press": {
+    width: 1280,
+    height: 720,
+    alt: "Açık havada, masanın üstünde demlenmiş kahveyle dolu cam bir French press.",
+    author: "Sorin Gheorghita",
+    source: "https://unsplash.com/photos/a-pitcher-of-liquid-sitting-on-top-of-a-table-flrcFG0rvZU",
+  },
+  "bilgi-aeropress": {
+    width: 1280,
+    height: 720,
+    alt: "Ahşap masada bir AeroPress, kahve çekirdekleri, ölçü kaşığı ve elde tutulan bir fincan kahve.",
+    author: "Elin Melaas",
+    source:
+      "https://unsplash.com/photos/a-person-holding-a-cup-of-coffee-next-to-a-pile-of-coffee-beans-9Yo5CGloHgU",
+  },
+  "bilgi-moka": {
+    width: 1280,
+    height: 720,
+    alt: "Koyu renk bir moka pot ve yanında öğütülmüş kahveyle dolu sepeti.",
+    author: "Ashkan Forouzani",
+    source:
+      "https://unsplash.com/photos/black-coffee-beans-in-black-and-silver-coffee-maker-1SATo8GQBYg",
+  },
+  "bilgi-espresso": {
+    width: 1280,
+    height: 720,
+    alt: "Makineye takılı portafiltrenin altından ince bir espresso akıyor.",
+    author: "Scott K",
+    source:
+      "https://unsplash.com/photos/fresh-espresso-pouring-from-coffee-machine-portafilter-MSNrHnK__gM",
+  },
+  "bilgi-turk-kahvesi": {
+    width: 1280,
+    height: 720,
+    alt: "Eskimiş ahşap masada, desenli tabağında köpüklü bir fincan Türk kahvesi.",
+    author: "yucar studios",
+    source:
+      "https://unsplash.com/photos/flat-lay-photography-of-cup-filled-with-coffee-qdFxL5PoQhE",
+  },
+  "bilgi-soguk-demleme": {
+    width: 1280,
+    height: 720,
+    alt: "Ahşap altlıkta buzlu bir bardak soğuk demleme, arkasında soğuk demleme şişesi ve cam sürahi.",
+    author: "An Nguyen",
+    source: "https://unsplash.com/photos/clear-drinking-glass-beside-brown-bottle-SIUaCpFN5cQ",
+  },
+  "bilgi-cekirdek": {
+    width: 1280,
+    height: 720,
+    alt: "Elde tutulan bir dalda yeşil, sarı ve kırmızı kahve meyveleri.",
+    author: "Katya Ross",
+    source: "https://unsplash.com/photos/a-hand-is-holding-a-bunch-of-berries-Adg9B8NTxj0",
+  },
+  "bilgi-kavrum": {
+    width: 1280,
+    height: 720,
+    alt: "Gri zemine sıra sıra dizilmiş, açık renkten koyuya kahve çekirdekleri.",
+    author: "nousnou iwasaki",
+    source: "https://unsplash.com/photos/brown-coffee-beans-myPzH34VYK4",
+  },
+  "bilgi-su": {
+    width: 1280,
+    height: 720,
+    alt: "Bir demliğin kapağındaki termometre suyun sıcaklığını gösteriyor.",
+    author: "Ryan Wallace",
+    source:
+      "https://unsplash.com/photos/the-thermometer-shows-a-high-temperature-reading-6_oDBzwQMqI",
+  },
 } as const satisfies Record<string, Photo>;
 
 export type PhotoId = keyof typeof PHOTOS;

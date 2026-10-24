@@ -90,11 +90,18 @@ const REPORTS = {
   },
 } as const;
 
-/** The workshop pages (/atolye and each workshop's own), in one sum. */
+/**
+ * The workshop pages (/workshop and each workshop's own), in one sum; /atolye is where they
+ * were until 2026-10-24, so earlier visits still count.
+ */
 const WORKSHOP_PAGES = {
   metrics: ["screenPageViews"],
   dimensionFilter: {
-    filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value: "/atolye" } },
+    orGroup: {
+      expressions: ["/workshop", "/atolye"].map((value) => ({
+        filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value } },
+      })),
+    },
   },
 };
 

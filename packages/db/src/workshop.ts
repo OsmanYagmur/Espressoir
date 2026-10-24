@@ -17,6 +17,7 @@ import {
   WORKSHOP_APPLICATION_SOURCES,
   COMMUNITY_METRICS,
   isWorkshopContact,
+  isWorkshopPhone,
 } from "@espressoir/core";
 import { z } from "zod";
 
@@ -107,6 +108,7 @@ export const WORKSHOP_APPLICATION_ERRORS = [
   "nameRequired",
   "nameTooLong",
   "contactInvalid",
+  "phoneInvalid",
   "experienceRequired",
   "questionTooLong",
   "consentRequired",
@@ -115,6 +117,19 @@ export type WorkshopApplicationError = (typeof WORKSHOP_APPLICATION_ERRORS)[numb
 
 const code = (error: WorkshopApplicationError) => ({ error });
 const tidy = (value: string) => value.trim().replace(/\s+/g, " ");
+
+/** How to reach the person: the form takes a phone number, the admin a handle as well. */
+const contactField = (accepts: (value: string) => boolean, error: WorkshopApplicationError) =>
+  z
+    .string()
+    .transform(tidy)
+    .pipe(
+      z
+        .string()
+        .min(WORKSHOP_CONTACT_MIN_LENGTH, code(error))
+        .max(WORKSHOP_CONTACT_MAX_LENGTH, code(error))
+        .refine(accepts, code(error)),
+    );
 
 export const workshopApplicationInputSchema = z.object({
   workshopId: z.uuid(),
@@ -127,16 +142,7 @@ export const workshopApplicationInputSchema = z.object({
         .min(WORKSHOP_NAME_MIN_LENGTH, code("nameRequired"))
         .max(WORKSHOP_NAME_MAX_LENGTH, code("nameTooLong")),
     ),
-  contact: z
-    .string()
-    .transform(tidy)
-    .pipe(
-      z
-        .string()
-        .min(WORKSHOP_CONTACT_MIN_LENGTH, code("contactInvalid"))
-        .max(WORKSHOP_CONTACT_MAX_LENGTH, code("contactInvalid"))
-        .refine(isWorkshopContact, code("contactInvalid")),
-    ),
+  contact: contactField(isWorkshopPhone, "phoneInvalid"),
   experience: z.enum(WORKSHOP_EXPERIENCES, code("experienceRequired")),
   question: z
     .string()
@@ -162,8 +168,12 @@ export function toWorkshopApplicationInsert(input: WorkshopApplicationInput): Ap
   };
 }
 
-/** A person the admin adds from the panel: the form's fields and the status chosen. */
+/**
+ * A person the admin adds from the panel: the form's fields and the status chosen; agreed
+ * on the phone or in person, they may be reached by an Instagram handle too.
+ */
 export const adminApplicationInputSchema = workshopApplicationInputSchema.extend({
+  contact: contactField(isWorkshopContact, "contactInvalid"),
   status: z.enum(WORKSHOP_STATUSES),
 });
 export type AdminApplicationInput = z.infer<typeof adminApplicationInputSchema>;

@@ -1,9 +1,10 @@
 import type { WorkshopProgram } from "./types";
 
-// design/icerik.md → "Atölye: Kahveye giriş". Coffee facts come from there only.
+// design/icerik.md → "Atölye: Kahve 101". Coffee facts come from there only. The key stays
+// "kahveye-giris": workshop rows name their program by it.
 export const kahveyeGiris: WorkshopProgram = {
-  name: "Kahveye giriş",
-  lead: "İki saatte üç demleme yöntemi ve bir mini tadım.",
+  name: "Kahve 101",
+  lead: "Kahveye giriş: iki saatte üç demleme yöntemi ve bir mini tadım.",
   photo: "atolye-mutfak",
   audience: "Kahveyi seven ama nereden başlayacağını bilmeyen herkes. Hiçbir ön bilgi gerekmez.",
   steps: [

@@ -38,6 +38,23 @@ export function isWorkshopContact(value: string): boolean {
   return /[A-Za-z]/.test(contact) || contact.replace(/\D/g, "").length >= 7;
 }
 
+/**
+ * What the application form takes (the admin panel still takes a handle too): a Turkish
+ * number written any usual way ("0555 123 45 67", "555 123 45 67", "+90 555 123 45 67"),
+ * or another country's with its "+" code. Every one of them is also a contact above.
+ */
+export function isWorkshopPhone(value: string): boolean {
+  const phone = value.trim();
+  if (!/^\+?[\d\s()-]+$/.test(phone)) return false;
+  const digits = phone.replace(/\D/g, "");
+  if (phone.startsWith("+") && !digits.startsWith("90")) {
+    return digits.length >= 8 && digits.length <= 15;
+  }
+  // Ten digits once the country code or the leading zero is gone; area codes start 2–4,
+  // mobile numbers 5.
+  return /^[2-5]\d{9}$/.test(digits.replace(/^(?:90|0)/, ""));
+}
+
 /** What the admin's statistics need from an application. */
 export interface ApplicationFacts {
   status: WorkshopStatus;

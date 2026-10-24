@@ -2,7 +2,8 @@
 title: Arabica ile Robusta arasındaki fark ne?
 summary: Arabica daha tatlı ve meyvemsi, Robusta daha acı ve yaklaşık iki kat kafeinli. Nitelikli kahvelerin neredeyse tamamı Arabica.
 readingMinutes: 2
-order: 1
+order: 22
+topic: cekirdek
 image: bilgi-arabica-robusta
 ---
 

@@ -9,9 +9,9 @@ import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
-  { href: "/akis", label: t.nav.feed },
-  { href: "/atolye", label: t.nav.workshop },
   { href: "/bilgi", label: t.nav.info },
+  { href: "/akis", label: t.nav.feed },
+  { href: "/workshop", label: t.nav.workshop },
 ];
 
 /** Where members change things. */
@@ -54,7 +54,8 @@ function CurrentNavLinks({ className }: { className?: string }) {
 }
 
 /**
- * The three main links, the current one underlined in the accent. Which one is current
+ * The three main links (the articles first: the site leads with them), the current one
+ * underlined in the accent. Which one is current
  * depends on the URL, which a page shell prerendered for an unknown URL does not have yet;
  * the fallback shows the same links without a marker until it is known.
  */

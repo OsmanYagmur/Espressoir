@@ -1,10 +1,15 @@
 "use client";
 
 import { WORKSHOP_EXPERIENCES } from "@espressoir/core";
+import type { Route } from "next";
 import Link from "next/link";
 import { useActionState, useEffect, useRef } from "react";
 
-import { applyToWorkshop, type ApplyField, type ApplyFormState } from "@/app/(site)/atolye/actions";
+import {
+  applyToWorkshop,
+  type ApplyField,
+  type ApplyFormState,
+} from "@/app/(site)/workshop/actions";
 import { Button } from "@/components/ui/button";
 import { describedBy, Field, FieldNote, Input, Optional, Textarea } from "@/components/ui/field";
 import { submitWithoutReset } from "@/lib/form-submit";
@@ -19,8 +24,8 @@ const FIELDS: readonly ApplyField[] = ["name", "contact", "experience", "questio
 const id = (field: ApplyField) => `basvuru-${field}`;
 
 /**
- * ApplyForm (DESIGN.md): name, how to reach you, how you get on with coffee (three option
- * cards), an optional question, consent. Labels above, the error under its field in one
+ * ApplyForm (DESIGN.md): name and surname, a phone number, how you get on with coffee
+ * (three option cards), an optional question, consent in one short line. Labels above, the error under its field in one
  * sentence; after a refused submit the first field to fix gets the focus. Once the
  * application is in, the thank-you note takes the form's place.
  *
@@ -102,7 +107,9 @@ export function ApplyForm({ workshopId, full }: { workshopId: string; full: bool
         <Input
           id={id("contact")}
           name="contact"
-          autoComplete="off"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           defaultValue={values.contact}
           {...aria("contact", f.contactHint)}
         />
@@ -171,7 +178,7 @@ export function ApplyForm({ workshopId, full }: { workshopId: string; full: bool
           <span>
             {f.consent}{" "}
             <Link
-              href="/kvkk"
+              href={"/kvkk#atolye-basvurulari" as Route}
               prefetch={false}
               className="text-accent-ink underline underline-offset-3"
             >

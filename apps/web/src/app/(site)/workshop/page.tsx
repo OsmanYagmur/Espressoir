@@ -11,7 +11,7 @@ import { t } from "@/lib/i18n";
 export const metadata: Metadata = {
   title: t.workshop.title,
   description: t.workshop.description,
-  alternates: { canonical: "/atolye" },
+  alternates: { canonical: "/workshop" },
 };
 
 /** The next workshop that takes applications; the others are listed under it. */
