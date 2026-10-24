@@ -23,11 +23,11 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 
 | Yer | Metin |
 | --- | --- |
-| Hero başlığı | İçtiğin her kahveyi kaydet. |
-| Hero alt cümlesi | Puanla, iki cümle not düş, arkadaşlarının ne içtiğine bak. |
+| Hero başlığı | Kahveyi biraz daha yakından tanı. |
+| Hero alt cümlesi | Demleme rehberleri, çekirdek ve kavrum üzerine kısa yazılar, arkadaşlarının tadım notları. |
 | Boş akış | Henüz tadım yok. İlk fincanını ekle. |
-| Atölye başlığı | Kahveye giriş atölyesi |
-| Atölye alt cümlesi | İki saatte üç demleme yöntemi ve bir mini tadım. |
+| Atölye başlığı | Kahve 101 |
+| Atölye alt cümlesi | Kahveye giriş: iki saatte üç demleme yöntemi ve bir mini tadım. |
 | Başvuru alındı | Başvurun alındı. İki gün içinde sana yazacağım. |
 | Kontenjan doldu | Bu atölye doldu. Bir sonrakinde ilk sana haber vereyim mi? |
 | Alt bilgi sloganı | Her fincanın bir hatırası var. |
@@ -79,7 +79,7 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 ## Yerleşim
 
 - Mobil önce: tek kolon, 16px yan boşluk. Okuma sütunu en fazla 640px, kart ızgaraları en fazla 1080px.
-- Üst menü: Tadımlar, Atölye, Bilgi + Giriş. Kafeler ve İstatistik profil menüsünde. Hamburger menü yok; 560px altında bağlantılar ikinci satıra iner.
+- Üst menü: Bilgi, Tadım notları, Atölye + Giriş ya da profil resmi. Kafeler ve İstatistik profil menüsünde. Hamburger menü yok; 560px altında bağlantılar ikinci satıra iner.
 
 ## Görseller ve ikonlar
 
@@ -120,21 +120,23 @@ Sınıf adları `components.css` ile aynıdır.
 
 **EventCard** (`.es-card.es-event`): `--crema` tarih karosu ("Kas" + "22"), "22 Kasım Pazar · 14:00–16:30", başlık, "Konum, başvurun onaylanınca paylaşılır.", `--leaf` kontenjan çubuğu ve "8 kişilik · 3 yer kaldı", buton. Atölye sayfasında buton birincil "Başvur"; ana sayfada ikincil "Detaylar". Dolunca buton devre dışı "Kontenjan doldu".
 
-**ApplyForm** (`.es-form`): Adın (`name`), Sana nasıl ulaşalım? (`contact`, telefon ya da Instagram), Kahveyle aran nasıl? (`experience`: `new` / `regular` / `home_brewer`, seçenek kartları), Hangi tarihler uyar? (`dates[]`, chip), Merak ettiğin bir şey var mı? (`question`, isteğe bağlı), onay kutusu (`consent`). Etiket üstte, hata altta bir cümleyle (`aria-invalid`, `aria-describedby`), gönderince ilk hatalı alana odak. Başarıda formun yerine `.es-notice`. Placeholder etiket yerine kullanılmaz.
+**ApplyForm** (`.es-form`): Adın soyadın (`name`), Telefon numaran (`contact`, yalnızca telefon), Kahveyle aran nasıl? (`experience`: `new` / `regular` / `home_brewer`, seçenek kartları), Merak ettiğin bir şey var mı? (`question`, isteğe bağlı), onay kutusu (`consent`, tek kısa satır ve aydınlatma metnine bağlantı). Etiket üstte, hata altta bir cümleyle (`aria-invalid`, `aria-describedby`), gönderince ilk hatalı alana odak. Başarıda formun yerine `.es-notice`. Placeholder etiket yerine kullanılmaz.
 
 **InfoCard** (`.es-card.es-info`): üstte kenardan kenara 16:9 yazı fotoğrafı (varsa), soru başlığı (≤60 karakter), iki cümlelik cevap (≤200 karakter), isteğe bağlı "2 dakikalık okuma", "Devamını oku" metin bağlantısı. Tek bağlantı "Devamını oku"dur ve kartın tamamını kaplar.
+
+**GuideCard**: ana sayfada bir demleme yöntemi; kartın tamamı rehbere giden tek bağlantı. `--sunk` daire içinde Lucide ikon (V60 huni, AeroPress silindir, moka alev, French press aşağı ok, espresso basınç göstergesi, Türk kahvesi fincan, soğuk demleme kar tanesi), yöntemin adı (`card-title`), "15 g · 240 ml" (`figure`), "2,5–3 dk · orta öğütme" (`meta`), `--accent-ink` ok. Hover: kart 2px yükselir, ikon hafifçe yatar, ok sağa kayar.
 
 **SiteHeader** (`.es-header`): logo (işaret + "Espressoir"), üç bağlantı (etkin olana `aria-current="page"`: `--ink` + 2px `--accent` alt çizgi), sağda "Giriş" (`es-btn--secondary es-btn--sm`) ya da 32px avatar.
 
 ## Sayfalar
 
-**Ana sayfa:** SiteHeader → hero (`--crema` bant: solda `display` başlık, tek `lead` cümle, tek birincil buton: açık atölye varken "Atölyeye başvur", yoksa "Tadım ekle"; yanında yalnızca "Nasıl çalışır?" bağlantısı; sağda 4:3 demleme fotoğrafı, mobilde metnin altında) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadımlar (üç TastingCard + "Tümünü gör") → iki üç InfoCard → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
+**Ana sayfa:** önce kahve bilgisi. SiteHeader → hero (`--crema` bant: solda `display` başlık, tek `lead` cümle, tek birincil buton "Okumaya başla" (/bilgi); yanında yalnızca "Nasıl çalışır?" bağlantısı; sağda 4:3 demleme fotoğrafı, mobilde metnin altında) → demleme rehberleri (GuideCard ızgarası: mobilde iki, masaüstünde dört sütun; son hücre "Bütün yazılar") → "Merak ettiklerin" (altı InfoCard, rehber olmayan yazılar) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadım notları (üç TastingCard + "Tümünü gör") → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
 
-**Atölye (/atolye):** kapak fotoğrafı → `display` başlık + `lead` → tarih karosu, saat, konum, kontenjan → birincil "Başvur" (mobilde altta sabit `.es-sticky`, forma kayar) → "Ne yapacağız?" numaralı akış, süreler `figure` → "Yanında getir" / "Biz hazırlıyoruz" → sık sorulanlar → ApplyForm.
+**Atölye (/workshop):** kapak fotoğrafı → `display` başlık + `lead` → tarih karosu, saat, konum, kontenjan → birincil "Başvur" (mobilde altta sabit `.es-sticky`, forma kayar) → "Ne yapacağız?" numaralı akış, süreler `figure` → "Yanında getir" / "Biz hazırlıyoruz" → sık sorulanlar (her soru açılır kapanır, hepsi kapalı başlar; tarayıcının kendi `<details>` öğesi, yanında dönen bir ok) → ApplyForm.
 
 **Tadım detayı:** kahve adı (`display`), kavurucu ve yöntem, büyük ScoreBadge, TasteProfile, tat notaları, not, beğeni ve yorumlar.
 
-**Bilgi (/bilgi):** InfoCard ızgarası; her yazı en fazla 300 kelime ve tek görsel (yazı sayfasında başlığın altında, fotoğrafçısıyla).
+**Bilgi (/bilgi):** konulara ayrılmış InfoCard ızgaraları: Demleme rehberleri, Çekirdek ve kavrum, Temel bilgiler. Yazı düz paragraflardır, en fazla 300 kelime. Demleme rehberi ise en fazla 600 kelime olabilir; başlığın ve fotoğrafın altında tarif kutusu (kahve, su, sıcaklık, süre, öğütme; ölçüler `figure`), sonra ara başlıklar ve numaralı adımlar (atölye programıyla aynı numaralar) bulunur. Her yazının tek görseli var (yazı sayfasında başlığın altında, fotoğrafçısıyla).
 
 ## Eski tasarımdan kaldırılacaklar
 
