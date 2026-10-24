@@ -87,10 +87,16 @@ export {
   WORKSHOP_QUESTION_MAX_LENGTH,
   WORKSHOP_STATUSES,
   WORKSHOP_TITLE_MAX_LENGTH,
+  WORKSHOP_APPLICATION_SOURCES,
   isWorkshopContact,
+  summarizeApplications,
+  type ApplicationFacts,
+  type ApplicationSummary,
+  type WorkshopApplicationSource,
   type WorkshopExperience,
   type WorkshopStatus,
 } from "./workshop";
+export { COMMUNITY_METRICS, type CommunityMetric } from "./admin-stats";
 export {
   ARTICLE_FILE,
   ARTICLE_SUMMARY_MAX_LENGTH,

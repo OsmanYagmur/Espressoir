@@ -14,6 +14,8 @@ import {
   WORKSHOP_QUESTION_MAX_LENGTH,
   WORKSHOP_STATUSES,
   WORKSHOP_TITLE_MAX_LENGTH,
+  WORKSHOP_APPLICATION_SOURCES,
+  COMMUNITY_METRICS,
   isWorkshopContact,
 } from "@espressoir/core";
 import { z } from "zod";
@@ -75,6 +77,9 @@ export const workshopApplicationRowSchema = z
     experience: z.enum(WORKSHOP_EXPERIENCES),
     question: z.string().nullable(),
     status: z.enum(WORKSHOP_STATUSES),
+    // Newer than the table: a database without them reads as the form's, unmarked.
+    source: z.enum(WORKSHOP_APPLICATION_SOURCES).default("form"),
+    attended: z.boolean().nullable().default(null),
     created_at: z.string(),
   })
   .transform((row) => ({
@@ -85,8 +90,14 @@ export const workshopApplicationRowSchema = z
     experience: row.experience,
     question: row.question,
     status: row.status,
+    source: row.source,
+    attended: row.attended,
     createdAt: row.created_at,
   }));
+
+/** The columns an admin reads (the panel, the CSV download). */
+export const WORKSHOP_APPLICATION_SELECT =
+  "id, workshop_id, name, contact, experience, question, status, source, attended, created_at";
 
 export type WorkshopApplication = z.infer<typeof workshopApplicationRowSchema>;
 
@@ -150,6 +161,29 @@ export function toWorkshopApplicationInsert(input: WorkshopApplicationInput): Ap
     consent: input.consent,
   };
 }
+
+/** A person the admin adds from the panel: the form's fields and the status chosen. */
+export const adminApplicationInputSchema = workshopApplicationInputSchema.extend({
+  status: z.enum(WORKSHOP_STATUSES),
+});
+export type AdminApplicationInput = z.infer<typeof adminApplicationInputSchema>;
+
+/** The row an admin writes; the database marks it as added from the panel. */
+export function toAdminApplicationInsert(input: AdminApplicationInput): ApplicationInsert {
+  return { ...toWorkshopApplicationInsert(input), status: input.status };
+}
+
+// ── the admin overview ──────────────────────────────────────────────────────────────────
+
+export const communityStatSchema = z
+  .object({
+    metric: z.enum(COMMUNITY_METRICS),
+    total: z.coerce.number(),
+    last_week: z.coerce.number(),
+  })
+  .transform((row) => ({ metric: row.metric, total: row.total, lastWeek: row.last_week }));
+
+export type CommunityStat = z.infer<typeof communityStatSchema>;
 
 // ── the admin's workshop form ───────────────────────────────────────────────────────────
 
