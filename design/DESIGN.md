@@ -89,10 +89,10 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 
 ## Logo
 
-- **İşaret:** yukarıdan bakılan bir fincan, sağda kulpu. Kremanın içinde sitenin puan çubuklarıyla yazılmış bir E: bir gövde ve uzunlukları farklı üç yuvarlak uçlu çubuk. Kahve ile defter aynı işarette.
-- **Renkler:** ağız ve kulp `--ink`, krema `--crema`, E `--on-crema`; koyu temada da aynı token'lar. Uygulama ikonunda zemin `--ink`, fincan `--bg`.
-- **Yazı:** işaretin yanında "Espressoir", `--font-display`, 600 ağırlık, cümle düzeninde. Üst menüde işaret 36px; alt bilgide sloganın yanında tek başına.
-- İşaret tek bir çizimdir (40 birimlik kare); site, ikonlar ve paylaşım görselleri aynı çizimi kullanır. Başka renk, gölge ya da eğim verme.
+- **İşaret (veri çekirdeği):** sitenin puan çubuklarından örülmüş, dik duran bir kahve çekirdeği. Sekiz sıra yuvarlak uçlu çubuk bir oval doldurur; çubukların arasından sağa sola kıvrılarak geçen boşluk çekirdeğin yarığıdır. Kahve ile istatistik aynı işarette.
+- **Renkler:** çubuklar `--accent` (puan çubuğuyla aynı renk; koyu temada koyu temanın `--accent`'i). Uygulama ikonunda zemin `--ink`, çubuklar koyu temanın `--accent`'i.
+- **Yazı:** işaretin yanında "Espressoir", `--font-display`, 600 ağırlık, cümle düzeninde. Üst menüde işaret 36px yüksekliğinde; alt bilgide sloganın yanında tek başına.
+- İşaret tek bir çizimdir; site, ikonlar ve paylaşım görselleri aynı çubukları kullanır. Başka renk, gölge, eğim ya da çerçeve verme.
 
 ## Durumlar ve hareket
 
@@ -100,7 +100,7 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 - Hover: birincil buton `--accent-ink`, ikincil buton `--sunk` zemin, menü bağlantısı `--ink-2` → `--ink`.
 - Süreler ve eğri `tokens.css`'te: `--motion-fast` (150ms) hover, odak ve menü için; `--motion-slow` (700ms) sayfayla gelen hareket için; ikisi de `--motion-ease` ile yavaşlayarak biter.
 - Sayfa açılınca başlık, alt cümle ve kart listeleri sırayla hafifçe yukarı kayarak belirir (60ms arayla); puan ve kontenjan çubukları soldan dolar; kapak fotoğrafı çerçevesine yerleşir. Hepsi bir kez oynar.
-- Hover: kart 2px yükselir ve kenarlığı `--line-strong` olur; karttaki fotoğraf hafifçe büyür; menü bağlantısının alt çizgisi soldan uzar; logonun E çubukları yeniden dolar; birincil butondaki ok sağa kayar. Butona basınca 1px iner.
+- Hover: kart 2px yükselir ve kenarlığı `--line-strong` olur; karttaki fotoğraf hafifçe büyür; menü bağlantısının alt çizgisi soldan uzar; logonun çubukları yukarıdan aşağı sırayla yeniden dolar; birincil butondaki ok sağa kayar. Butona basınca 1px iner.
 - "Hareketi azalt" tercihi açıksa hiçbiri oynamaz; sayfa ilk hâliyle durur.
 - Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır.
 

@@ -193,17 +193,21 @@ data/                        owner's Notion export + reports (git-ignored)
   the header's "Giriş" only). Cards are framed by `--line`, never by a shadow; the one shadow
   is the phone's sticky bar. A TastingCard is a single link; lists of coffees, cafés and
   suggestions are rows that are each one link. Scores never change colour.
-- **The logo is one drawing** (`lib/logo.ts`, DESIGN.md → Logo): a cup from above whose
-  crema holds an E made of score bars. `LogoMark`/`Wordmark` (`components/site/logo.tsx`)
-  draw it with CSS colours; `lib/og.tsx` draws the same shapes with the token values for the
-  share images and the app icons (`app/icon.tsx`, `app/apple-icon.tsx`: the mark on `--ink`).
+- **The logo is one drawing** (`lib/logo.ts`, DESIGN.md → Logo; the owner picked it from ten
+  drafts on 2026-10-24): a coffee bean woven from score bars, eight rows of rounded bars in
+  an oval with a swinging gap for the crease, computed once as `LOGO_BARS`. `LogoMark` /
+  `Wordmark` (`components/site/logo.tsx`) draw it in `fill-accent`; `lib/og.tsx` draws the
+  same bars with the token values for the share images and the app icons (`app/icon.tsx`,
+  `app/apple-icon.tsx`: the dark theme's accent on `--ink`).
 - **Motion lives in tokens and utilities:** `--motion-fast/slow/ease` in `tokens.css`;
   `animate-rise`, `animate-fill` (bars, with `origin-left`), `animate-settle` (photos),
   `animate-pop` (menus), `animate-delay-<ms>` and `stagger` (a list whose items rise one after
   another) in `globals.css`. Always behind `motion-safe:` (or inside `stagger`, which uses it):
   "reduce motion" keeps every page still. Entrances play once on load, never on scroll.
   Hover lifts use the `translate` property (`hover:-translate-y-0.5`), so they never fight an
-  entrance's `transform`.
+  entrance's `transform`. A delay takes the same variants as its animation
+  (`motion-safe:animate-delay-150` beside `motion-safe:animate-fill`): the `animate-*`
+  shorthand under a variant resets a plain `animate-delay-*`.
 - **Photos are the site's own files** (`public/images/<id>-640.webp` and `-1280.webp`), listed
   with their Turkish `alt`, photographer and Unsplash page in `content/photos.ts`; drawn by
   `PhotoImage` / `PhotoFigure` / `PhotoCredit` (`components/site/photo.tsx`), plain `<img>`
