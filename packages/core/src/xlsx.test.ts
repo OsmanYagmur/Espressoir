@@ -2,7 +2,7 @@ import { crc32 as nodeCrc32 } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
-import { columnName, crc32, xlsxWorkbook, zipStored } from "./xlsx";
+import { columnName, crc32, utf8, xlsxWorkbook, zipStored } from "./xlsx";
 
 const decoder = new TextDecoder();
 
@@ -35,6 +35,14 @@ describe("crc32", () => {
     const bytes = new TextEncoder().encode("Kahve 101 — çekirdek, öğütme, ışık");
     expect(crc32(bytes)).toBe(nodeCrc32(bytes));
     expect(crc32(new Uint8Array())).toBe(0);
+  });
+});
+
+describe("utf8", () => {
+  it("encodes like TextEncoder, Turkish letters, emoji and lone surrogates included", () => {
+    for (const text of ["", "Kahve", "ğüşıöç ĞÜŞİÖÇ", "€ — ☕", "kahve 🫘 çekirdek", "a\ud800b"]) {
+      expect([...utf8(text)], text).toEqual([...new TextEncoder().encode(text)]);
+    }
   });
 });
 

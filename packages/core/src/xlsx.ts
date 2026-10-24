@@ -13,7 +13,31 @@ export interface SheetColumn {
   wrap?: boolean;
 }
 
-const encoder = new TextEncoder();
+/**
+ * A string's UTF-8 bytes. Written out because core stays free of DOM and Node APIs (the
+ * React Native app type-checks it without TextEncoder); a lone surrogate becomes U+FFFD,
+ * as TextEncoder would make it.
+ */
+export function utf8(text: string): Uint8Array<ArrayBuffer> {
+  const bytes: number[] = [];
+  for (const char of text) {
+    let code = char.codePointAt(0) ?? 0xfffd;
+    if (code >= 0xd800 && code <= 0xdfff) code = 0xfffd;
+    if (code < 0x80) bytes.push(code);
+    else if (code < 0x800) bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+    else if (code < 0x10000) {
+      bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
+    } else {
+      bytes.push(
+        0xf0 | (code >> 18),
+        0x80 | ((code >> 12) & 0x3f),
+        0x80 | ((code >> 6) & 0x3f),
+        0x80 | (code & 0x3f),
+      );
+    }
+  }
+  return new Uint8Array(bytes);
+}
 
 // ── zip ─────────────────────────────────────────────────────────────────────────────────
 
@@ -40,7 +64,7 @@ export function zipStored(
   let offset = 0;
 
   for (const file of files) {
-    const name = encoder.encode(file.name);
+    const name = utf8(file.name);
     const crc = crc32(file.data);
     const size = file.data.length;
 
@@ -162,7 +186,5 @@ export function xlsxWorkbook(
     "xl/worksheets/sheet1.xml": sheet,
     "xl/styles.xml": STYLES,
   };
-  return zipStored(
-    Object.entries(parts).map(([file, text]) => ({ name: file, data: encoder.encode(text) })),
-  );
+  return zipStored(Object.entries(parts).map(([file, text]) => ({ name: file, data: utf8(text) })));
 }
