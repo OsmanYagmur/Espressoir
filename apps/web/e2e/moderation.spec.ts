@@ -145,9 +145,15 @@ test("a reported comment reaches the admin, who hides it from everyone else", as
   await reported.getByRole("button", { name: "Şikâyeti gönder" }).click();
   await expect(reported.getByText("Şikâyetin alındı.")).toBeVisible();
 
-  // It is in the admin's queue, with what was said about it.
+  // It is in the admin's queue, with what was said about it: panel → /osman → Moderasyon.
   await admin.goto("/panel");
   await admin.getByRole("link", { name: "Yönetim" }).click();
+  await expect(admin).toHaveURL(/\/osman$/);
+  await admin
+    .getByRole("navigation", { name: "Yönetim bölümleri" })
+    .getByRole("link", { name: "Moderasyon" })
+    .click();
+  await expect(admin).toHaveURL(/\/osman\/yonetim$/);
   const report = admin
     .getByRole("list", { name: "Açık şikâyetler" })
     .getByRole("listitem")
