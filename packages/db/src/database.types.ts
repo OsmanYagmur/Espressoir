@@ -2403,6 +2403,11 @@ export type Database = {
           id: string;
           name: string;
           question: string | null;
+          reminded_at: string | null;
+          rsvp: string | null;
+          rsvp_asked_at: string | null;
+          rsvp_at: string | null;
+          rsvp_token: string;
           source: string;
           status: string;
           updated_at: string;
@@ -2419,6 +2424,11 @@ export type Database = {
           id?: string;
           name: string;
           question?: string | null;
+          reminded_at?: string | null;
+          rsvp?: string | null;
+          rsvp_asked_at?: string | null;
+          rsvp_at?: string | null;
+          rsvp_token?: string;
           source?: string;
           status?: string;
           updated_at?: string;
@@ -2434,6 +2444,11 @@ export type Database = {
           id?: string;
           name?: string;
           question?: string | null;
+          reminded_at?: string | null;
+          rsvp?: string | null;
+          rsvp_asked_at?: string | null;
+          rsvp_at?: string | null;
+          rsvp_token?: string;
           source?: string;
           status?: string;
           updated_at?: string;
@@ -2893,6 +2908,7 @@ export type Database = {
         Returns: undefined;
       };
       analytics_member_key: { Args: { p_user_id: string }; Returns: string };
+      answer_workshop_rsvp_v1: { Args: { p_answer: string; p_token: string }; Returns: string };
       can_post: { Args: Record<PropertyKey, never>; Returns: boolean };
       coffee_search_text: { Args: { p_brand_id: string; p_name: string }; Returns: string };
       complete_onboarding_v1: {
@@ -3006,6 +3022,7 @@ export type Database = {
         }[];
       };
       merge_coffee_into: { Args: { p_from: string; p_into: string }; Returns: undefined };
+      new_rsvp_token: { Args: Record<PropertyKey, never>; Returns: string };
       reorder_list_v1: { Args: { p_coffee_ids: string[]; p_list_id: string }; Returns: undefined };
       reserved_usernames: { Args: Record<PropertyKey, never>; Returns: string[] };
       search_cafes_v1: {
@@ -3060,6 +3077,19 @@ export type Database = {
           p_website?: string;
         };
         Returns: undefined;
+      };
+      workshop_rsvp_v1: {
+        Args: { p_token: string };
+        Returns: {
+          can_answer: boolean;
+          ends_at: string;
+          first_name: string;
+          location_text: string;
+          rsvp: string;
+          starts_at: string;
+          status: string;
+          workshop_title: string;
+        }[];
       };
       workshop_seats_taken: { Args: { p_workshop_id: string }; Returns: number };
     };

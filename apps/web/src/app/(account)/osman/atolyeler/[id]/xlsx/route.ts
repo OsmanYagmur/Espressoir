@@ -12,6 +12,7 @@ const WIDTHS: Record<(typeof EXPORT_COLUMNS)[number], number> = {
   experience: 18,
   status: 14,
   attendance: 12,
+  rsvp: 12,
   source: 10,
   createdAt: 18,
   question: 60,

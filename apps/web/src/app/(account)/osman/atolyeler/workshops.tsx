@@ -10,6 +10,7 @@ import {
   WORKSHOP_TITLE_MAX_LENGTH,
   siteConfig,
   summarizeApplications,
+  whatsappNumber,
   type WorkshopStatus,
 } from "@espressoir/core";
 import type { Workshop, WorkshopApplication } from "@espressoir/db";
@@ -36,6 +37,7 @@ import { Capacity } from "@/components/workshop/event-card";
 import { WORKSHOP_PROGRAMS } from "@/content/atolye";
 import { formatLongDay, formatPercent } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
+import { getSiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { workshopFormValues, workshopWhen } from "@/lib/workshop-format";
 
@@ -46,6 +48,7 @@ import {
   setApplicationStatus,
   setAttendance,
 } from "./actions";
+import { CopyLinkButton, WhatsAppButton } from "./message-buttons";
 
 const w = t.admin.workshops;
 const experiences = t.workshop.form.experiences;
@@ -238,7 +241,98 @@ const ATTENDANCE: readonly { value: "true" | "false"; label: string; Icon: Lucid
 const attendanceValue = (attended: boolean | null) =>
   attended === null ? "" : attended ? "true" : "false";
 
-function Application({ application }: { application: WorkshopApplication }) {
+const rsvpText = w.rsvp;
+
+const stampFormat = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: siteConfig.timeZone,
+});
+
+/**
+ * For an approved person: whether they answered "are you coming?", when they were asked
+ * and reminded, and the WhatsApp messages that carry their personal link (/teyit/<token>).
+ */
+function RsvpRow({
+  application,
+  workshop,
+}: {
+  application: WorkshopApplication;
+  workshop: Workshop;
+}) {
+  if (!application.rsvpToken) return null;
+  const link = new URL(`/teyit/${application.rsvpToken}`, getSiteUrl()).href;
+  const firstName = application.name.split(" ")[0] ?? application.name;
+  const when = workshopWhen(workshop);
+  const number = whatsappNumber(application.contact);
+  const chat = (text: string) => `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
+  const ask = format(rsvpText.messages.ask, {
+    name: firstName,
+    title: workshop.title,
+    when: when.full,
+    place: workshop.locationText ? ` · ${workshop.locationText}` : "",
+    link,
+  });
+  const remind = format(rsvpText.messages.remind, {
+    name: firstName,
+    title: workshop.title,
+    time: when.start,
+    link,
+  });
+  const notes = [
+    application.rsvpAskedAt
+      ? format(rsvpText.asked, { date: stampFormat.format(new Date(application.rsvpAskedAt)) })
+      : null,
+    application.remindedAt
+      ? format(rsvpText.reminded, { date: stampFormat.format(new Date(application.remindedAt)) })
+      : null,
+  ].filter(Boolean);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="type-meta">{rsvpText.label}</span>
+        <Chip>{rsvpText.states[application.rsvp ?? "none"]}</Chip>
+        {notes.length > 0 ? <span className="type-meta">{notes.join(" · ")}</span> : null}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        {number ? (
+          <>
+            <WhatsAppButton
+              href={chat(ask)}
+              label={rsvpText.ask}
+              description={`${application.name}, ${rsvpText.whatsapp}`}
+              applicationId={application.id}
+              kind="ask"
+            />
+            {application.rsvp !== "no" ? (
+              <WhatsAppButton
+                href={chat(remind)}
+                label={rsvpText.remind}
+                description={`${application.name}, ${rsvpText.whatsapp}`}
+                applicationId={application.id}
+                kind="remind"
+              />
+            ) : null}
+          </>
+        ) : (
+          <span className="type-meta">{rsvpText.noPhone}</span>
+        )}
+        <CopyLinkButton link={link} label={rsvpText.copy} copiedLabel={rsvpText.copied} />
+      </div>
+    </div>
+  );
+}
+
+function Application({
+  application,
+  workshop,
+}: {
+  application: WorkshopApplication;
+  workshop: Workshop;
+}) {
   const date = formatLongDay(application.createdAt.slice(0, 10));
   const ids = (
     <>
@@ -267,6 +361,9 @@ function Application({ application }: { application: WorkshopApplication }) {
           </p>
         ) : null}
       </div>
+      {application.status === "approved" ? (
+        <RsvpRow application={application} workshop={workshop} />
+      ) : null}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         {/* Each button sends its own answer; the name says whose application it is. */}
         <form action={setApplicationStatus} className="flex flex-wrap items-center gap-2">
@@ -330,6 +427,19 @@ function Application({ application }: { application: WorkshopApplication }) {
         </form>
       </div>
     </li>
+  );
+}
+
+/** How the approved people answered "are you coming?": the count the day's plan rests on. */
+function RsvpSummary({ applications }: { applications: readonly WorkshopApplication[] }) {
+  const approved = applications.filter(({ status }) => status === "approved");
+  if (approved.length === 0) return null;
+  const count = (answer: WorkshopApplication["rsvp"]) =>
+    approved.filter(({ rsvp }) => rsvp === answer).length;
+  return (
+    <p className="mb-2 type-meta">
+      {format(rsvpText.summary, { yes: count("yes"), no: count("no"), none: count(null) })}
+    </p>
   );
 }
 
@@ -472,12 +582,17 @@ export function WorkshopsAdmin({
                 {w.applicationsTitle}{" "}
                 <span className="type-figure font-normal text-ink-2">{mine.length}</span>
               </h3>
+              <RsvpSummary applications={mine} />
               {mine.length === 0 ? (
                 <p className="text-ink-2">{w.applicationsEmpty}</p>
               ) : (
                 <ul aria-label={w.applicationsTitle} className="border-t border-line">
                   {mine.map((application) => (
-                    <Application key={application.id} application={application} />
+                    <Application
+                      key={application.id}
+                      application={application}
+                      workshop={workshop}
+                    />
                   ))}
                 </ul>
               )}

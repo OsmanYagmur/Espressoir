@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { WorkshopApplicationInput, Workshop } from "@espressoir/db";
+import type { WorkshopApplicationInput, Workshop, WorkshopRsvp } from "@espressoir/db";
 
 import { format, t } from "@/lib/i18n";
 import { getSiteUrl } from "@/lib/site-url";
@@ -72,6 +72,22 @@ export async function notifyNewApplication(
     `${m.seatsLeft}: ${Math.max(workshop.seatsLeft - (waitlist ? 0 : 1), 0)} / ${workshop.capacity}`,
     "",
     `${m.panel}: ${panelLink(workshop.id)}`,
+  ]);
+}
+
+/**
+ * Tells the owner that an approved person said "Gelemiyorum" on their answer page, so a
+ * seat can go to the waitlist. A "Geliyorum" sends nothing: the panel shows it.
+ */
+export async function notifyRsvpNo(rsvp: WorkshopRsvp): Promise<void> {
+  await send(format(m.noSubject, { title: rsvp.workshopTitle, name: rsvp.firstName }), [
+    format(m.noBody, {
+      name: rsvp.firstName,
+      title: rsvp.workshopTitle,
+      date: workshopWhen(rsvp).date,
+    }),
+    "",
+    `${m.panel}: ${panelLink()}`,
   ]);
 }
 

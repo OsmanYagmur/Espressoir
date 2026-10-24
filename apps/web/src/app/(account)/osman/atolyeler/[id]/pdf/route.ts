@@ -27,13 +27,14 @@ const COLUMNS: readonly PdfColumn[] = [
     // A box to tick on the day, for the people with a seat.
     box: (a) => a.status === "approved",
   },
-  { title: c.createdAt, width: 90, value: (a) => exportRow(a).createdAt },
+  { title: c.rsvp, width: 90, value: (a) => exportRow(a).rsvp },
   { title: c.question, width: 218, value: (a) => exportRow(a).question },
 ];
 
 /**
- * A workshop's applications as a PDF: approved people first, a box to tick for each one on
- * the day, long questions wrapped. Admins only; anyone else gets a 404.
+ * A workshop's applications as a PDF for the day: approved people first, their answer to
+ * "are you coming?", a box to tick when they arrive, long questions wrapped. The time
+ * each one applied is in the Excel file. Admins only; anyone else gets a 404.
  */
 export async function GET(
   _request: Request,

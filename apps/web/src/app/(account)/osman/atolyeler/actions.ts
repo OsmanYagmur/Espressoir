@@ -163,3 +163,20 @@ export async function testApplicationMail(): Promise<void> {
   if (result === "sent") redirect(`${SECTION}?tamam=posta`);
   back(result === "missing" ? "mail_missing" : "mail_failed");
 }
+
+/**
+ * Notes that the admin opened WhatsApp to ask for an answer or to remind: called from the
+ * panel's buttons as the chat opens, so the panel can say when each person was asked. The
+ * message itself is sent from the admin's own WhatsApp; nothing leaves the site.
+ */
+export async function noteMessageSent(applicationId: string, kind: "ask" | "remind") {
+  const parsed = id.safeParse(applicationId);
+  if (!parsed.success) return;
+  const { supabase } = await requireAdmin();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("workshop_applications")
+    .update(kind === "ask" ? { rsvp_asked_at: now } : { reminded_at: now })
+    .eq("id", parsed.data);
+  if (error) console.error("[admin] message note refused:", error.message);
+}

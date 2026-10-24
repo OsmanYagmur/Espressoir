@@ -1,17 +1,13 @@
 import "server-only";
 
 import { siteConfig, slugify, type WorkshopStatus } from "@espressoir/core";
-import {
-  WORKSHOP_APPLICATION_SELECT,
-  workshopApplicationRowSchema,
-  workshopRowSchema,
-  type Workshop,
-  type WorkshopApplication,
-} from "@espressoir/db";
+import { workshopRowSchema, type Workshop, type WorkshopApplication } from "@espressoir/db";
 import { z } from "zod";
 
 import { getCurrentUser } from "@/lib/auth";
 import { t } from "@/lib/i18n";
+
+import { readApplications } from "../data";
 
 const w = t.admin.workshops;
 
@@ -44,22 +40,16 @@ export async function readWorkshopExport(rawId: string): Promise<WorkshopExport 
   const { supabase } = session;
   const [workshop, applications] = await Promise.all([
     supabase.from("workshop_overview").select("*").eq("workshop_id", id.data).maybeSingle(),
-    supabase
-      .from("workshop_applications")
-      .select(WORKSHOP_APPLICATION_SELECT)
-      .eq("workshop_id", id.data)
-      .order("created_at"),
+    readApplications(supabase, id.data),
   ]);
-  if (!workshop.data || applications.error) return null;
+  if (!workshop.data || !applications) return null;
 
   const parsed = workshopRowSchema.parse(workshop.data);
   const rank = (status: WorkshopStatus) => STATUS_ORDER.indexOf(status);
   return {
     workshop: parsed,
-    applications: applications.data
-      .map((row) => workshopApplicationRowSchema.parse(row))
-      // Stable: within a status, in the order they came.
-      .sort((a, b) => rank(a.status) - rank(b.status)),
+    // Stable: within a status, in the order they came.
+    applications: applications.sort((a, b) => rank(a.status) - rank(b.status)),
     fileName: `${slugify(parsed.title)}-${parsed.startsAt.slice(0, 10)}-${w.exportFile}`,
   };
 }
@@ -71,6 +61,7 @@ export const EXPORT_COLUMNS = [
   "experience",
   "status",
   "attendance",
+  "rsvp",
   "source",
   "createdAt",
   "question",
@@ -87,6 +78,7 @@ export function exportRow(application: WorkshopApplication): Record<ExportColumn
     status: w.statuses[application.status],
     attendance:
       application.attended === null ? "" : application.attended ? states.came : states.missed,
+    rsvp: application.rsvp === null ? "" : w.rsvp.states[application.rsvp],
     source: w.sources[application.source],
     createdAt: stampFormat.format(new Date(application.createdAt)),
     question: application.question ?? "",

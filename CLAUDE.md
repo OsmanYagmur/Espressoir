@@ -67,6 +67,7 @@ apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /
                              /osman (admin: overview), /osman/atolyeler (+ [id]/xlsx, [id]/pdf),
                              /osman/yonetim (moderation); admin-area.tsx asks for the password
                              (dynamic; session read behind <Suspense>)
+apps/web/src/app/teyit/      /teyit/[token] (a workshop applicant's "are you coming?" page; per request)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
 apps/web/src/app/            root layout (fonts), 404/error/loading, icon + apple-icon (drawn),
@@ -740,6 +741,22 @@ The admin area and visit statistics (2026-10-24):
   submit button per answer (Onayla, Beklet, Yedeğe al, Reddet; the current one is left out),
   each named for the person; "Geldi / Gelmedi" only for approved people, pressed again to
   take the mark back. Works without JavaScript.
+- **"Are you coming?" over WhatsApp, answered on a personal page** (migration
+  `20261024210000_workshop_rsvp`; owner's choice 2026-10-24: free, sent by hand, no SMS
+  provider). Every application has `rsvp_token` (22 URL-safe characters from a UUID's 122
+  random bits, `new_rsvp_token()`), `rsvp` ('yes' / 'no' / null, `WORKSHOP_RSVP_ANSWERS`),
+  `rsvp_at`, `rsvp_asked_at`, `reminded_at`. For approved people the panel shows the answer
+  and two `wa.me` links (`whatsappNumber` in `@espressoir/core`) with the message written
+  out: "Teyit sor" (a day before, with the link) and "Hatırlat" (shortly before); opening one
+  notes the time (`noteMessageSent`). "Linki kopyala" is for contacts without a phone.
+  `/teyit/[token]` (outside `(site)`: per request, `noindex`, disallowed in robots) reads
+  `workshop_rsvp_v1` (first name, workshop, status, answer, `can_answer` by the database's
+  clock; nothing private) and writes `answer_workshop_rsvp_v1` (approved only, until the
+  start, the latest answer wins); both SECURITY DEFINER for anon. Nobody writes the token or
+  the answer directly; admins update only the two "sent" times. A "Gelemiyorum" mails the
+  owner (`notifyRsvpNo`). The answer is in both downloads (the PDF shows it instead of the
+  application time). Read through `readApplications` (`osman/atolyeler/data.ts`), which
+  falls back through `WORKSHOP_APPLICATION_SELECTS` on an older database.
 - **The application mail** (`lib/workshop-mail.ts`): its subject names the person, its link
   leads to the workshop in the panel. `/osman/atolyeler` says whether it is on (`mailSetup()`)
   and has a "Deneme e-postası gönder" button (`testApplicationMail`, `?tamam=posta`), the way
@@ -877,8 +894,8 @@ Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
   `db:push:prod`). 4C has none. The workshop migrations (`20261023120000_workshops`,
-  `20261024120000_workshop_admin`) are on dev and prod (2026-10-24). `20261024180000_kahve_101`
-  (renames the seeded workshop to "Kahve 101" if it still has its first title) is not yet.
+  `20261024120000_workshop_admin`, `20261024180000_kahve_101`, `20261024210000_workshop_rsvp`)
+  are on dev and prod (2026-10-24).
 - Google Analytics: the property, the service account and four Vercel variables
   (`docs/setup-analytics.md`); until then no consent bar and no visits on /osman.
 - Workshop: set the real date, price and place in `/osman` → Atölyeler (the first row holds
