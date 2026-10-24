@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { format, t } from "@/lib/i18n";
 
+import { ConsentReset } from "./consent-bar";
 import { LogoMark } from "./logo";
 import { ThemeSwitch } from "./theme-switch";
 
@@ -65,6 +66,9 @@ export function SiteFooter() {
                     </Link>
                   </li>
                 ))}
+                <li className="empty:hidden">
+                  <ConsentReset className={`cursor-pointer ${footerLink}`} />
+                </li>
               </ul>
             </nav>
             <CopyrightLine />
