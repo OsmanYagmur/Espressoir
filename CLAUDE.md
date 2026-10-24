@@ -193,6 +193,24 @@ data/                        owner's Notion export + reports (git-ignored)
   the header's "Giriş" only). Cards are framed by `--line`, never by a shadow; the one shadow
   is the phone's sticky bar. A TastingCard is a single link; lists of coffees, cafés and
   suggestions are rows that are each one link. Scores never change colour.
+- **The logo is one drawing** (`lib/logo.ts`, DESIGN.md → Logo): a cup from above whose
+  crema holds an E made of score bars. `LogoMark`/`Wordmark` (`components/site/logo.tsx`)
+  draw it with CSS colours; `lib/og.tsx` draws the same shapes with the token values for the
+  share images and the app icons (`app/icon.tsx`, `app/apple-icon.tsx`: the mark on `--ink`).
+- **Motion lives in tokens and utilities:** `--motion-fast/slow/ease` in `tokens.css`;
+  `animate-rise`, `animate-fill` (bars, with `origin-left`), `animate-settle` (photos),
+  `animate-pop` (menus), `animate-delay-<ms>` and `stagger` (a list whose items rise one after
+  another) in `globals.css`. Always behind `motion-safe:` (or inside `stagger`, which uses it):
+  "reduce motion" keeps every page still. Entrances play once on load, never on scroll.
+  Hover lifts use the `translate` property (`hover:-translate-y-0.5`), so they never fight an
+  entrance's `transform`.
+- **Photos are the site's own files** (`public/images/<id>-640.webp` and `-1280.webp`), listed
+  with their Turkish `alt`, photographer and Unsplash page in `content/photos.ts`; drawn by
+  `PhotoImage` / `PhotoFigure` / `PhotoCredit` (`components/site/photo.tsx`), plain `<img>`
+  with `srcSet`. A new photo: crop it to the shape it is shown in, write both widths without
+  metadata, add a line to `PHOTOS`. An article names its one picture with `image:` in its
+  header (checked against `PHOTOS` when the articles are read); a workshop program with
+  `photo`.
 - **Light and dark** come from the same tokens: `data-theme` on `<html>` (next-themes) or the
   system preference; the switch is in the footer. Places that cannot read CSS variables (theme
   colour, manifest, share images, the global error page, the drawn icons) read
@@ -416,8 +434,9 @@ Home screen and the quick form (Phase 3E):
   shortcuts ("Tadım ekle", "Akış"). The site needs the network; an offline copy of pages that
   change with every tasting and sign-in would only be out of date. iPhone: `appleWebApp` in the
   root layout and `app/apple-icon.png`.
-- **Icons are plain PNG files** (`public/icons/`, drawn once; how is in its README), so they
-  cost nothing to serve. Maskable keeps the square inside the middle 80 %.
+- **Icons are drawn at build time** with next/og from the logo mark (`app/icon.tsx`:
+  `/icon/32`, `/192`, `/512`, `/maskable`; `app/apple-icon.tsx`). Maskable keeps the mark
+  inside the middle 80 %.
 - **`viewportFit: "cover"`**: the body keeps the safe-area insets as padding, and so does the
   form's save bar.
 - **The new-tasting form starts from the member's last tastings:** up to six recent coffees as
@@ -711,6 +730,8 @@ Workshops and articles (2026-10-23):
       admin section, `/bilgi` with four articles. Decided with the owner: one date per
       workshop, capacity and price editable in the admin panel, e-mail notification through
       Resend, a KVKK paragraph without a retention period, integer scores (no 0.5 steps).
+      Added on the owner's request (2026-10-24): the logo mark, motion, Unsplash photos on
+      the home page, the workshop cover and the articles.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
