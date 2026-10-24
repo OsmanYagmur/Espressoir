@@ -9,7 +9,7 @@ import { getOpenWorkshops } from "@/lib/data/workshops";
 import { t } from "@/lib/i18n";
 import { workshopWhen } from "@/lib/workshop-format";
 
-type Props = PageProps<"/atolye/[id]">;
+type Props = PageProps<"/workshop/[id]">;
 
 // Every open workshop has its own page; the placeholder keeps a build without any open
 // workshop going (it renders the 404 page).
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: workshop.title,
     description: `${workshopWhen(workshop).full}. ${t.workshop.description}`,
-    alternates: { canonical: `/atolye/${workshop.id}` },
+    alternates: { canonical: `/workshop/${workshop.id}` },
   };
 }
 

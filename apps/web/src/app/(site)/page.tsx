@@ -3,21 +3,24 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { TastingCard } from "@/components/coffee/tasting-card";
+import { GuideCard } from "@/components/info/guide-card";
 import { InfoCard } from "@/components/info/info-card";
 import { PageShell } from "@/components/site/page-shell";
 import { PhotoCredit, PhotoImage } from "@/components/site/photo";
 import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
+import { cardClass } from "@/components/ui/card";
 import { EventCard } from "@/components/workshop/event-card";
 import { getArchive } from "@/lib/data/archive";
-import { getArticles } from "@/lib/data/articles";
+import { getArticles, isGuide } from "@/lib/data/articles";
 import { loggedTastings } from "@/lib/data/selectors";
 import { getCurrentYear } from "@/lib/data/today";
 import { getOpenWorkshops } from "@/lib/data/workshops";
 import { t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 const LATEST_COUNT = 3;
-const INFO_COUNT = 3;
+const INFO_COUNT = 6;
 
 const HERO_PHOTO = "ana-demleme";
 
@@ -25,9 +28,9 @@ const aside = "text-accent-ink underline underline-offset-3";
 const arrow = "transition-transform group-hover/cta:translate-x-1";
 
 /**
- * The home page (DESIGN.md → Sayfalar): one sentence on what this is and one main action
- * (apply to the open workshop, or add a tasting when there is none), the next workshop,
- * the latest tastings, a few short articles.
+ * The home page (DESIGN.md → Sayfalar), a coffee guide first: one sentence on what is here
+ * and one main action (start reading), the brewing methods with their numbers, the articles,
+ * the next workshop, the latest tasting notes.
  */
 export default async function HomePage() {
   const [archive, workshops, articles, currentYear] = await Promise.all([
@@ -38,6 +41,8 @@ export default async function HomePage() {
   ]);
   const workshop = workshops[0];
   const latest = loggedTastings(archive).slice(0, LATEST_COUNT);
+  const guides = articles.filter(isGuide);
+  const reads = articles.filter((article) => !isGuide(article)).slice(0, INFO_COUNT);
 
   return (
     <PageShell>
@@ -52,17 +57,10 @@ export default async function HomePage() {
           <p className="text-lg">{t.home.heroLead}</p>
           <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-4">
             <Button asChild className="group/cta">
-              {workshop ? (
-                <Link href={"/atolye#basvuru" as Route} prefetch={false}>
-                  {t.home.cta.workshop}
-                  <ArrowRightIcon aria-hidden className={arrow} />
-                </Link>
-              ) : (
-                <Link href="/panel/tadim/yeni" prefetch={false}>
-                  {t.home.cta.addTasting}
-                  <ArrowRightIcon aria-hidden className={arrow} />
-                </Link>
-              )}
+              <Link href="/bilgi">
+                {t.home.cta.read}
+                <ArrowRightIcon aria-hidden className={arrow} />
+              </Link>
             </Button>
             <Link
               href={"/hakkinda#nasil-calisir" as Route}
@@ -86,10 +84,60 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {guides.length > 0 ? (
+        <Section id="demleme">
+          <SectionHeading id="demleme" title={t.home.guidesTitle} hint={t.home.guidesHint} />
+          <ul aria-labelledby="demleme" className="grid stagger grid-cols-2 gap-4 md:grid-cols-4">
+            {guides.map((guide) => (
+              <li key={guide.slug}>
+                <GuideCard guide={guide} />
+              </li>
+            ))}
+            {/* The last cell leads to everything else (seven methods fill two rows with it). */}
+            <li>
+              <Link
+                href="/bilgi"
+                className={cn(
+                  cardClass,
+                  "group flex h-full flex-col justify-end gap-2 text-accent-ink no-underline transition-[border-color,translate] hover:-translate-y-0.5 hover:border-line-strong",
+                )}
+              >
+                <span className="font-semibold">{t.home.guidesAll}</span>
+                <ArrowRightIcon
+                  aria-hidden
+                  className="size-5 stroke-[1.5] transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </li>
+          </ul>
+        </Section>
+      ) : null}
+
+      {reads.length > 0 ? (
+        <Section id="bilgi">
+          <SectionHeading
+            id="bilgi"
+            title={t.home.infoTitle}
+            aside={
+              <Link href="/bilgi" className={aside}>
+                {t.home.infoAll}
+              </Link>
+            }
+          />
+          <ul aria-labelledby="bilgi" className="grid stagger gap-4 md:grid-cols-3">
+            {reads.map((article) => (
+              <li key={article.slug}>
+                <InfoCard article={article} />
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
       {workshop ? (
         <Section id="siradaki-atolye">
           <SectionHeading id="siradaki-atolye" title={t.home.workshopTitle} />
-          <EventCard workshop={workshop} action="details" href="/atolye" />
+          <EventCard workshop={workshop} action="details" href="/workshop" />
         </Section>
       ) : null}
 
@@ -117,27 +165,6 @@ export default async function HomePage() {
           <p className="text-ink-2">{t.home.latestEmpty}</p>
         )}
       </Section>
-
-      {articles.length > 0 ? (
-        <Section id="bilgi">
-          <SectionHeading
-            id="bilgi"
-            title={t.home.infoTitle}
-            aside={
-              <Link href="/bilgi" className={aside}>
-                {t.home.infoAll}
-              </Link>
-            }
-          />
-          <ul aria-labelledby="bilgi" className="grid stagger gap-4 md:grid-cols-3">
-            {articles.slice(0, INFO_COUNT).map((article) => (
-              <li key={article.slug}>
-                <InfoCard article={article} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
     </PageShell>
   );
 }

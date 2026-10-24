@@ -20,9 +20,14 @@ const nextConfig: NextConfig = {
   },
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: ["@espressoir/core", "@espressoir/db", "@espressoir/i18n"],
-  // The admin pages moved to /osman (2026-10-24); old links and bookmarks still arrive.
+  // The admin pages and the workshop moved on 2026-10-24 (to /osman and to /workshop);
+  // old links, bookmarks and shared addresses still arrive.
   async redirects() {
-    return [{ source: "/panel/yonetim", destination: "/osman/yonetim", permanent: false }];
+    return [
+      { source: "/panel/yonetim", destination: "/osman/yonetim", permanent: false },
+      { source: "/atolye", destination: "/workshop", permanent: true },
+      { source: "/atolye/:id", destination: "/workshop/:id", permanent: true },
+    ];
   },
   turbopack: {
     rules: {

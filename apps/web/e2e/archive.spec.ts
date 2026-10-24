@@ -10,33 +10,44 @@ const mainNav = (page: Page) => page.getByRole("navigation", { name: "Ana menü"
 const exploreNav = (page: Page) => page.getByRole("navigation", { name: "Keşfet" });
 
 test.describe("home", () => {
-  test("says what the site is, leads to the open workshop and shows the latest", async ({
+  test("leads with the guides, then the workshop and the latest tasting notes", async ({
     page,
   }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/Espressoir/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("İçtiğin her kahveyi kaydet.");
-
-    // One main action: the open workshop's form. "Nasıl çalışır?" sits beside it as a link.
-    const main = page.getByRole("main");
-    await expect(main.getByRole("link", { name: "Atölyeye başvur" })).toHaveAttribute(
-      "href",
-      "/atolye#basvuru",
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Kahveyi biraz daha yakından tanı.",
     );
+
+    // One main action: start reading. "Nasıl çalışır?" sits beside it as a link.
+    const main = page.getByRole("main");
+    await expect(main.getByRole("link", { name: "Okumaya başla" })).toHaveAttribute(
+      "href",
+      "/bilgi",
+    );
+    await expect(main.getByRole("link", { name: "Atölyeye başvur" })).toHaveCount(0);
     await expect(main.getByRole("link", { name: "Nasıl çalışır?" })).toHaveAttribute(
       "href",
       "/hakkinda#nasil-calisir",
     );
 
+    // Every brewing method with its numbers, each one link to its guide, then the rest.
+    const guides = page.getByRole("list", { name: "Demleme rehberleri" }).getByRole("listitem");
+    await expect(guides).toHaveCount(8);
+    await expect(guides.first()).toContainText("V60");
+    await expect(guides.first()).toContainText("15 g · 240 ml");
+    await expect(guides.first().getByRole("link")).toHaveAttribute("href", "/bilgi/v60");
+    await expect(guides.last().getByRole("link")).toHaveAttribute("href", "/bilgi");
+
     const workshop = page.getByRole("region", { name: "Sıradaki atölye" });
-    await expect(workshop.getByRole("heading", { name: "Kahveye giriş atölyesi" })).toBeVisible();
+    await expect(workshop.getByRole("heading", { name: "Kahve 101" })).toBeVisible();
     await expect(workshop).toContainText("8 kişilik · 8 yer kaldı");
     await expect(workshop.getByRole("link", { name: "Detaylar" })).toHaveAttribute(
       "href",
-      "/atolye",
+      "/workshop",
     );
 
-    const latest = page.getByRole("list", { name: "Son tadımlar" });
+    const latest = page.getByRole("list", { name: "Son tadım notları" });
     await expect(latest.getByRole("listitem")).toHaveCount(3);
     await expect(latest.getByRole("listitem").first()).toContainText(/10 Eki/);
     await expect(latest.getByRole("link", { name: /Original Taste/ })).toBeVisible();
@@ -44,7 +55,7 @@ test.describe("home", () => {
 
     await expect(
       page.getByRole("list", { name: "Merak ettiklerin" }).getByRole("listitem"),
-    ).toHaveCount(3);
+    ).toHaveCount(6);
     // The numbers, the top coffees and the brew methods live on the statistics page now.
     await expect(page.getByText("En yüksek puanlılar")).toHaveCount(0);
   });
@@ -222,10 +233,10 @@ test("theme can be switched to dark and back", async ({ page }) => {
   await expect(html).toHaveAttribute("data-theme", "light");
 });
 
-test("the main menu has the feed, the workshop and the articles", async ({ page }) => {
+test("the main menu has the articles, the tasting notes and the workshop", async ({ page }) => {
   await page.goto("/bilgi");
   const links = mainNav(page).getByRole("link");
-  await expect(links).toHaveText(["Tadımlar", "Atölye", "Bilgi"]);
+  await expect(links).toHaveText(["Bilgi", "Tadım notları", "Atölye"]);
   await expect(mainNav(page).getByRole("link", { name: "Bilgi" })).toHaveAttribute(
     "aria-current",
     "page",
@@ -241,9 +252,10 @@ test("no page is wider than a phone's screen", async ({ page }) => {
     "/kahve/nespresso/ristretto-siyah-kapsul",
     "/kafeler",
     "/kafe/istanbul/ornek-kahve-atolyesi",
-    "/atolye",
+    "/workshop",
     "/bilgi",
     "/bilgi/oran",
+    "/bilgi/v60",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -287,7 +299,7 @@ test("the site can go on a phone's home screen and open like an app", async ({ p
   expect(manifest.shortcuts).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ name: "Tadım ekle", url: "/panel/tadim/yeni" }),
-      expect.objectContaining({ name: "Tadımlar", url: "/akis" }),
+      expect.objectContaining({ name: "Tadım notları", url: "/akis" }),
     ]),
   );
   for (const icon of manifest.icons) {
@@ -308,7 +320,7 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
   expect(sitemap).toContain("/kahve/nespresso/ristretto-siyah-kapsul</loc>");
   expect(sitemap).toContain("/marka/kahve-dunyasi</loc>");
   expect(sitemap).toContain("/kafe/istanbul/ornek-kahve-atolyesi</loc>");
-  expect(sitemap).toContain("/atolye</loc>");
+  expect(sitemap).toContain("/workshop</loc>");
   expect(sitemap).toContain("/bilgi/ogutme</loc>");
 
   const robots = await (await request.get("/robots.txt")).text();
@@ -410,9 +422,9 @@ test.describe("members and legal texts", () => {
 test.describe("community", () => {
   test("the feed lists the latest entries with who wrote them", async ({ page }) => {
     await page.goto("/");
-    await mainNav(page).getByRole("link", { name: "Tadımlar" }).click();
+    await mainNav(page).getByRole("link", { name: "Tadım notları" }).click();
     await expect(page).toHaveURL(/\/akis$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tadımlar");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tadım notları");
 
     // The first ten of the 17 logged tastings come with the page; the rest is on request.
     const entries = page.getByRole("list", { name: "Herkes" }).getByRole("listitem");
@@ -703,15 +715,24 @@ test.describe("workshop", () => {
   test("shows the next workshop, its program and a form that says what to fix", async ({
     page,
   }) => {
-    await page.goto("/atolye");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahveye giriş atölyesi");
-    await expect(page.getByText("İki saatte üç demleme yöntemi ve bir mini tadım.")).toBeVisible();
+    await page.goto("/workshop");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahve 101");
+    await expect(
+      page.getByText("Kahveye giriş: iki saatte üç demleme yöntemi ve bir mini tadım."),
+    ).toBeVisible();
     await expect(page.getByText("8 kişilik · 8 yer kaldı")).toBeVisible();
     await expect(page.getByText(/Konum, başvurun onaylanınca paylaşılır\./)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Ne yapacağız?" })).toBeVisible();
     await expect(page.getByText("Demleme pratiği")).toBeVisible();
     await expect(page.getByText("60 dk")).toBeVisible();
-    await expect(page.getByText("Ücretli mi?")).toBeVisible();
+
+    // The questions open and close; their answers wait until asked for.
+    const price = page.locator("details").filter({ hasText: "Ücretli mi?" });
+    await expect(price.getByText(/Ücretli\./)).toBeHidden();
+    await price.getByText("Ücretli mi?").click();
+    await expect(price.getByText(/Ücretli\./)).toBeVisible();
+    await price.getByText("Ücretli mi?").click();
+    await expect(price.getByText(/Ücretli\./)).toBeHidden();
 
     // One way to the form on screen: the card's button, or on a phone the bar at the bottom.
     const toForm = page.getByRole("link", { name: "Başvur" }).filter({ visible: true });
@@ -721,28 +742,59 @@ test.describe("workshop", () => {
     // Checked on the server before anything is written: an empty form is refused field by
     // field, and the first field to fix gets the focus.
     await page.getByRole("button", { name: "Başvur" }).click();
-    await expect(page.getByText("Adını yaz.")).toBeVisible();
-    await expect(
-      page.getByText("Bir telefon numarası ya da Instagram kullanıcı adı yaz."),
-    ).toBeVisible();
+    await expect(page.getByText("Adını ve soyadını yaz.")).toBeVisible();
+    await expect(page.getByText("Bir telefon numarası yaz, örneğin 0555 123 45 67.")).toBeVisible();
     await expect(page.getByText("Devam etmek için onay kutusunu işaretle.")).toBeVisible();
-    await expect(page.getByLabel("Adın")).toBeFocused();
-    await expect(page.getByLabel("Adın")).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByLabel("Adın soyadın")).toBeFocused();
+    await expect(page.getByLabel("Adın soyadın")).toHaveAttribute("aria-invalid", "true");
+
+    // A handle is not enough any more: the form asks for a phone number.
+    await page.getByLabel("Telefon numaran").fill("@kahvesever");
+    await page.getByRole("button", { name: "Başvur" }).click();
+    await expect(page.getByText("Bir telefon numarası yaz, örneğin 0555 123 45 67.")).toBeVisible();
+  });
+
+  test("the old address leads to the new one", async ({ page }) => {
+    await page.goto("/atolye");
+    await expect(page).toHaveURL(/\/workshop$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kahve 101");
   });
 });
 
 test.describe("articles", () => {
-  test("the info page lists the articles, each with its own page", async ({ page }) => {
+  test("the info page lists the articles by subject, each with its own page", async ({ page }) => {
     await page.goto("/");
     await mainNav(page).getByRole("link", { name: "Bilgi" }).click();
     await expect(page).toHaveURL(/\/bilgi$/);
-    const articles = page.getByRole("list", { name: "Yazılar" }).getByRole("listitem");
-    await expect(articles).toHaveCount(4);
-    await expect(articles.first()).toContainText("Arabica ile Robusta arasındaki fark ne?");
-    await expect(articles.first()).toContainText("2 dakikalık okuma");
+    const guides = page.getByRole("list", { name: "Demleme rehberleri" }).getByRole("listitem");
+    await expect(guides).toHaveCount(7);
+    await expect(
+      page.getByRole("list", { name: "Çekirdek ve kavrum" }).getByRole("listitem"),
+    ).toHaveCount(4);
+    await expect(
+      page.getByRole("list", { name: "Temel bilgiler" }).getByRole("listitem"),
+    ).toHaveCount(3);
 
-    await articles
+    // A guide: its recipe above numbered steps.
+    await guides
       .first()
+      .getByRole("link", { name: /Devamını oku/ })
+      .click();
+    await expect(page).toHaveURL(/\/bilgi\/v60$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("V60 nedir, nasıl demlenir?");
+    await expect(page.getByRole("heading", { name: "Tarif" })).toBeVisible();
+    await expect(page.getByText("240 ml", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Nasıl demlenir?", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("listitem").filter({ hasText: /demlenme \(bloom\)/ }),
+    ).toBeVisible();
+
+    await page.goto("/bilgi");
+    const beans = page.getByRole("list", { name: "Çekirdek ve kavrum" }).getByRole("listitem");
+    await expect(beans.nth(2)).toContainText("Arabica ile Robusta arasındaki fark ne?");
+    await expect(beans.nth(2)).toContainText("2 dakikalık okuma");
+    await beans
+      .nth(2)
       .getByRole("link", { name: /Devamını oku/ })
       .click();
     await expect(page).toHaveURL(/\/bilgi\/arabica-robusta$/);

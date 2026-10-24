@@ -3,13 +3,15 @@ import Link from "next/link";
 
 import { PhotoImage } from "@/components/site/photo";
 import { cardClass } from "@/components/ui/card";
-import type { SiteArticle } from "@/lib/data/articles";
+import { isGuide, type SiteArticle } from "@/lib/data/articles";
+
+import { recipeAmounts, recipeTiming } from "./guide-card";
 import { format, t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
- * InfoCard (DESIGN.md): the article's picture, the question, its two-sentence answer, how
- * long it takes to read, and "Devamını oku". That link is the only one; it names the
+ * InfoCard (DESIGN.md): the article's picture, the question, its two-sentence answer (a
+ * guide adds its recipe's numbers), how long it takes to read, and "Devamını oku". That link is the only one; it names the
  * article for readers who hear the links listed on their own, and it stretches over the
  * card, so a click anywhere on it leads on.
  */
@@ -39,6 +41,11 @@ export function InfoCard({
       ) : null}
       <Heading className="type-card-title">{article.title}</Heading>
       <p>{article.summary}</p>
+      {isGuide(article) ? (
+        <p className="type-figure text-ink-2">
+          {recipeAmounts(article)} · {recipeTiming(article)}
+        </p>
+      ) : null}
       {article.readingMinutes ? (
         <p className="type-meta">
           {format(t.info.readingTime, { minutes: article.readingMinutes })}

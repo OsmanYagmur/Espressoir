@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { ArticleBody } from "@/components/info/article-body";
 import { InfoCard } from "@/components/info/info-card";
+import { RecipeCard } from "@/components/info/recipe-card";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PhotoFigure } from "@/components/site/photo";
@@ -44,14 +46,16 @@ export default function ArticlePage({ params }: Props) {
 async function Article({ params }: Pick<Props, "params">) {
   const { slug } = await params;
   const articles = await getArticles();
-  const index = articles.findIndex((article) => article.slug === slug);
-  const article = articles[index];
+  const article = articles.find((candidate) => candidate.slug === slug);
   if (!article) notFound();
-  // The next ones in the list, wrapping round to the start.
-  const others = Array.from(
-    { length: Math.min(OTHERS, articles.length - 1) },
-    (_, step) => articles[(index + step + 1) % articles.length]!,
-  );
+  // The next ones on the same subject, wrapping round to its first; then the rest.
+  const sameTopic = articles.filter((candidate) => candidate.topic === article.topic);
+  const index = sameTopic.indexOf(article);
+  const others = [
+    ...sameTopic.slice(index + 1),
+    ...sameTopic.slice(0, index),
+    ...articles.filter((candidate) => candidate.topic !== article.topic),
+  ].slice(0, OTHERS);
 
   return (
     <article>
@@ -79,11 +83,8 @@ async function Article({ params }: Pick<Props, "params">) {
           className="mb-8"
         />
       ) : null}
-      <div className="flex flex-col gap-4">
-        {article.paragraphs.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
+      {article.recipe ? <RecipeCard recipe={article.recipe} /> : null}
+      <ArticleBody blocks={article.blocks} />
       {others.length > 0 ? (
         <Section id="diger-yazilar">
           <SectionHeading id="diger-yazilar" title={t.info.otherTitle} />

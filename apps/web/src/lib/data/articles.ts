@@ -6,26 +6,33 @@ import { join } from "node:path";
 import { ARTICLE_FILE, parseArticle, sortArticles, type Article } from "@espressoir/core";
 import { cacheLife } from "next/cache";
 
+import { isArticleIconId, type ArticleIconId } from "@/content/icons";
 import { isPhotoId, type PhotoId } from "@/content/photos";
 
 // The articles are files in the app (src/content/bilgi), read by a literal path and
 // shipped with every server function (next.config.ts), like the share-image fonts.
 const DIRECTORY = join(process.cwd(), "src/content/bilgi");
 
-/** An article with its picture checked against the site's photos. */
+/** An article with its picture and icon checked against the site's own. */
 export interface SiteArticle extends Article {
   photo: PhotoId | null;
+  iconId: ArticleIconId | null;
 }
 
-function withPhoto(article: Article): SiteArticle {
-  const { image } = article;
-  if (image === null) return { ...article, photo: null };
-  if (!isPhotoId(image)) {
-    throw new Error(
-      `Bilgi yazısı "${article.slug}.md": image "${image}" src/content/photos.ts içinde yok.`,
-    );
+/** A brewing guide: an article with a recipe. */
+export type SiteGuide = SiteArticle & { recipe: NonNullable<Article["recipe"]> };
+
+export const isGuide = (article: SiteArticle): article is SiteGuide => article.recipe !== null;
+
+function checked(article: Article): SiteArticle {
+  const { image, icon, slug } = article;
+  if (image !== null && !isPhotoId(image)) {
+    throw new Error(`Bilgi yazısı "${slug}.md": image "${image}" src/content/photos.ts içinde yok.`);
   }
-  return { ...article, photo: image };
+  if (icon !== null && !isArticleIconId(icon)) {
+    throw new Error(`Bilgi yazısı "${slug}.md": icon "${icon}" src/content/icons.ts içinde yok.`);
+  }
+  return { ...article, photo: image, iconId: icon };
 }
 
 /**
@@ -42,7 +49,7 @@ export async function getArticles(): Promise<SiteArticle[]> {
       return slug
         ? [
             readFile(join(DIRECTORY, file), "utf8").then((source) =>
-              withPhoto(parseArticle(slug, source)),
+              checked(parseArticle(slug, source)),
             ),
           ]
         : [];

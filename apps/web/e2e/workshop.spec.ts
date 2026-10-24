@@ -29,8 +29,8 @@ async function seatsLeft(page: Page): Promise<number> {
 }
 
 async function apply(page: Page, name: string, contact: string) {
-  await page.getByLabel("Adın", { exact: true }).fill(name);
-  await page.getByLabel("Sana nasıl ulaşalım?", { exact: true }).fill(contact);
+  await page.getByLabel("Adın soyadın", { exact: true }).fill(name);
+  await page.getByLabel("Telefon numaran", { exact: true }).fill(contact);
   await page.getByText("Evde demliyorum", { exact: true }).click();
   await page.getByLabel("Merak ettiğin bir şey var mı? (isteğe bağlı)").fill("Uçtan uca soru.");
   await page.getByRole("checkbox").check();
@@ -43,9 +43,11 @@ test("a visitor applies; the admin sees, answers and removes the application", a
 }) => {
   const stamp = Date.now().toString(36);
   const name = `E2E Başvuru ${stamp}`;
-  const contact = `@e2e_${stamp}`;
+  // A number of its own on every run: the form takes phone numbers only.
+  const digits = String(Date.now()).slice(-7);
+  const contact = `0555 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`;
 
-  await page.goto("/atolye");
+  await page.goto("/workshop");
   const before = await seatsLeft(page);
   await apply(page, name, contact);
   await expect(page.getByText("Başvurun alındı. İki gün içinde sana yazacağım.")).toBeVisible();
@@ -57,10 +59,10 @@ test("a visitor applies; the admin sees, answers and removes the application", a
   }).toPass({ timeout: 20_000 });
   await expect(page.getByText(name)).toHaveCount(0);
 
-  // The same handle, written differently, is one person.
-  await apply(page, `${name} tekrar`, contact.toUpperCase());
+  // The same number, written differently, is one person.
+  await apply(page, `${name} tekrar`, `+90 555 ${digits}`);
   await expect(
-    page.getByText("Bu iletişim bilgisiyle bu atölyeye zaten başvurmuşsun."),
+    page.getByText("Bu telefon numarasıyla bu atölyeye zaten başvurmuşsun."),
   ).toBeVisible();
 
   const admin = await sessionOf(browser, owner);
