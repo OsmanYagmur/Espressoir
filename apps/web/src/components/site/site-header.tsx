@@ -22,7 +22,7 @@ export function SiteHeader() {
           href="/"
           prefetch={false}
           aria-label={`${siteConfig.name} — ${t.nav.home}`}
-          className="mr-auto rounded-sm no-underline"
+          className="group mr-auto rounded-sm no-underline"
         >
           <Wordmark />
         </Link>
