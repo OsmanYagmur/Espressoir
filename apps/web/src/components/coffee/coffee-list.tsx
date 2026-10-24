@@ -54,14 +54,14 @@ export function CoffeeList({
 }) {
   if (view === "cards") {
     return (
-      <ul aria-label={label} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul aria-label={label} className="grid stagger gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {coffees.map((coffee) => (
           <li key={coffee.id}>
             <Link
               href={coffee.href}
               className={cn(
                 cardClass,
-                "flex h-full flex-col gap-3 text-ink no-underline transition-colors hover:border-line-strong",
+                "flex h-full flex-col gap-3 text-ink no-underline transition-[border-color,translate] hover:-translate-y-0.5 hover:border-line-strong",
               )}
             >
               <div className="flex items-start justify-between gap-4">

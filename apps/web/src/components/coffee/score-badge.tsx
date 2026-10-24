@@ -48,7 +48,7 @@ export function ScoreBadge({
       <span className="mt-1 h-1 w-full overflow-hidden rounded-full bg-sunk">
         {score === null ? null : (
           <span
-            className="block h-full rounded-full bg-accent"
+            className="block h-full origin-left rounded-full bg-accent animate-delay-150 motion-safe:animate-fill"
             style={{ width: `${(score / SCORE_MAX) * 100}%` }}
           />
         )}

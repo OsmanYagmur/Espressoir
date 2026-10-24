@@ -38,7 +38,7 @@ function NavLinkList({ pathname, className }: { pathname: string | null; classNa
               href={href}
               prefetch={prefetch}
               aria-current={active ? "page" : undefined}
-              className="block border-b-2 border-transparent py-1 font-medium text-ink-2 no-underline transition-colors hover:text-ink aria-[current=page]:border-accent aria-[current=page]:text-ink"
+              className="relative block py-1 font-medium text-ink-2 no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-line-strong after:transition-transform hover:text-ink hover:after:scale-x-100 aria-[current=page]:text-ink aria-[current=page]:after:scale-x-100 aria-[current=page]:after:bg-accent"
             >
               {label}
             </Link>

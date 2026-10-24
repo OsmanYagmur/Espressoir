@@ -17,7 +17,10 @@ export default async function InfoPage() {
   return (
     <PageShell>
       <PageHeading title={t.info.title} lead={t.info.lead} />
-      <ul aria-label={t.info.listLabel} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <ul
+        aria-label={t.info.listLabel}
+        className="grid stagger gap-4 md:grid-cols-2 lg:grid-cols-3"
+      >
         {articles.map((article) => (
           <li key={article.slug}>
             <InfoCard article={article} heading="h2" />
