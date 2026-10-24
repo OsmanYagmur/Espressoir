@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { siteConfig } from "@espressoir/core";
 
 import { designTokens } from "./design-tokens";
+import { LOGO, LOGO_VIEWBOX } from "./logo";
 
 /**
  * Shared pieces of the share images (Open Graph cards). They are drawn with next/og, which
@@ -85,7 +86,10 @@ export function OgFrame({ label, children }: { label: string; children: React.Re
           paddingBottom: 24,
         }}
       >
-        <div style={{ fontFamily: OG_FONTS.display, fontSize: 44 }}>{siteConfig.name}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <OgMark size={56} rim={OG_COLORS.ink} />
+          <div style={{ fontFamily: OG_FONTS.display, fontSize: 44 }}>{siteConfig.name}</div>
+        </div>
         <div style={{ fontSize: 26, color: OG_COLORS["ink-2"] }}>{label}</div>
       </div>
       <div style={{ display: "flex", flex: 1 }}>{children}</div>
@@ -124,14 +128,38 @@ export function OgTitle({ text, fontSize }: { text: string; fontSize: number }) 
   );
 }
 
+/** The mark (lib/logo.ts) with the token values; `rim` draws the cup's rim and handle. */
+function OgMark({ size, rim }: { size: number; rim: string }) {
+  const { handle, rim: cup, crema, stem, bars } = LOGO;
+  return (
+    <svg width={size} height={size} viewBox={LOGO_VIEWBOX}>
+      <rect
+        x={handle.x}
+        y={handle.y}
+        width={handle.width}
+        height={handle.height}
+        rx={handle.rx}
+        fill="none"
+        stroke={rim}
+        strokeWidth={handle.strokeWidth}
+      />
+      <circle {...cup} fill={rim} />
+      <circle {...crema} fill={OG_COLORS.crema} />
+      {[stem, ...bars].map((bar) => (
+        <rect key={`${bar.x}-${bar.y}-${bar.width}`} {...bar} fill={OG_COLORS["on-crema"]} />
+      ))}
+    </svg>
+  );
+}
+
 /**
- * The app icon: the first letter of the name in the display face, on crema. `scale` is
- * the letter's height against the icon; `rounded` cuts the corners (browsers show the file
- * as it is, while home screens and maskable icons are cut by the system).
+ * The app icon: the mark, its cup in paper colour, on espresso. `scale` is the mark's size
+ * against the icon; `rounded` cuts the corners (browsers show the file as it is, while
+ * home screens and maskable icons are cut by the system).
  */
 export function IconMark({
   size,
-  scale = 0.62,
+  scale = 0.72,
   rounded = false,
 }: {
   size: number;
@@ -146,17 +174,11 @@ export function IconMark({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: OG_COLORS.crema,
-        color: OG_COLORS["on-crema"],
+        background: OG_COLORS.ink,
         borderRadius: rounded ? size * 0.22 : 0,
-        fontFamily: OG_FONTS.display,
-        fontWeight: 600,
-        fontSize: size * scale,
-        lineHeight: 1,
-        paddingBottom: size * 0.04,
       }}
     >
-      {siteConfig.name.slice(0, 1)}
+      <OgMark size={size * scale} rim={OG_COLORS.bg} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 # Espressoir tasarım dili
 
-Bu dosya sitenin tek tasarım kaynağıdır. Renk, boşluk, köşe ve font değerleri yalnızca `tokens.css` içindedir; kodda hex renk ya da sabit ölçü yazma, token kullan. `components.css` bileşenlerin referans uygulamasıdır: görünüm ve ölçüler onunla aynı olmalı, ama projenin stil sistemine (ör. Tailwind) uyarlanabilir.
+Bu dosya sitenin tek tasarım kaynağıdır. Renk, boşluk, köşe, hareket ve font değerleri yalnızca `tokens.css` içindedir; kodda hex renk ya da sabit ölçü yazma, token kullan. `components.css` bileşenlerin referans uygulamasıdır: görünüm ve ölçüler onunla aynı olmalı, ama projenin stil sistemine (ör. Tailwind) uyarlanabilir.
 
 Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atölyeleridir. Okuyan kişi kahveyi seven ama uzman olmayan biri: arayüz onu sınava sokmaz, sohbet eder. Dil sıcak, sade ve okunur: krem zemin (`--bg`), espresso kahverengisi metin (`--ink`), tek bir tarçın vurgusu (`--accent`).
 
@@ -84,14 +84,25 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 ## Görseller ve ikonlar
 
 - Gerçek fotoğraf: fincan, çekirdek, demleme anı; doğal ışık, sıcak ton; kapakta 16:9 ve `--radius-lg`. Fotoğraf yoksa `--crema` ya da `--sunk` düz zemin. Stok illüstrasyon yok.
+- Fotoğraflar Unsplash'ten (ücretsiz lisans) seçilir, sitenin kendi dosyası olarak durur: kırpılmış, metadata'sız, 640 ve 1280 piksel genişlikte iki WebP. Her birinin Türkçe açıklaması ve fotoğrafçısı tek listede tutulur; büyük gösterildiği yerde altında "Fotoğraf: Ad / Unsplash" yazar. Kartta başlık her şeyi söylediği için fotoğraf süstür (boş `alt`).
 - İkonlar Lucide, 1.5px çizgi, 20px. Emoji yok.
-- Logo dosyası yok: "Espressoir" yazısı `--font-display`, 600 ağırlık, cümle düzeninde.
+
+## Logo
+
+- **İşaret:** yukarıdan bakılan bir fincan, sağda kulpu. Kremanın içinde sitenin puan çubuklarıyla yazılmış bir E: bir gövde ve uzunlukları farklı üç yuvarlak uçlu çubuk. Kahve ile defter aynı işarette.
+- **Renkler:** ağız ve kulp `--ink`, krema `--crema`, E `--on-crema`; koyu temada da aynı token'lar. Uygulama ikonunda zemin `--ink`, fincan `--bg`.
+- **Yazı:** işaretin yanında "Espressoir", `--font-display`, 600 ağırlık, cümle düzeninde. Üst menüde işaret 36px; alt bilgide sloganın yanında tek başına.
+- İşaret tek bir çizimdir (40 birimlik kare); site, ikonlar ve paylaşım görselleri aynı çizimi kullanır. Başka renk, gölge ya da eğim verme.
 
 ## Durumlar ve hareket
 
 - Her etkileşimli öğede 2px `--focus` odak halkası, 2px boşlukla (`:focus-visible`).
 - Hover: birincil buton `--accent-ink`, ikincil buton `--sunk` zemin, menü bağlantısı `--ink-2` → `--ink`.
-- Geçişler 150ms ease-out. Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır.
+- Süreler ve eğri `tokens.css`'te: `--motion-fast` (150ms) hover, odak ve menü için; `--motion-slow` (700ms) sayfayla gelen hareket için; ikisi de `--motion-ease` ile yavaşlayarak biter.
+- Sayfa açılınca başlık, alt cümle ve kart listeleri sırayla hafifçe yukarı kayarak belirir (60ms arayla); puan ve kontenjan çubukları soldan dolar; kapak fotoğrafı çerçevesine yerleşir. Hepsi bir kez oynar.
+- Hover: kart 2px yükselir ve kenarlığı `--line-strong` olur; karttaki fotoğraf hafifçe büyür; menü bağlantısının alt çizgisi soldan uzar; logonun E çubukları yeniden dolar; birincil butondaki ok sağa kayar. Butona basınca 1px iner.
+- "Hareketi azalt" tercihi açıksa hiçbiri oynamaz; sayfa ilk hâliyle durur.
+- Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır.
 
 ## Bileşenler
 
@@ -111,19 +122,19 @@ Sınıf adları `components.css` ile aynıdır.
 
 **ApplyForm** (`.es-form`): Adın (`name`), Sana nasıl ulaşalım? (`contact`, telefon ya da Instagram), Kahveyle aran nasıl? (`experience`: `new` / `regular` / `home_brewer`, seçenek kartları), Hangi tarihler uyar? (`dates[]`, chip), Merak ettiğin bir şey var mı? (`question`, isteğe bağlı), onay kutusu (`consent`). Etiket üstte, hata altta bir cümleyle (`aria-invalid`, `aria-describedby`), gönderince ilk hatalı alana odak. Başarıda formun yerine `.es-notice`. Placeholder etiket yerine kullanılmaz.
 
-**InfoCard** (`.es-card.es-info`): soru başlığı (≤60 karakter), iki cümlelik cevap (≤200 karakter), isteğe bağlı "2 dakikalık okuma", "Devamını oku" metin bağlantısı.
+**InfoCard** (`.es-card.es-info`): üstte kenardan kenara 16:9 yazı fotoğrafı (varsa), soru başlığı (≤60 karakter), iki cümlelik cevap (≤200 karakter), isteğe bağlı "2 dakikalık okuma", "Devamını oku" metin bağlantısı. Tek bağlantı "Devamını oku"dur ve kartın tamamını kaplar.
 
-**SiteHeader** (`.es-header`): "Espressoir" yazısı, üç bağlantı (etkin olana `aria-current="page"`: `--ink` + 2px `--accent` alt çizgi), sağda "Giriş" (`es-btn--secondary es-btn--sm`) ya da 32px avatar.
+**SiteHeader** (`.es-header`): logo (işaret + "Espressoir"), üç bağlantı (etkin olana `aria-current="page"`: `--ink` + 2px `--accent` alt çizgi), sağda "Giriş" (`es-btn--secondary es-btn--sm`) ya da 32px avatar.
 
 ## Sayfalar
 
-**Ana sayfa:** SiteHeader → hero (`display` başlık, tek `lead` cümle, tek birincil buton: açık atölye varken "Atölyeye başvur", yoksa "Tadım ekle"; yanında yalnızca "Nasıl çalışır?" bağlantısı) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadımlar (üç TastingCard + "Tümünü gör") → iki üç InfoCard → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
+**Ana sayfa:** SiteHeader → hero (`--crema` bant: solda `display` başlık, tek `lead` cümle, tek birincil buton: açık atölye varken "Atölyeye başvur", yoksa "Tadım ekle"; yanında yalnızca "Nasıl çalışır?" bağlantısı; sağda 4:3 demleme fotoğrafı, mobilde metnin altında) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadımlar (üç TastingCard + "Tümünü gör") → iki üç InfoCard → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
 
 **Atölye (/atolye):** kapak fotoğrafı → `display` başlık + `lead` → tarih karosu, saat, konum, kontenjan → birincil "Başvur" (mobilde altta sabit `.es-sticky`, forma kayar) → "Ne yapacağız?" numaralı akış, süreler `figure` → "Yanında getir" / "Biz hazırlıyoruz" → sık sorulanlar → ApplyForm.
 
 **Tadım detayı:** kahve adı (`display`), kavurucu ve yöntem, büyük ScoreBadge, TasteProfile, tat notaları, not, beğeni ve yorumlar.
 
-**Bilgi (/bilgi):** InfoCard ızgarası; her yazı en fazla 300 kelime ve tek görsel.
+**Bilgi (/bilgi):** InfoCard ızgarası; her yazı en fazla 300 kelime ve tek görsel (yazı sayfasında başlığın altında, fotoğrafçısıyla).
 
 ## Eski tasarımdan kaldırılacaklar
 

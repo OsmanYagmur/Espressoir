@@ -29,7 +29,7 @@ export function Capacity({ workshop }: { workshop: Pick<Workshop, "capacity" | "
     <div className="flex flex-col gap-1">
       <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-sunk">
         <span
-          className="block h-full rounded-full bg-leaf"
+          className="block h-full origin-left rounded-full bg-leaf animate-delay-150 motion-safe:animate-fill"
           style={{ width: `${(taken / workshop.capacity) * 100}%` }}
         />
       </span>

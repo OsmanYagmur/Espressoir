@@ -55,7 +55,7 @@ export function TastingCard({
       prefetch={false}
       className={cn(
         cardClass,
-        "flex h-full flex-col gap-3 text-ink no-underline transition-colors hover:border-line-strong",
+        "flex h-full flex-col gap-3 text-ink no-underline transition-[border-color,translate] hover:-translate-y-0.5 hover:border-line-strong",
       )}
     >
       <div className="flex items-start justify-between gap-4">

@@ -35,6 +35,10 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 150ms;
+  --motion-slow: 700ms;
+
   --font-display: Fraunces, Georgia, serif;
   --font-sans: Archivo, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;

@@ -3,6 +3,7 @@ title: Öğütme neden bu kadar önemli?
 summary: Öğütme inceldikçe kahve suya daha hızlı geçer. Fazla ince öğütme acı, fazla iri öğütme ekşi ve sulu bir fincan verir.
 readingMinutes: 2
 order: 3
+image: bilgi-ogutme
 ---
 
 Her yöntemin kendi aralığı var: espresso çok ince (un ile ince tuz arası), V60 orta (kum gibi), French press iri (kaba tuz gibi).

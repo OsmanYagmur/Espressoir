@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { format, t } from "@/lib/i18n";
 
+import { LogoMark } from "./logo";
 import { ThemeSwitch } from "./theme-switch";
 
 async function CopyrightLine() {
@@ -37,7 +38,10 @@ export function SiteFooter() {
   return (
     <footer className="mt-12 border-t border-line md:mt-16">
       <div className="mx-auto flex max-w-grid flex-col gap-6 px-4 py-8">
-        <p className="font-display text-2xl font-semibold text-ink">{t.footer.slogan}</p>
+        <p className="flex items-center gap-3 font-display text-2xl font-semibold text-ink">
+          <LogoMark />
+          {t.footer.slogan}
+        </p>
         <nav aria-label={t.footer.exploreLabel}>
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {EXPLORE.map(({ href, label }) => (

@@ -3,6 +3,7 @@ title: Demleme oranı nedir?
 summary: Kahvenin suya oranı. Filtre kahve için iyi bir başlangıç 1:16, yani 15 g kahveye 240 ml su.
 readingMinutes: 1
 order: 4
+image: bilgi-oran
 ---
 
 Oranı terazi ile ölç; kaşık ölçüsü çekirdeğin boyutuna ve kavrumuna göre değişir.

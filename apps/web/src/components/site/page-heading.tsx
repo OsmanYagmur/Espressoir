@@ -22,7 +22,7 @@ export function PageHeading({
   className?: string;
 }) {
   return (
-    <header className={cn("flex flex-col gap-3 pb-8", className)}>
+    <header className={cn("flex stagger flex-col gap-3 pb-8", className)}>
       {kicker ? <div className="type-meta">{kicker}</div> : null}
       <h1
         className={cn(

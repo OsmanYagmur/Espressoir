@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { InfoCard } from "@/components/info/info-card";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
+import { PhotoFigure } from "@/components/site/photo";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { Section, SectionHeading } from "@/components/site/section-heading";
 import { getArticle, getArticles } from "@/lib/data/articles";
@@ -70,6 +71,14 @@ async function Article({ params }: Pick<Props, "params">) {
           </p>
         ) : null}
       </PageHeading>
+      {article.photo ? (
+        <PhotoFigure
+          id={article.photo}
+          priority
+          sizes="(min-width: 672px) 640px, 100vw"
+          className="mb-8"
+        />
+      ) : null}
       <div className="flex flex-col gap-4">
         {article.paragraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
@@ -78,7 +87,7 @@ async function Article({ params }: Pick<Props, "params">) {
       {others.length > 0 ? (
         <Section id="diger-yazilar">
           <SectionHeading id="diger-yazilar" title={t.info.otherTitle} />
-          <ul className="grid gap-4">
+          <ul className="grid stagger gap-4">
             {others.map((other) => (
               <li key={other.slug}>
                 <InfoCard article={other} />

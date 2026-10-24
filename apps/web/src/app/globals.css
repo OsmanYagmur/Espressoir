@@ -87,8 +87,69 @@
   --container-read: 40rem;
   --container-grid: 67.5rem;
 
-  --default-transition-duration: 150ms;
-  --default-transition-timing-function: ease-out;
+  /* Motion (DESIGN.md → Durumlar ve hareket): quick for hovers, slow for what arrives with a page. */
+  --default-transition-duration: var(--motion-fast);
+  --default-transition-timing-function: var(--motion-ease);
+  --ease-*: initial;
+  --ease-out: var(--motion-ease);
+  --animate-rise: rise var(--motion-slow) var(--motion-ease) both;
+  --animate-fill: fill-bar var(--motion-slow) var(--motion-ease) both;
+  --animate-settle: settle calc(var(--motion-slow) * 2) var(--motion-ease) both;
+  --animate-pop: pop var(--motion-fast) var(--motion-ease) both;
+}
+
+/* Entrances play once, when an element arrives with its page; nothing moves on scroll.
+   Every use goes through `motion-safe:`, so "reduce motion" keeps the page still. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-3));
+  }
+}
+
+/* A bar fills from its left end (with `origin-left`): score, seats, the logo's E. */
+@keyframes fill-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* A photo settles into its frame. */
+@keyframes settle {
+  from {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--space-1) * -1));
+  }
+}
+
+/* One entrance after another: animate-delay-80 waits 80ms. */
+@utility animate-delay-* {
+  animation-delay: calc(--value(integer) * 1ms);
+}
+
+/* A list whose items rise one after another as the page opens. */
+@utility stagger {
+  & > * {
+    @apply motion-safe:animate-rise;
+  }
+  & > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+  & > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+  & > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+  & > :nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
 }
 
 /* Type styles (DESIGN.md → Tipografi). */

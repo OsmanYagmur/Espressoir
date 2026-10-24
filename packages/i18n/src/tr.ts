@@ -1048,6 +1048,8 @@ export const tr = {
     /** What a picture without a description is called. */
     defaultAlt: "{coffee} tadımının fotoğrafı",
     avatarAlt: "@{username} profil resmi",
+    /** Under the site's own photos (all from Unsplash). */
+    credit: "Fotoğraf: {author} / Unsplash",
     savedWithoutPhoto: "Tadım kaydedildi, ama fotoğraf eklenemedi. Buradan yeniden deneyebilirsin.",
     errors: {
       notImage: "Bu dosya bir fotoğraf değil.",

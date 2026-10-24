@@ -12,6 +12,9 @@ export const ARTICLE_WORDS_MAX = 300;
 /** A file that is an article, and the address it gets: "ogutme.md" → "ogutme". */
 export const ARTICLE_FILE = /^([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/;
 
+/** The name of one of the website's photos ("bilgi-ogutme"); which ones exist is its business. */
+const PHOTO_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export interface Article {
   slug: string;
   title: string;
@@ -20,6 +23,8 @@ export interface Article {
   readingMinutes: number | null;
   /** Place in the list, lowest first. */
   order: number;
+  /** The article's one picture (DESIGN.md: "tek görsel"), by name; null: none. */
+  image: string | null;
   paragraphs: string[];
 }
 
@@ -59,6 +64,11 @@ export function parseArticle(slug: string, source: string): Article {
       : fail(`${key} pozitif bir tam sayı değil.`);
   };
 
+  const image = header.get("image") || null;
+  if (image !== null && !PHOTO_NAME.test(image)) {
+    fail(`image "${image}" bir fotoğraf adı değil (küçük harf, rakam ve tire).`);
+  }
+
   const paragraphs = (match[2] ?? "")
     .split(/\r?\n\s*\r?\n/)
     .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
@@ -73,11 +83,12 @@ export function parseArticle(slug: string, source: string): Article {
     summary,
     readingMinutes: number("readingMinutes"),
     order: number("order") ?? Number.MAX_SAFE_INTEGER,
+    image,
     paragraphs,
   };
 }
 
 /** Articles in their list order: `order`, then title. */
-export function sortArticles(articles: readonly Article[]): Article[] {
+export function sortArticles<T extends Article>(articles: readonly T[]): T[] {
   return [...articles].sort((a, b) => a.order - b.order || a.title.localeCompare(b.title, "tr"));
 }
