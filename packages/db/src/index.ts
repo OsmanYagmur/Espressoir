@@ -86,8 +86,12 @@ export { notificationRowSchema, type Notification } from "./notification";
 
 export {
   WORKSHOP_APPLICATION_ERRORS,
+  WORKSHOP_APPLICATION_SELECT,
   WORKSHOP_INPUT_ERRORS,
+  adminApplicationInputSchema,
+  communityStatSchema,
   fetchWorkshopRows,
+  toAdminApplicationInsert,
   toWorkshopApplicationInsert,
   toWorkshopRow,
   workshopApplicationInputSchema,
@@ -95,6 +99,8 @@ export {
   workshopInputSchema,
   workshopRowSchema,
   zonedTimeToIso,
+  type AdminApplicationInput,
+  type CommunityStat,
   type Workshop,
   type WorkshopApplication,
   type WorkshopApplicationError,

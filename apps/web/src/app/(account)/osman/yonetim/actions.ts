@@ -12,7 +12,7 @@ import { refreshArchive } from "@/lib/data/refresh-archive";
 import { removeMedia } from "@/lib/media-server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const PANEL = "/panel/yonetim";
+const PANEL = "/osman/yonetim";
 
 // The refusals the database functions raise, as they appear in the error message.
 const KNOWN_ERRORS = [

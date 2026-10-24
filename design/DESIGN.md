@@ -102,13 +102,13 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 - Sayfa açılınca başlık, alt cümle ve kart listeleri sırayla hafifçe yukarı kayarak belirir (60ms arayla); puan ve kontenjan çubukları soldan dolar; kapak fotoğrafı çerçevesine yerleşir. Hepsi bir kez oynar.
 - Hover: kart 2px yükselir ve kenarlığı `--line-strong` olur; karttaki fotoğraf hafifçe büyür; menü bağlantısının alt çizgisi soldan uzar; logonun çubukları yukarıdan aşağı sırayla yeniden dolar; birincil butondaki ok sağa kayar. Butona basınca 1px iner.
 - "Hareketi azalt" tercihi açıksa hiçbiri oynamaz; sayfa ilk hâliyle durur.
-- Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır.
+- Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır: bir cümle, "Ayrıntılar" bağlantısı, eşit ağırlıkta "Reddet" ve "Kabul et" (ikisi de ikincil buton). Yalnızca Google Analytics tanımlıyken ve ziyaretçi henüz cevap vermemişken görünür.
 
 ## Bileşenler
 
 Sınıf adları `components.css` ile aynıdır.
 
-**Button** (`.es-btn`): `--primary` ekrandaki tek ana eylem; `--secondary` diğer eylemler; `--text` satır içi bağlantı; `--sm` (36px) yalnızca menüdeki Giriş; `--block` mobilde tam genişlik. Devre dışıyken durumu söyleyen etiket ("Kontenjan doldu"). Sayfa değiştiriyorsa `<a>`, işlem yapıyorsa `<button>`.
+**Button** (`.es-btn`): `--primary` ekrandaki tek ana eylem; `--secondary` diğer eylemler; `--text` satır içi bağlantı; `--sm` (36px) yalnızca menüdeki Giriş ve çerez çubuğundaki Reddet / Kabul et; `--block` mobilde tam genişlik. Devre dışıyken durumu söyleyen etiket ("Kontenjan doldu"). Sayfa değiştiriyorsa `<a>`, işlem yapıyorsa `<button>`.
 
 **ScoreBadge** (`.es-score`): puan 0,5 adımlı, virgülle yazılır; çubuk genişliği puan × %10; `role="img"` + `aria-label="Puan: 8,5 / 10"`. `--sm` listelerde; `--empty` puansız kahvede "—". Puana göre renk değiştirme.
 

@@ -25,7 +25,13 @@ const decimalFormat = new Intl.NumberFormat(LOCALE, {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
 });
+const percentFormat = new Intl.NumberFormat(LOCALE, { style: "percent", maximumFractionDigits: 0 });
 const countryNames = new Intl.DisplayNames([LOCALE], { type: "region" });
+
+/** 0.5 → "%50" */
+export function formatPercent(value: number): string {
+  return percentFormat.format(value);
+}
 
 /** "2025-07-08" → "8 Tem 2025" */
 export function formatDay(day: string): string {

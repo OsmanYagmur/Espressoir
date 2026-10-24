@@ -52,7 +52,7 @@ test("a member applies for a brand, is approved, edits its page and wears the ba
 
   // The admin approves it.
   const admin = await sessionOf(browser, owner);
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   const request = admin
     .getByRole("list", { name: "Doğrulama başvuruları" })
     .getByRole("listitem")
@@ -95,7 +95,7 @@ test("a member applies for a brand, is approved, edits its page and wears the ba
   await expect(seen(page, /kendi kahvene puan veremezsin/)).toBeVisible();
 
   // The admin takes the account back; the brand's page invites applications again.
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   const official = admin
     .getByRole("list", { name: "Resmi hesaplar" })
     .getByRole("listitem")

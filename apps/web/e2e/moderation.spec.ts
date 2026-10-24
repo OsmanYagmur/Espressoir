@@ -145,9 +145,15 @@ test("a reported comment reaches the admin, who hides it from everyone else", as
   await reported.getByRole("button", { name: "Şikâyeti gönder" }).click();
   await expect(reported.getByText("Şikâyetin alındı.")).toBeVisible();
 
-  // It is in the admin's queue, with what was said about it.
+  // It is in the admin's queue, with what was said about it: panel → /osman → Moderasyon.
   await admin.goto("/panel");
   await admin.getByRole("link", { name: "Yönetim" }).click();
+  await expect(admin).toHaveURL(/\/osman$/);
+  await admin
+    .getByRole("navigation", { name: "Yönetim bölümleri" })
+    .getByRole("link", { name: "Moderasyon" })
+    .click();
+  await expect(admin).toHaveURL(/\/osman\/yonetim$/);
   const report = admin
     .getByRole("list", { name: "Açık şikâyetler" })
     .getByRole("listitem")
@@ -187,7 +193,7 @@ test("a restricted member is told so and cannot post until it is lifted", async 
   browser,
 }) => {
   const admin = await sessionOf(browser, owner);
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   const form = admin.locator("form").filter({ has: admin.getByLabel("Kullanıcı adı") });
   await form.getByLabel("Kullanıcı adı").fill("e2e_guest");
   await form.getByLabel("Süre").selectOption({ label: "1 gün" });
@@ -244,7 +250,7 @@ test("the admin reviews a member's coffee and merges a duplicate into the origin
   const duplicateUrl = await addCoffee(duplicate, note);
 
   const admin = await sessionOf(browser, owner);
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   const pending = admin.getByRole("list", { name: "Doğrulanmamış kahveler" });
   // A coffee's row is the one that links to it: its name also shows up in every other
   // row, as a choice in the "merge into" list.
@@ -260,7 +266,7 @@ test("the admin reviews a member's coffee and merges a duplicate into the origin
   await expect(admin.getByRole("note")).toHaveCount(0);
 
   // Merged: the duplicate is gone and its tasting now belongs to the original.
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   await rowOf(duplicate)
     .getByLabel("Şununla birleştir")
     .selectOption({ label: "Nespresso — Ristretto (Siyah Kapsül)" });

@@ -231,7 +231,7 @@ test("the admin invites from the panel, sends it again and withdraws it", async 
 }) => {
   const email = `panel-${Date.now().toString(36)}@example.test`;
   await signIn(page, owner);
-  await page.goto("/panel/yonetim");
+  await page.goto("/osman/yonetim");
   const pending = page
     .getByRole("list", { name: "Bekleyen davetler" })
     .getByRole("listitem")

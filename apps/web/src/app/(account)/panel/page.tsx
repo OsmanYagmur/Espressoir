@@ -73,7 +73,7 @@ async function MyTastings() {
     { href: "/panel/isletme", label: t.panel.business },
     { href: "/bildirimler", label: t.notifications.title, prefetch: false },
     { href: "/hesap", label: t.panel.account },
-    ...(user.role === "admin" ? [{ href: "/panel/yonetim" as Route, label: t.panel.admin }] : []),
+    ...(user.role === "admin" ? [{ href: "/osman" as Route, label: t.panel.admin }] : []),
   ];
 
   return (

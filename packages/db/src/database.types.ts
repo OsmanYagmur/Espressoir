@@ -2394,6 +2394,7 @@ export type Database = {
       };
       workshop_applications: {
         Row: {
+          attended: boolean | null;
           consent: boolean;
           contact: string;
           contact_key: string;
@@ -2402,12 +2403,14 @@ export type Database = {
           id: string;
           name: string;
           question: string | null;
+          source: string;
           status: string;
           updated_at: string;
           workshop_id: string;
         };
         ComputedFields: never;
         Insert: {
+          attended?: boolean | null;
           consent: boolean;
           contact: string;
           contact_key?: string;
@@ -2416,11 +2419,13 @@ export type Database = {
           id?: string;
           name: string;
           question?: string | null;
+          source?: string;
           status?: string;
           updated_at?: string;
           workshop_id: string;
         };
         Update: {
+          attended?: boolean | null;
           consent?: boolean;
           contact?: string;
           contact_key?: string;
@@ -2429,6 +2434,7 @@ export type Database = {
           id?: string;
           name?: string;
           question?: string | null;
+          source?: string;
           status?: string;
           updated_at?: string;
           workshop_id?: string;
@@ -2822,6 +2828,14 @@ export type Database = {
       };
     };
     Functions: {
+      admin_community_stats_v1: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          last_week: number;
+          metric: string;
+          total: number;
+        }[];
+      };
       admin_delete_v1: {
         Args: {
           p_note?: string;

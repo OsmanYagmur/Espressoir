@@ -2,6 +2,8 @@ import { siteConfig } from "@espressoir/core";
 import type { Metadata, Viewport } from "next";
 import { Archivo, Fraunces, IBM_Plex_Mono } from "next/font/google";
 
+import { Analytics } from "@/components/site/analytics";
+import { ConsentBar } from "@/components/site/consent-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { ThemeProvider } from "@/components/site/theme-provider";
@@ -84,6 +86,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <ConsentBar />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

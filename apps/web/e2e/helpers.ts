@@ -25,7 +25,7 @@ export const apiHeaders = { apikey: key, Authorization: `Bearer ${key}` };
 const mailUrl = process.env.E2E_MAIL_URL ?? "http://127.0.0.1:54324";
 
 /** The submit button unlocks once the CAPTCHA has passed, which takes a moment. */
-async function press(page: Page, name: string) {
+export async function press(page: Page, name: string) {
   const button = page.getByRole("button", { name, exact: true });
   await expect(button).toBeEnabled({ timeout: 30_000 });
   await button.click();

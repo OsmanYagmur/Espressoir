@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/panel", "/hesap", "/giris", "/auth", "/uygulama"],
+      disallow: ["/panel", "/hesap", "/giris", "/auth", "/uygulama", "/osman"],
     },
     sitemap: new URL("/sitemap.xml", getSiteUrl()).toString(),
   };

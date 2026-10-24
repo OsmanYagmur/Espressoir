@@ -26,7 +26,7 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
    ⛔ `SUPABASE_DB_URL` Vercel'e **girmez**. `SUPABASE_SECRET_KEY` yalnızca yönetimdeki davet ekranı için, **Secret** türünde ve ortam başına kendi projesinin anahtarıyla eklenir ([`setup-auth.md`](./setup-auth.md), "Davet ekranı"); o ekranı kullanmayacaksan hiç ekleme.
 
-   **Atölye başvurusu bildirimi (isteğe bağlı).** Yeni başvuruda sana e-posta gelsin istersen iki değişken daha ekle; eklemezsen başvurular yine Panel → Yönetim → Atölyeler'de görünür:
+   **Atölye başvurusu bildirimi (isteğe bağlı).** Yeni başvuruda sana e-posta gelsin istersen iki değişken daha ekle; eklemezsen başvurular yine `/osman` → Atölyeler'de görünür:
 
    | Değişken                | Tür    | Değer                                                                                      |
    | ----------------------- | ------ | ------------------------------------------------------------------------------------------ |
@@ -35,6 +35,14 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
 
    E-posta `atolye@espressoir.com` adresinden çıkar (giriş e-postaları için Resend'de doğrulanmış alan adı). Production'a ekle; önizlemelerde de istersen Preview'a da. Değişiklik bir sonraki deploy'da geçerli olur.
 
+   **Ziyaret istatistikleri (isteğe bağlı).** Google Analytics ve `/osman`'daki ziyaret grafikleri için dört değişken; nasıl alınacakları [`setup-analytics.md`](./setup-analytics.md)'de. Eklemezsen çerez sorusu hiç çıkmaz ve Özet sekmesi neyin eksik olduğunu söyler. Yalnızca **Production**'a ekle: önizlemeler sayılmasın.
+
+   | Değişken                        | Tür    | Değer                                                       |
+   | ------------------------------- | ------ | ----------------------------------------------------------- |
+   | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Config | Veri akışının ölçüm kimliği, `G-` ile başlar                |
+   | `GA_PROPERTY_ID`                | Config | Mülk kimliği (yalnızca rakam)                               |
+   | `GA_SERVICE_ACCOUNT_EMAIL`      | Config | Hizmet hesabının e-postası (`…@….iam.gserviceaccount.com`)  |
+   | `GA_SERVICE_ACCOUNT_KEY`        | Secret | JSON anahtar dosyasındaki `private_key` değeri, olduğu gibi |
    - Tablodakiler için **Type: Config** seç, Secret değil. `NEXT_PUBLIC_` ile başlayan değerler zaten tarayıcıya gider; Secret seçersen Vercel "Remove the public framework prefix…" uyarısı verir. Kaydedilmiş bir Secret sonradan Config'e çevrilemez: sil ve Config olarak yeniden ekle.
    - Preview + Development sütunu boş kalırsa PR önizlemeleri derlenmez (PR'daki **Vercel** satırı kırmızı olur; canlı site etkilenmez). Dev projesini sonradan eklemek: [`setup-supabase.md`](./setup-supabase.md), "Dev projesini sonradan eklemek".
    - Vercel'in önerdiği **Supabase entegrasyonunu ekleme** ("Optional Integrations → Add"). Proje zaten var; entegrasyon yeni bir veritabanı kurar ve gizli anahtarları Vercel'e taşır.

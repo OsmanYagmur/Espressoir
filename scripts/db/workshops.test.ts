@@ -1,4 +1,9 @@
-import { WORKSHOP_EXPERIENCES, WORKSHOP_STATUSES } from "@espressoir/core";
+import {
+  COMMUNITY_METRICS,
+  WORKSHOP_APPLICATION_SOURCES,
+  WORKSHOP_EXPERIENCES,
+  WORKSHOP_STATUSES,
+} from "@espressoir/core";
 import { workshopApplicationRowSchema, workshopRowSchema } from "@espressoir/db";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -45,6 +50,15 @@ const apply = (as: string | null, workshopId: string, contact: string, consent =
          (workshop_id, name, contact, experience, question, consent)
        values ($1, 'Ada Lovelace', $2, 'new', null, $3)`,
     [workshopId, contact, consent],
+  );
+
+/** A person added with a status, the way the admin panel does it (or a member trying to). */
+const addWithStatus = (as: string, workshopId: string, contact: string, status: string) =>
+  db.as(as).sql(
+    `insert into public.workshop_applications
+         (workshop_id, name, contact, experience, question, consent, status)
+       values ($1, 'Grace Hopper', $2, 'regular', null, true, $3)`,
+    [workshopId, contact, status],
   );
 
 const overview = async (as: string | null, workshopId: string) => {
@@ -127,6 +141,58 @@ describe("workshops", () => {
     ).rejects.toThrow(/permission denied/);
   });
 
+  it("keep a status sent with an application for an admin only, and mark the admin's", async () => {
+    const id = await addWorkshop();
+    await addWithStatus(ada, id, "@ada", "approved");
+    await addWithStatus(admin, id, "@grace", "approved");
+    expect(await statuses(id)).toEqual({ "@ada": "pending", "@grace": "approved" });
+    expect(
+      await db.sql(
+        `select contact, source from public.workshop_applications
+          where workshop_id = $1 order by contact`,
+        [id],
+      ),
+    ).toEqual([
+      { contact: "@ada", source: "form" },
+      { contact: "@grace", source: "admin" },
+    ]);
+  });
+
+  it("let an admin add a person to a closed, full or started workshop, once per contact", async () => {
+    const closed = await addWorkshop({ isOpen: false, capacity: 1 });
+    const started = await addWorkshop({ startsIn: "-1 hour" });
+    await addWithStatus(admin, closed, "@grace", "approved");
+    await addWithStatus(admin, closed, "@ada", "waitlist");
+    await addWithStatus(admin, started, "@grace", "approved");
+    expect(await statuses(closed)).toEqual({ "@ada": "waitlist", "@grace": "approved" });
+    await expect(addWithStatus(admin, closed, "grace", "approved")).rejects.toThrow(
+      /one_per_contact/,
+    );
+  });
+
+  it("let only an admin mark who came", async () => {
+    const id = await addWorkshop();
+    await apply(null, id, "@ada");
+    const attended = async () =>
+      (
+        await db.sql<{ attended: boolean | null }>(
+          "select attended from public.workshop_applications where workshop_id = $1",
+          [id],
+        )
+      )[0]?.attended;
+
+    await expect(
+      db.as(null).sql("update public.workshop_applications set attended = true"),
+    ).rejects.toThrow(/permission denied/);
+    await db.as(ada).sql("update public.workshop_applications set attended = true");
+    expect(await attended()).toBeNull();
+
+    await db
+      .as(admin)
+      .sql("update public.workshop_applications set attended = true where workshop_id = $1", [id]);
+    expect(await attended()).toBe(true);
+  });
+
   it("put applicants on the waitlist once the seats are taken; a rejection frees one", async () => {
     const id = await addWorkshop({ capacity: 2 });
     await apply(null, id, "@bir");
@@ -188,5 +254,26 @@ describe("workshops", () => {
     expect(await values("workshop_applications_status_known")).toEqual(
       [...WORKSHOP_STATUSES].sort(),
     );
+    expect(await values("workshop_applications_source_known")).toEqual(
+      [...WORKSHOP_APPLICATION_SOURCES].sort(),
+    );
+  });
+});
+
+describe("the community's numbers", () => {
+  it("are counted for an admin only, in the order the app lists them", async () => {
+    await expect(db.as(ada).sql("select * from public.admin_community_stats_v1()")).rejects.toThrow(
+      /not_allowed/,
+    );
+    const rows = await db
+      .as(admin)
+      .sql<{ metric: string; total: number; last_week: number }>(
+        "select * from public.admin_community_stats_v1()",
+      );
+    expect(rows.map(({ metric }) => metric)).toEqual([...COMMUNITY_METRICS]);
+    // The two members made for this test joined just now.
+    const members = rows.find(({ metric }) => metric === "members");
+    expect(Number(members?.total)).toBeGreaterThanOrEqual(2);
+    expect(Number(members?.last_week)).toBeGreaterThanOrEqual(2);
   });
 });

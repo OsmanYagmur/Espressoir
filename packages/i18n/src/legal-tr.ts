@@ -12,7 +12,7 @@ const CONTACT = "[iletişim e-postası eklenecek]";
 export const legalTr = {
   draftBanner:
     "Taslak: bu metin henüz hukuki incelemeden geçmedi ve yürürlüğe girmeden önce değişebilir.",
-  updated: "Son güncelleme: 23 Ekim 2026",
+  updated: "Son güncelleme: 24 Ekim 2026",
   related: "İlgili metinler",
   kvkk: {
     title: "KVKK aydınlatma metni",
@@ -39,6 +39,7 @@ export const legalTr = {
           "Fotoğraflar: tadımlarına ve profiline eklediğin fotoğraflar. Gönderilmeden önce cihazında küçültülür ve yeniden kaydedilir; bu sırada konum, cihaz ve çekim zamanı gibi bilgiler silinir, bize yalnızca görüntü ulaşır.",
           "Kayıtlar: kabul ettiğin koşulların sürümü ve tarihi, kullanıcı adı değişikliğinin tarihi, varsa hesabına uygulanan kısıtlama.",
           "İşlem güvenliği: oturum çerezi, giriş zamanları ve altyapı sağlayıcılarının günlüklerinde yer alan IP adresi ile tarayıcı bilgisi.",
+          "Ziyaret istatistikleri: yalnızca izin verirsen, Google Analytics çerezleriyle gezdiğin sayfalar, siteye nereden geldiğin, cihaz ve tarayıcı türün ve şehir düzeyinde yaklaşık konumun.",
         ],
       },
       {
@@ -56,7 +57,16 @@ export const legalTr = {
           "Atölye başvuru formunu doldurduğunda, hesabın olsun ya da olmasın, şu veriler işlenir: adın, sana ulaşabilmem için yazdığın telefon numarası ya da Instagram kullanıcı adın, kahveyle aranı anlatan seçimin ve varsa sorun.",
           "Bu veriler yalnızca başvurunu değerlendirmek, yerini onaylamak ya da seni yedek listeye almak ve atölyeyle ilgili sana yazmak için kullanılır. Hukuki sebep, formdaki onay kutusuyla verdiğin açık rızadır (KVKK md. 5/1); rızanı istediğin zaman geri alabilirsin.",
           "Başvuruları yalnızca site sahibi görür; sitede herkes yalnızca atölyede kaç yer kaldığını görür. Yeni bir başvuru geldiğinde site sahibine Resend üzerinden, başvurudaki bilgileri içeren bir bildirim e-postası gider.",
+          "Formu doldurmadan, site sahibiyle telefonda ya da yüz yüze anlaşarak katılırsan aynı bilgiler (adın, iletişim bilgin, kahveyle aran, varsa bir not) senin onayınla yönetim panelinden kaydedilir. Atölyeden sonra katılıp katılmadığın da işaretlenebilir; bu bilgi yalnızca atölyelerin planlanması için kullanılır.",
           `Başvurunun silinmesini istersen: ${CONTACT}.`,
+        ],
+        items: [],
+      },
+      {
+        title: "Ziyaret istatistikleri",
+        paragraphs: [
+          "Siteye ilk girdiğinde, ziyaretlerin Google Analytics ile sayılmasına izin verip vermediğin sorulur. Yalnızca izin verirsen tarayıcına Google Analytics çerezleri yazılır ve yukarıda sayılan ziyaret bilgileri Google'a iletilir. Bu bilgiler sitenin kaç kişiye ulaştığını ve hangi sayfaların okunduğunu görmek için toplu sayılar olarak kullanılır; site sahibi kimin hangi sayfaya baktığını görmez.",
+          "Hukuki sebep açık rızandır (KVKK md. 5/1). Google'ın sunucuları yurt dışında olduğundan, aynı izinle verilerin yurt dışına aktarılmasına da rıza vermiş olursun (md. 9). İzin vermezsen site aynen çalışır. Kararını sayfanın altındaki “Çerez tercihleri” bağlantısıyla istediğin zaman değiştirebilirsin; izni geri aldığında Google Analytics çerezleri tarayıcından silinir.",
         ],
         items: [],
       },
@@ -70,7 +80,7 @@ export const legalTr = {
           "Vercel: sitenin barındırılması ve dağıtımı.",
           "Resend: giriş kodu, davet ve atölye başvurusu bildirimi e-postalarının gönderimi.",
           "Cloudflare (Turnstile): giriş formunda bot koruması.",
-          "Google: yalnızca Google ile giriş yapmayı seçersen.",
+          "Google: Google ile giriş yapmayı seçersen kimlik doğrulama için; ziyaret istatistiklerine izin verirsen Google Analytics için.",
         ],
       },
       {
@@ -78,6 +88,7 @@ export const legalTr = {
         paragraphs: [
           "Verilerin hesabın açık olduğu sürece saklanır. Hesabını sildiğinde profilin, tadımların, kafe ziyaretlerin ve takip ilişkilerin veritabanından hemen silinir. Şifreli haftalık yedeklerde en fazla 90 gün daha kalabilir; bu süre sonunda yedekler de silinir.",
           "Kataloğa eklediğin kahve, marka ve kafe kayıtları, kim tarafından eklendiği bilgisi silinerek yerinde kalır.",
+          "Google Analytics'teki ziyaret verileri en fazla 14 ay saklanır, sonra Google tarafından silinir.",
         ],
         items: [],
       },
@@ -112,7 +123,7 @@ export const legalTr = {
       {
         title: "Kısaca",
         paragraphs: [
-          "Espressoir bir tadım defteri. Reklam göstermez, ziyaretçileri izlemez, verilerini satmaz. Senden yalnızca hesabın ve yazdıkların için gereken bilgiyi tutar.",
+          "Espressoir bir tadım defteri. Reklam göstermez ve verilerini satmaz. Ziyaretleri saymak için Google Analytics'i yalnızca sen izin verirsen kullanır. Senden yalnızca hesabın ve yazdıkların için gereken bilgiyi tutar.",
         ],
         items: [],
       },
@@ -139,11 +150,13 @@ export const legalTr = {
       {
         title: "Çerezler",
         paragraphs: [
-          "Espressoir yalnızca zorunlu çerezleri kullanır; analitik ya da reklam çerezi yoktur. Bu nedenle çerez onay penceresi gösterilmez.",
+          "Espressoir zorunlu çerezlerin yanında yalnızca bir tür isteğe bağlı çerez kullanır: ziyaretleri saymak için Google Analytics. Bunlar yalnızca sayfanın altındaki soruya “Kabul et” dersen yazılır; reklam çerezi yoktur.",
         ],
         items: [
           "Oturum çerezi: giriş yaptığında oturumunu açık tutar. Çıkış yaptığında silinir.",
           "Tema tercihi: açık ya da koyu görünüm seçimin tarayıcında saklanır; sunucuya gönderilmez.",
+          "Çerez tercihin: Google Analytics'e izin verip vermediğin tarayıcında saklanır; sunucuya gönderilmez.",
+          "Google Analytics (_ga, _ga_…): yalnızca izin verirsen. Ziyaretlerini ayırt etmek için rastgele bir kimlik tutar; en fazla 2 yıl tarayıcında kalır. “Çerez tercihleri” bağlantısından izni geri aldığında silinir.",
           "Bot koruması: giriş formunda Cloudflare Turnstile çalışır ve doğrulama için tarayıcın hakkında teknik bilgi işler.",
         ],
       },

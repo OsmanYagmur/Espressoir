@@ -8,16 +8,12 @@ import {
 import type { TypedSupabaseClient } from "@espressoir/db";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 
-import { PageHeading } from "@/components/site/page-heading";
-import { PageShell } from "@/components/site/page-shell";
 import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Input, Select } from "@/components/ui/field";
-import { Skeleton } from "@/components/ui/skeleton";
-import { requireAdmin } from "@/lib/auth";
+import type { Session } from "@/lib/auth";
 import { cafeHref } from "@/lib/data/cafes";
 import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
@@ -41,7 +37,8 @@ import {
   reviewCoffee,
   setHidden,
 } from "./actions";
-import { WorkshopsAdmin } from "./workshops";
+import { ActionResult } from "../action-result";
+import { AdminArea } from "../admin-area";
 
 export const metadata: Metadata = {
   title: t.admin.title,
@@ -49,7 +46,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type Props = PageProps<"/panel/yonetim">;
+type Props = PageProps<"/osman/yonetim">;
 
 const a = t.admin;
 const field = "h-10";
@@ -348,7 +345,7 @@ const sentFormat = new Intl.DateTimeFormat(siteConfig.locale, {
 
 /**
  * Invitations: the way in while signup is closed. Uses the secret key (see
- * lib/supabase/admin.ts), and is rendered only after requireAdmin() in AdminPanel.
+ * lib/supabase/admin.ts), and is rendered only for an admin (AdminArea).
  */
 async function Invitations() {
   const admin = createAdminClient();
@@ -1018,49 +1015,29 @@ async function Log({ supabase }: { supabase: TypedSupabaseClient }) {
 // fetched ahead, and the button beside it changes that very page: a fetch that starts just
 // before the change and finishes just after it is cached as if it were current, and the
 // page then shows the old state (a reviewed coffee still "not reviewed") for up to an hour.
-async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
-  const { supabase } = await requireAdmin();
-  const { hata, tamam } = await searchParams;
-  const reason =
-    typeof hata === "string"
-      ? (a.errors[hata as keyof typeof a.errors] ?? a.errors.unknown)
-      : undefined;
+async function ModerationPanel({
+  session: { supabase },
+  searchParams,
+}: { session: Session } & Pick<Props, "searchParams">) {
   // How much of the free plan's 1 GB the pictures take (nothing shown if it cannot be read).
   const { data: usage } = await supabase.rpc("media_usage_v1");
   const stored = usage?.[0];
 
   return (
     <>
-      <nav className="flex flex-wrap items-baseline justify-between gap-3">
-        <Link href="/panel" className={link}>
-          {a.back}
-        </Link>
-        {stored ? (
-          <p className="type-meta">
-            {format(t.photo.admin.usage, {
-              files: stored.files,
-              size: Math.round((Number(stored.bytes) / 1024 / 1024) * 10) / 10,
-            })}
-          </p>
-        ) : null}
-      </nav>
-      {reason ? (
-        <p role="alert" className="mt-6 font-medium text-danger">
-          {format(a.failed, { reason })}
-        </p>
-      ) : tamam ? (
-        <p role="status" className="mt-6 rounded-md bg-leaf-soft p-4 font-medium text-leaf">
-          {a.done}
+      <ActionResult searchParams={await searchParams} />
+      {stored ? (
+        <p className="type-meta">
+          {format(t.photo.admin.usage, {
+            files: stored.files,
+            size: Math.round((Number(stored.bytes) / 1024 / 1024) * 10) / 10,
+          })}
         </p>
       ) : null}
 
       <Section id="davetler">
         <SectionHeading id="davetler" title={a.invites.title} />
         <Invitations />
-      </Section>
-      <Section id="atolyeler">
-        <SectionHeading id="atolyeler" title={a.workshops.title} hint={a.workshops.hint} />
-        <WorkshopsAdmin supabase={supabase} />
       </Section>
       <Section id="sikayetler">
         <SectionHeading id="sikayetler" title={a.reportsTitle} />
@@ -1095,13 +1072,10 @@ async function AdminPanel({ searchParams }: Pick<Props, "searchParams">) {
   );
 }
 
-export default function AdminPage({ searchParams }: Props) {
+export default function ModerationPage({ searchParams }: Props) {
   return (
-    <PageShell>
-      <PageHeading title={a.title} lead={a.description} size="title" />
-      <Suspense fallback={<Skeleton className="h-96" />}>
-        <AdminPanel searchParams={searchParams} />
-      </Suspense>
-    </PageShell>
+    <AdminArea tab="moderation">
+      {(session) => <ModerationPanel session={session} searchParams={searchParams} />}
+    </AdminArea>
   );
 }

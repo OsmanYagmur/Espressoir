@@ -3,9 +3,11 @@
  * go down at once, the same person cannot apply twice, and only the admin sees and answers
  * the application. Needs the local Supabase stack, like the other signed-in specs.
  */
+import { readFile } from "node:fs/promises";
+
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
-import { configured, owner, signIn } from "./helpers";
+import { configured, owner, press, signIn } from "./helpers";
 
 test.skip(!configured, "needs a Supabase with test accounts (E2E_* variables)");
 test.describe.configure({ mode: "serial" });
@@ -62,7 +64,7 @@ test("a visitor applies; the admin sees, answers and removes the application", a
   ).toBeVisible();
 
   const admin = await sessionOf(browser, owner);
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/atolyeler");
   const application = admin
     .getByRole("list", { name: "Başvurular" })
     .getByRole("listitem")
@@ -71,14 +73,62 @@ test("a visitor applies; the admin sees, answers and removes the application", a
   await expect(application).toContainText("Evde demliyorum");
   await expect(application).toContainText("Uçtan uca soru.");
 
-  await application.getByRole("combobox").selectOption({ label: "Onaylandı" });
-  await application.getByRole("button", { name: "Durumu kaydet" }).click();
+  await application.getByRole("combobox", { name: /^Durum:/ }).selectOption({ label: "Onaylandı" });
+  await application.getByRole("combobox", { name: /^Katılım:/ }).selectOption({ label: "Geldi" });
+  await application.getByRole("button", { name: "Kaydet", exact: true }).click();
   await expect(admin.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
   await expect(application).toContainText("Onaylandı");
+  await expect(application.getByRole("combobox", { name: /^Katılım:/ })).toHaveValue("true");
 
   await application.getByRole("checkbox").check();
   await application.getByRole("button", { name: "Başvuruyu sil" }).click();
   await expect(admin.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
   await expect(application).toHaveCount(0);
   await admin.context().close();
+});
+
+test("/osman asks for the password; the admin adds a person and downloads the list", async ({
+  page,
+}) => {
+  const stamp = Date.now().toString(36);
+  const name = `E2E Panel ${stamp}`;
+
+  await page.goto("/osman");
+  const tabs = page.getByRole("navigation", { name: "Yönetim bölümleri" });
+  await expect(tabs).toHaveCount(0);
+  await page.getByLabel("E-posta", { exact: true }).fill(owner.email ?? "");
+  await page.getByLabel("Parola", { exact: true }).fill(owner.password ?? "");
+  await press(page, "Giriş yap");
+  await expect(tabs).toBeVisible();
+  await expect(page).toHaveURL(/\/osman$/);
+  await expect(page.getByRole("heading", { name: "Topluluk" })).toBeVisible();
+  // CI has no Google Analytics: the overview says what is missing.
+  await expect(page.getByText(/Google Analytics henüz bağlı değil/)).toBeVisible();
+
+  await tabs.getByRole("link", { name: "Atölyeler" }).click();
+  await expect(page).toHaveURL(/\/osman\/atolyeler$/);
+  const workshop = page.getByRole("article").first();
+  await workshop.getByText("Kişi ekle", { exact: true }).click();
+  await workshop.getByLabel("Ad", { exact: true }).fill(name);
+  await workshop.getByLabel("İletişim", { exact: true }).fill(`@panel_${stamp}`);
+  await workshop.getByRole("checkbox", { name: /onay verdi/ }).check();
+  await workshop.getByRole("button", { name: "Ekle", exact: true }).click();
+  await expect(page.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
+
+  const person = page
+    .getByRole("list", { name: "Başvurular" })
+    .getByRole("listitem")
+    .filter({ hasText: name });
+  await expect(person).toContainText("Panelden eklendi");
+  await expect(person).toContainText("Onaylandı");
+
+  // The list as a file; the handle starts with "@", so the cell gets an apostrophe.
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Başvuruları indir (CSV)" }).first().click();
+  const csv = await readFile(await (await download).path(), "utf8");
+  expect(csv).toContain(`${name};'@panel_${stamp};Yeni başlıyorum;;Onaylandı;;Panel;`);
+
+  await person.getByRole("checkbox").check();
+  await person.getByRole("button", { name: "Başvuruyu sil" }).click();
+  await expect(person).toHaveCount(0);
 });

@@ -63,8 +63,9 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              the application), /bilgi, /bilgi/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
-                             /panel/yonetim (admin), /hesap,
-                             /hesap/kurulum, /bildirimler
+                             /hesap, /hesap/kurulum, /bildirimler,
+                             /osman (admin: overview), /osman/atolyeler (+ [id]/csv),
+                             /osman/yonetim (moderation); admin-area.tsx asks for the password
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
@@ -144,15 +145,18 @@ data/                        owner's Notion export + reports (git-ignored)
 - Client components shared with the server must not format with `Intl` (hydration); prepare
   display strings on the server (`lib/coffee-cards.ts`).
 - `new Date()`/`Math.random()` in server components only inside `'use cache'` (with `cacheLife`).
-- **Two secrets at app runtime, each for one job.** `SUPABASE_SECRET_KEY` is read only by
+- **Three secrets at app runtime, each for one job.** `SUPABASE_SECRET_KEY` is read only by
   `lib/supabase/admin.ts` (`server-only`), only for the invitation screen's Auth admin calls,
   only after `requireAdmin()` (owner-approved exception, 2D). Never use that client on the app's
   own tables; everything else still runs with the publishable key and the caller's session.
   `RESEND_API_KEY` (with `WORKSHOP_NOTIFY_EMAIL`) is read only by `lib/workshop-mail.ts`, to
   tell the owner about a new workshop application (owner-approved 2026-10-23); without it
-  nothing is sent. Vercel holds secrets as **Secret** (prod key on Production, dev key on
-  Preview); the public values are **Config** variables (a `NEXT_PUBLIC_` name cannot be a
-  Vercel Secret).
+  nothing is sent. `GA_SERVICE_ACCOUNT_KEY` (with `GA_PROPERTY_ID` and
+  `GA_SERVICE_ACCOUNT_EMAIL`) is read only by `lib/analytics/ga-report.ts`, for the visits
+  on /osman's overview, after the admin check (owner-approved 2026-10-24, with Google
+  Analytics); without them the overview says what is missing. Vercel holds secrets as
+  **Secret** (prod key on Production, dev key on Preview); the public values are **Config**
+  variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
@@ -303,7 +307,7 @@ Community (Phase 2B):
   per person per thing; read by the reporter and admins.
 - **Admin acts go through `admin_*_v1` functions** (hide, delete, restrict, resolve, review,
   merge coffees/brands): each checks `is_admin()` and writes `moderation_log` via
-  `log_admin_action()`. The panel (`/panel/yonetim`) is plain forms and Server Actions that
+  `log_admin_action()`. The panel (`/osman/yonetim`) is plain forms and Server Actions that
   call them as the signed-in admin: no service key, and the page works without JavaScript.
 - **Rate-limited rows are stamped with `now()`** for members (`enforce_rate_limit`), so a
   back-dated `created_at` cannot dodge a limit. Comments 10 / 5 min and 100 / day, likes
@@ -318,7 +322,7 @@ Community (Phase 2B):
 
 Invitations (Phase 2D):
 
-- **Panel → Yönetim → Davetler** sends, re-sends and withdraws invitations with Supabase's Auth
+- **`/osman` → Moderasyon → Davetler** sends, re-sends and withdraws invitations with Supabase's Auth
   admin API (`inviteMember`, `cancelInvitation`). The link leads to the origin of the request,
   so a preview invites to itself. "Pending" = `invited_at` set and `email_confirmed_at` empty;
   `cancelInvitation` re-reads the account and deletes it only in that state, so the screen can
@@ -653,7 +657,7 @@ Workshops and articles (2026-10-23):
 - **`workshops` and `workshop_applications`** (migration `20261023120000_workshops`). A workshop
   row is a date with its capacity, price text, public location text and `is_open`; `program`
   names the text the page shows (`content/atolye/<key>.ts`, registered in its `index.ts`). The
-  admin panel (Yönetim → Atölyeler) adds and edits workshops and answers applications: plain
+  admin panel (`/osman/atolyeler`) adds and edits workshops and answers applications: plain
   table writes as the signed-in admin, allowed by `is_admin()` policies (not moderation, so
   not logged).
 - **Anyone applies, nobody reads:** anon and members insert the form's columns only (column
@@ -675,6 +679,38 @@ Workshops and articles (2026-10-23):
   plain paragraphs, parsed by `parseArticle` (`@espressoir/core`, no package) and shipped with
   the server functions (`outputFileTracingIncludes`). A broken file stops the build with a
   sentence. Coffee facts come from `design/icerik.md` only.
+
+The admin area and visit statistics (2026-10-24):
+
+- **`/osman` is the admin area** (the old `/panel/yonetim` redirects there, `next.config.ts`):
+  Özet (`page.tsx`), Atölyeler (`atolyeler/`), Moderasyon (`yonetim/`). Every page renders
+  inside `AdminArea` (`osman/admin-area.tsx`), which shows the tabs to an admin and, to
+  anyone else, `LoginForm variant="admin"` (e-mail + password, the same browser sign-in,
+  then a refresh in place) or "admins only". The address is no secret and the form is no
+  lock: the database checks `is_admin()` on every row. The proxy refreshes the session for
+  /osman but never redirects there; robots and every page's metadata keep it out of search.
+- **People added from the panel** (migration `20261024120000_workshop_admin`): an admin
+  inserts with the status chosen (`toAdminApplicationInsert`), into a closed, full or started
+  workshop, without the flood limit; the trigger sets `source = 'admin'` (`'form'` for
+  everyone else, whatever they send) and keeps one row per contact. `attended` (true / false /
+  null) is written by admins only (column grant + the update policy), asked of approved
+  people. Old databases read as form rows, unmarked (`readWorkshopAdmin` falls back to the
+  first column list; the Zod defaults fill in).
+- **Numbers:** a workshop's are derived in TS (`summarizeApplications` in `@espressoir/core`:
+  by status, experience and source, fill against the capacity, show rate, per day in the
+  site's time zone); the community's come from `admin_community_stats_v1` (admin only; order
+  = `COMMUNITY_METRICS`, a test compares). Charts are `BarTable` and `DayColumns`
+  (`components/stats`), under the chart rules.
+- **CSV:** `GET /osman/atolyeler/[id]/csv` (admins, else 404): semicolons, a byte order mark
+  (Turkish Excel), formula-looking cells prefixed with an apostrophe.
+- **Google Analytics only after a yes** (`lib/consent.ts`): `ConsentBar` (one line at the
+  bottom, "Reddet" and "Kabul et" equal) and `Analytics` (gtag via `next/script`) render only
+  when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set; the answer lives in `localStorage`; the
+  footer's "Çerez tercihleri" (`ConsentReset`) asks again, and a "no" deletes `_ga` cookies.
+  Page changes are counted by GA's history tracking. The overview reads the Data API as a
+  service account: a JWT signed with `node:crypto` (no package), five reports in one batch
+  plus the workshop pages. Setup: `docs/setup-analytics.md`.
+- **Legal sections are linkable by title** (`/gizlilik#cerezler`, slugified).
 
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
@@ -735,7 +771,10 @@ Workshops and articles (2026-10-23):
       workshop, capacity and price editable in the admin panel, e-mail notification through
       Resend, a KVKK paragraph without a retention period, integer scores (no 0.5 steps).
       Added on the owner's request (2026-10-24): the logo mark, motion, Unsplash photos on
-      the home page, the workshop cover and the articles.
+      the home page, the workshop cover and the articles; then (branch `osman-admin`) the
+      admin area at `/osman` behind e-mail + password, people added to workshops from the
+      panel, attendance, CSV, workshop and community numbers, and Google Analytics behind a
+      consent bar, with its numbers on the overview.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
@@ -792,8 +831,11 @@ Phase 4 decisions (owner-approved 2026-10-15):
 Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
-  `db:push:prod`). 4C has none. The workshop migration is on dev (2026-10-23), not on prod.
-- Workshop: set the real date, price and place in Yönetim → Atölyeler (the first row holds
+  `db:push:prod`). 4C has none. The workshop migrations (`20261023120000_workshops`,
+  `20261024120000_workshop_admin`) are on dev and prod (2026-10-24).
+- Google Analytics: the property, the service account and four Vercel variables
+  (`docs/setup-analytics.md`); until then no consent bar and no visits on /osman.
+- Workshop: set the real date, price and place in `/osman` → Atölyeler (the first row holds
   placeholders); for the e-mail, `RESEND_API_KEY` (Secret) and `WORKSHOP_NOTIFY_EMAIL` on
   Vercel (docs/deploy-vercel.md). After any branch switch, look for iCloud's
   ` 2` copies first (`git status`). The owner has merged before migrating three times, and

@@ -1,3 +1,4 @@
+import { slugify } from "@espressoir/core";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -28,9 +29,10 @@ export function LegalPage({ page }: { page: LegalKey }) {
       <p role="note" className="rounded-md bg-sunk p-4">
         {legal.draftBanner}
       </p>
-      {sections.map((section, index) => (
-        <Section key={section.title} id={`bolum-${index + 1}`} className="md:mt-12">
-          <SectionHeading level={3} title={section.title} id={`bolum-${index + 1}`} />
+      {/* Each section is linkable by its title: /gizlilik#cerezler. */}
+      {sections.map((section) => (
+        <Section key={section.title} id={slugify(section.title)} className="md:mt-12">
+          <SectionHeading level={3} title={section.title} id={slugify(section.title)} />
           <div className="flex flex-col gap-4">
             {section.paragraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

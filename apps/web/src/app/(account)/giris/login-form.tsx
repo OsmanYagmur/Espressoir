@@ -33,9 +33,13 @@ const quietButton =
  * Sign-in runs in the browser, straight against Supabase Auth: the auth server then sees
  * each visitor's own address (its rate limits are per address), and no server function is
  * spent on logging in. The session lands in cookies, which the server reads from then on.
+ *
+ * `admin` is the door of /osman: e-mail and password only, and the page it sits on is
+ * shown again once the session is there.
  */
-export function LoginForm() {
-  const [mode, setMode] = useState<Mode>("code");
+export function LoginForm({ variant = "member" }: { variant?: "member" | "admin" }) {
+  const admin = variant === "admin";
+  const [mode, setMode] = useState<Mode>(admin ? "password" : "code");
   const [step, setStep] = useState<Step>("request");
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
@@ -64,7 +68,7 @@ export function LoginForm() {
 
   function finish() {
     // The session cookie is set by now; refresh drops anything rendered while signed out.
-    router.replace("/panel");
+    if (!admin) router.replace("/panel");
     router.refresh();
   }
 
@@ -261,26 +265,28 @@ export function LoginForm() {
           ) : null}
         </form>
 
-        <div className="grid gap-4 border-t border-line pt-6">
-          {authConfig.googleEnabled ? (
-            <Button
+        {admin ? null : (
+          <div className="grid gap-4 border-t border-line pt-6">
+            {authConfig.googleEnabled ? (
+              <Button
+                type="button"
+                variant="secondary"
+                block
+                disabled={pending}
+                onClick={() => void signInWithGoogle()}
+              >
+                {t.auth.google}
+              </Button>
+            ) : null}
+            <button
               type="button"
-              variant="secondary"
-              block
-              disabled={pending}
-              onClick={() => void signInWithGoogle()}
+              className={`${quietButton} justify-self-start`}
+              onClick={() => switchTo(mode === "code" ? "password" : "code")}
             >
-              {t.auth.google}
-            </Button>
-          ) : null}
-          <button
-            type="button"
-            className={`${quietButton} justify-self-start`}
-            onClick={() => switchTo(mode === "code" ? "password" : "code")}
-          >
-            {mode === "code" ? t.auth.usePassword : t.auth.useCode}
-          </button>
-        </div>
+              {mode === "code" ? t.auth.usePassword : t.auth.useCode}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
