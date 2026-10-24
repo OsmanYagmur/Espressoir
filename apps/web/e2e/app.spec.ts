@@ -31,9 +31,13 @@ test("a tasting written by the app shows on the site once the app asks for a ref
   const token = await accessToken(request);
   const member = { ...apiHeaders, Authorization: `Bearer ${token}` };
 
-  const coffees = await request.get(`${url}/rest/v1/coffee_overview?select=coffee_id&limit=1`, {
-    headers: apiHeaders,
-  });
+  // A coffee no other signed-in spec counts tastings on (they use Nespresso and Kronotrop),
+  // picked by a fixed order: "the first row" without one changes from run to run, and once
+  // it was the Ristretto that community.spec expects to carry exactly two tastings.
+  const coffees = await request.get(
+    `${url}/rest/v1/coffee_overview?select=coffee_id&brand_slug=eq.kahve-dunyasi&order=coffee_slug&limit=1`,
+    { headers: apiHeaders },
+  );
   const [coffee] = (await coffees.json()) as { coffee_id: string }[];
   expect(coffee).toBeDefined();
 
