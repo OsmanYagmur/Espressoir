@@ -33,7 +33,7 @@ Haftalık şifreli DB yedekleri bu repoda Actions artifact'ı olarak saklanacak;
    | `RESEND_API_KEY`        | Secret | Resend → API Keys → **Create API Key** (yetki: Sending access, alan adı: `espressoir.com`) |
    | `WORKSHOP_NOTIFY_EMAIL` | Config | Bildirimin gideceği adres                                                                  |
 
-   E-posta `atolye@espressoir.com` adresinden çıkar (giriş e-postaları için Resend'de doğrulanmış alan adı). Production'a ekle; önizlemelerde de istersen Preview'a da. Değişiklik bir sonraki deploy'da geçerli olur.
+   E-posta `atolye@espressoir.com` adresinden çıkar (giriş e-postaları için Resend'de doğrulanmış alan adı). Production'a ekle; önizlemelerde de istersen Preview'a da. Değişiklik bir sonraki deploy'da geçerli olur: Deployments → son deploy → **Redeploy**. Sonra `/osman` → Atölyeler'de "Yeni başvurular … adresine e-postayla gelir." yazısını ve **Deneme e-postası gönder** butonunu görürsün; butona bas, e-posta gelirse akış hazır.
 
    **Ziyaret istatistikleri (isteğe bağlı).** Google Analytics ve `/osman`'daki ziyaret grafikleri için dört değişken; nasıl alınacakları [`setup-analytics.md`](./setup-analytics.md)'de. Eklemezsen çerez sorusu hiç çıkmaz ve Özet sekmesi neyin eksik olduğunu söyler. Yalnızca **Production**'a ekle: önizlemeler sayılmasın.
 

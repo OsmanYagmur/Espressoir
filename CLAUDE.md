@@ -64,7 +64,7 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
                              /hesap, /hesap/kurulum, /bildirimler,
-                             /osman (admin: overview), /osman/atolyeler (+ [id]/csv),
+                             /osman (admin: overview), /osman/atolyeler (+ [id]/xlsx, [id]/pdf),
                              /osman/yonetim (moderation); admin-area.tsx asks for the password
                              (dynamic; session read behind <Suspense>)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
@@ -159,6 +159,11 @@ data/                        owner's Notion export + reports (git-ignored)
   variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
+- **`lint`, `typecheck` and `test` depend on a `transit` task** (no package has that script;
+  `transit` depends on `^transit`): they still run in parallel, but a change in a workspace
+  package changes the hash of every package that uses it. Without it the mobile app's
+  typecheck was replayed from cache after a change in `@espressoir/core` and only CI caught
+  the error (2026-10-24). Never give a package a `transit` script.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
   On the live project the Vercel step never applies: "Enable access to System Environment
   Variables" is off there (seen 2026-10-11), so pages fall back to `siteConfig.url`. That is
@@ -723,8 +728,22 @@ The admin area and visit statistics (2026-10-24):
   site's time zone); the community's come from `admin_community_stats_v1` (admin only; order
   = `COMMUNITY_METRICS`, a test compares). Charts are `BarTable` and `DayColumns`
   (`components/stats`), under the chart rules.
-- **CSV:** `GET /osman/atolyeler/[id]/csv` (admins, else 404): semicolons, a byte order mark
-  (Turkish Excel), formula-looking cells prefixed with an apostrophe.
+- **Downloads: Excel and PDF, no CSV** (owner's request, 2026-10-24).
+  `GET /osman/atolyeler/[id]/xlsx` and `/pdf` (admins, else 404) share `[id]/export.ts`
+  (the admin check, approved people first, the columns). The workbook comes from
+  `xlsxWorkbook` (`@espressoir/core`, no package: a stored zip of a few XML parts, every
+  cell inline text so nothing runs as a formula, the header bold and frozen). The PDF is
+  `lib/applications-pdf.ts` on `pdf-lib` + `@pdf-lib/fontkit` (the one place with a package:
+  Turkish letters need the site's Archivo embedded, read from `src/assets/fonts`): A4
+  landscape, the header row on every page, a box to tick for approved people, page numbers.
+- **Applications are answered with buttons** (`setApplicationStatus`, `setAttendance`): one
+  submit button per answer (Onayla, Beklet, Yedeğe al, Reddet; the current one is left out),
+  each named for the person; "Geldi / Gelmedi" only for approved people, pressed again to
+  take the mark back. Works without JavaScript.
+- **The application mail** (`lib/workshop-mail.ts`): its subject names the person, its link
+  leads to the workshop in the panel. `/osman/atolyeler` says whether it is on (`mailSetup()`)
+  and has a "Deneme e-postası gönder" button (`testApplicationMail`, `?tamam=posta`), the way
+  to check the Vercel variables once they are set.
 - **Google Analytics only after a yes** (`lib/consent.ts`): `ConsentBar` (one line at the
   bottom, "Reddet" and "Kabul et" equal) and `Analytics` (gtag via `next/script`) render only
   when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set; the answer lives in `localStorage`; the
@@ -795,7 +814,7 @@ The admin area and visit statistics (2026-10-24):
       Added on the owner's request (2026-10-24): the logo mark, motion, Unsplash photos on
       the home page, the workshop cover and the articles; then (branch `osman-admin`) the
       admin area at `/osman` behind e-mail + password, people added to workshops from the
-      panel, attendance, CSV, workshop and community numbers, and Google Analytics behind a
+      panel, attendance, downloads, workshop and community numbers, and Google Analytics behind a
       consent bar, with its numbers on the overview. Then (branch `bilgi-rehberleri`,
       2026-10-24): the home page leads with coffee knowledge, seven brewing guides and three
       articles with photos, topics on `/bilgi`, the menu Bilgi · Tadım notları · Atölye,

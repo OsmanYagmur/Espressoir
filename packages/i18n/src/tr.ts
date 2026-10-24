@@ -91,6 +91,7 @@ export const tr = {
     form: {
       name: "Adın soyadın",
       contact: "Telefon numaran",
+      contactPlaceholder: "+90 530 123 45 67",
       contactHint: "Yerini onaylamak için bu numaradan sana ulaşacağım.",
       experience: "Kahveyle aran nasıl?",
       experiences: {
@@ -125,8 +126,8 @@ export const tr = {
       failed: "Başvurun gönderilemedi. Biraz sonra tekrar dene.",
     },
     mail: {
-      subject: "Yeni başvuru: {title}",
-      waitlistSubject: "Yedek listeye yeni başvuru: {title}",
+      subject: "Yeni başvuru: {title} · {name}",
+      waitlistSubject: "Yedek listeye yeni başvuru: {title} · {name}",
       intro: "{title} ({date}) için yeni bir başvuru geldi.",
       name: "Ad",
       contact: "İletişim",
@@ -134,6 +135,9 @@ export const tr = {
       question: "Sorusu",
       seatsLeft: "Kalan yer",
       panel: "Başvurular",
+      testSubject: "Deneme: atölye başvuru e-postası",
+      testBody:
+        "Bu bir deneme e-postası. Geldiyse ayarlar doğru: yeni her başvuru bu adrese bildirilecek.",
     },
   },
   info: {
@@ -1064,11 +1068,20 @@ export const tr = {
       applicant_invalid:
         "kişinin adı, iletişimi ya da kahveyle arası eksik veya hatalı; onay kutusunu da işaretle",
       applicant_duplicate: "bu iletişim bilgisiyle bu atölyede zaten bir kayıt var",
+      mail_missing:
+        "e-posta ayarlı değil; Vercel'de RESEND_API_KEY ve WORKSHOP_NOTIFY_EMAIL tanımlı olmalı",
+      mail_failed: "Resend e-postayı göndermedi; anahtarı ve alan adını kontrol et",
       unknown: "beklenmedik bir hata",
     },
     workshops: {
       title: "Atölyeler",
       hint: "Atölye ekle; tarihini, kontenjanını ve ücretini değiştir; başvuruları yanıtla. Başvuruları yalnızca yöneticiler görür.",
+      mail: {
+        on: "Yeni başvurular {to} adresine e-postayla gelir.",
+        off: "Başvuru e-postası kapalı: yeni başvurular yalnızca burada görünür. Açmak için Vercel'de RESEND_API_KEY (Secret) ve WORKSHOP_NOTIFY_EMAIL tanımla.",
+        test: "Deneme e-postası gönder",
+        sent: "Deneme e-postası gönderildi. Gelen kutunu, gelmediyse gereksiz klasörünü kontrol et.",
+      },
       empty: "Henüz atölye yok.",
       newTitle: "Yeni atölye ekle",
       edit: "Atölyeyi düzenle",
@@ -1100,6 +1113,12 @@ export const tr = {
         waitlist: "Yedek liste",
       },
       status: "Durum",
+      answers: {
+        approve: "Onayla",
+        hold: "Beklet",
+        waitlist: "Yedeğe al",
+        reject: "Reddet",
+      },
       remove: "Başvuruyu sil",
       question: "Sorusu",
       received: "{date} geldi",
@@ -1111,7 +1130,6 @@ export const tr = {
         came: "Geldi",
         missed: "Gelmedi",
       },
-      saveApplication: "Kaydet",
       addTitle: "Kişi ekle",
       addHint:
         "Formu doldurmadan katılacak biri: telefonda ya da yüz yüze anlaştığın kişiler. Onaylı ya da bekleyen olarak eklenirse kontenjandan düşer.",
@@ -1124,9 +1142,10 @@ export const tr = {
       },
       addConsent: "Bu kişi, bilgilerinin bu atölye için kaydedilmesine onay verdi.",
       add: "Ekle",
-      csv: "Başvuruları indir (CSV)",
-      csvColumns: {
-        name: "Ad",
+      downloadXlsx: "Excel olarak indir",
+      downloadPdf: "PDF olarak indir",
+      exportColumns: {
+        name: "Ad soyad",
         contact: "İletişim",
         experience: "Kahveyle arası",
         question: "Not ya da soru",
@@ -1135,7 +1154,14 @@ export const tr = {
         source: "Kaynak",
         createdAt: "Kayıt zamanı",
       },
-      csvFile: "basvurular",
+      exportFile: "basvurular",
+      exportSheet: "Başvurular",
+      pdf: {
+        summary:
+          "{total} başvuru · {approved} onaylı · {pending} bekliyor · {waitlist} yedek · {capacity} kişilik",
+        downloaded: "İndirildi: {time}",
+        page: "Sayfa {page} / {pages}",
+      },
       sources: {
         form: "Form",
         admin: "Panel",

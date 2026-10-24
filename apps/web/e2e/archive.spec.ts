@@ -748,7 +748,11 @@ test.describe("workshop", () => {
     await expect(page.getByLabel("Adın soyadın")).toBeFocused();
     await expect(page.getByLabel("Adın soyadın")).toHaveAttribute("aria-invalid", "true");
 
-    // A handle is not enough any more: the form asks for a phone number.
+    // A handle is not enough any more: the form asks for a phone number, with an example.
+    await expect(page.getByLabel("Telefon numaran")).toHaveAttribute(
+      "placeholder",
+      "+90 530 123 45 67",
+    );
     await page.getByLabel("Telefon numaran").fill("@kahvesever");
     await page.getByRole("button", { name: "Başvur" }).click();
     await expect(page.getByText("Bir telefon numarası yaz, örneğin 0555 123 45 67.")).toBeVisible();
