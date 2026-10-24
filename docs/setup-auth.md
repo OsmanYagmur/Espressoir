@@ -102,7 +102,7 @@ Bilmen gerekenler:
 
 ### Davet ekranı
 
-**Panel → Yönetim → Davetler:** adresi yaz, "Davet gönder". Altında bekleyen (henüz kabul edilmemiş) davetler durur; her birinin yanında **Yeniden gönder** (yeni bağlantı gider, eskisi geçersiz olur) ve **Geri çek** (davet silinir, bağlantı çalışmaz) vardır. Kabul edilmiş bir davet listeden düşer ve buradan silinemez.
+**`/osman` → Moderasyon → Davetler:** adresi yaz, "Davet gönder". Altında bekleyen (henüz kabul edilmemiş) davetler durur; her birinin yanında **Yeniden gönder** (yeni bağlantı gider, eskisi geçersiz olur) ve **Geri çek** (davet silinir, bağlantı çalışmaz) vardır. Kabul edilmiş bir davet listeden düşer ve buradan silinemez.
 
 Ekranın çalışması için site, Supabase'in **gizli anahtarını** bilmek zorunda: davet göndermek bir yönetici çağrısıdır, giriş yapmış bir kullanıcı olarak yapılamaz. Bir kez kurulur:
 
@@ -154,8 +154,8 @@ Süreyi uzatmak mümkün (Supabase → Authentication → Emails → "Email OTP 
 | E-postada kod yok, yalnızca bağlantı var                      | Şablonlar güncellenmemiş (4. adım).                                                                                                                  |
 | Bağlantı ana sayfaya düşüyor                                  | `/auth/callback` adresi Redirect URLs listesinde yok (2. adım).                                                                                      |
 | "Bu bağlantı geçersiz ya da süresi dolmuş"                    | Bağlantı bir kez kullanılmış ya da bir saati geçmiş. Giriş sayfasından yeni kod iste.                                                                |
-| "Bu davet bağlantısı geçersiz ya da süresi dolmuş"            | Davet bir saati geçmiş, geri çekilmiş ya da yerine yenisi gönderilmiş. Yönetim → Davetler'den yeniden gönder.                                        |
-| Yönetim → Davetler: "gizli anahtar tanımlı değil"             | `SUPABASE_SECRET_KEY` o ortamda (Production / Preview) yok ya da eklendikten sonra Redeploy yapılmadı (7. adım, "Davet ekranı").                     |
+| "Bu davet bağlantısı geçersiz ya da süresi dolmuş"            | Davet bir saati geçmiş, geri çekilmiş ya da yerine yenisi gönderilmiş. `/osman` → Moderasyon → Davetler'den yeniden gönder.                          |
+| Moderasyon → Davetler: "gizli anahtar tanımlı değil"          | `SUPABASE_SECRET_KEY` o ortamda (Production / Preview) yok ya da eklendikten sonra Redeploy yapılmadı (7. adım, "Davet ekranı").                     |
 | Google: "Kayıt şu an yalnızca davetle"                        | O Google hesabının e-postasıyla açılmış bir hesap yok.                                                                                               |
 | `pnpm user:invite`: "e-posta servisi bu adrese gönderemiyor"  | Özel SMTP kurulmamış (3. adım).                                                                                                                      |
 | Kendi hesabınla giremiyorsun ve Turnstile'dan şüpheleniyorsun | Supabase'te Captcha korumasını geçici olarak kapat, gir, nedenini bul, yeniden aç.                                                                   |
