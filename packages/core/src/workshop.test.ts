@@ -4,6 +4,7 @@ import {
   isWorkshopContact,
   isWorkshopPhone,
   summarizeApplications,
+  whatsappNumber,
   type ApplicationFacts,
 } from "./workshop";
 
@@ -49,6 +50,21 @@ describe("isWorkshopPhone", () => {
     ]) {
       expect(isWorkshopPhone(phone), phone).toBe(false);
     }
+  });
+});
+
+describe("whatsappNumber", () => {
+  it("writes a phone number the way wa.me wants it", () => {
+    expect(whatsappNumber("0555 123 45 67")).toBe("905551234567");
+    expect(whatsappNumber("555 123 45 67")).toBe("905551234567");
+    expect(whatsappNumber("+90 (555) 123-45-67")).toBe("905551234567");
+    expect(whatsappNumber("905551234567")).toBe("905551234567");
+    expect(whatsappNumber("+44 20 7946 0958")).toBe("442079460958");
+  });
+
+  it("has nothing for a handle", () => {
+    expect(whatsappNumber("@kahvesever")).toBeNull();
+    expect(whatsappNumber("kahvesever")).toBeNull();
   });
 });
 

@@ -16,6 +16,10 @@ export type WorkshopStatus = (typeof WORKSHOP_STATUSES)[number];
 export const WORKSHOP_APPLICATION_SOURCES = ["form", "admin"] as const;
 export type WorkshopApplicationSource = (typeof WORKSHOP_APPLICATION_SOURCES)[number];
 
+/** An approved person's answer on their personal page: coming or not (null: no answer). */
+export const WORKSHOP_RSVP_ANSWERS = ["yes", "no"] as const;
+export type WorkshopRsvpAnswer = (typeof WORKSHOP_RSVP_ANSWERS)[number];
+
 export const WORKSHOP_NAME_MIN_LENGTH = 2;
 export const WORKSHOP_NAME_MAX_LENGTH = 80;
 export const WORKSHOP_CONTACT_MIN_LENGTH = 3;
@@ -53,6 +57,18 @@ export function isWorkshopPhone(value: string): boolean {
   // Ten digits once the country code or the leading zero is gone; area codes start 2–4,
   // mobile numbers 5.
   return /^[2-5]\d{9}$/.test(digits.replace(/^(?:90|0)/, ""));
+}
+
+/**
+ * The number WhatsApp's links want (`wa.me/<digits>`): the country code and the number,
+ * digits only. A Turkish number gets 90 in front; a handle, or anything that is not a phone
+ * number the form would take, has none (null).
+ */
+export function whatsappNumber(contact: string): string | null {
+  if (!isWorkshopPhone(contact)) return null;
+  const digits = contact.replace(/\D/g, "");
+  if (contact.trim().startsWith("+")) return digits;
+  return `90${digits.replace(/^(?:90|0)/, "")}`;
 }
 
 /** What the admin's statistics need from an application. */

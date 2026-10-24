@@ -2,6 +2,7 @@ import {
   COMMUNITY_METRICS,
   WORKSHOP_APPLICATION_SOURCES,
   WORKSHOP_EXPERIENCES,
+  WORKSHOP_RSVP_ANSWERS,
   WORKSHOP_STATUSES,
 } from "@espressoir/core";
 import { workshopApplicationRowSchema, workshopRowSchema } from "@espressoir/db";
@@ -257,6 +258,121 @@ describe("workshops", () => {
     expect(await values("workshop_applications_source_known")).toEqual(
       [...WORKSHOP_APPLICATION_SOURCES].sort(),
     );
+    expect(await values("workshop_applications_rsvp_known")).toEqual(
+      [...WORKSHOP_RSVP_ANSWERS].sort(),
+    );
+  });
+});
+
+describe("the answer page", () => {
+  /** The token of the one application in a workshop, read the way the admin panel does. */
+  const tokenOf = async (workshopId: string) => {
+    const [row] = await db
+      .as(admin)
+      .sql<{ token: string }>(
+        "select rsvp_token as token from public.workshop_applications where workshop_id = $1",
+        [workshopId],
+      );
+    return row!.token;
+  };
+  const view = (as: string | null, token: string) =>
+    db.as(as).sql<Record<string, unknown>>("select * from public.workshop_rsvp_v1($1)", [token]);
+  const answer = (as: string | null, token: string, value: string) =>
+    db.as(as).sql("select public.answer_workshop_rsvp_v1($1, $2)", [token, value]);
+
+  it("gives every application its own unguessable token", async () => {
+    const id = await addWorkshop({ capacity: 5 });
+    await apply(null, id, "0555 111 22 33");
+    await apply(null, id, "0555 111 22 44");
+    const tokens = await db
+      .as(admin)
+      .sql<{ token: string }>(
+        "select rsvp_token as token from public.workshop_applications where workshop_id = $1",
+        [id],
+      );
+    expect(tokens).toHaveLength(2);
+    for (const { token } of tokens) expect(token).toMatch(/^[A-Za-z0-9_-]{22}$/);
+    expect(tokens[0]!.token).not.toBe(tokens[1]!.token);
+  });
+
+  it("shows a visitor the first name and the workshop, nothing private", async () => {
+    const id = await addWorkshop();
+    await apply(null, id, "0555 111 22 33");
+    const token = await tokenOf(id);
+    const [row] = await view(null, token);
+    expect(row).toEqual({
+      first_name: "Ada",
+      workshop_title: "Deneme atölyesi",
+      starts_at: expect.anything(),
+      ends_at: expect.anything(),
+      location_text: "Kadıköy",
+      status: "pending",
+      rsvp: null,
+      can_answer: false,
+    });
+    expect(await view(null, "bilinmeyen-bir-anahtar-xx")).toEqual([]);
+  });
+
+  it("takes an answer from an approved person until the workshop starts", async () => {
+    const id = await addWorkshop();
+    await apply(null, id, "0555 111 22 33");
+    const token = await tokenOf(id);
+
+    await expect(answer(null, token, "yes")).rejects.toThrow(/rsvp_not_approved/);
+    await db
+      .as(admin)
+      .sql("update public.workshop_applications set status = 'approved' where workshop_id = $1", [
+        id,
+      ]);
+    await expect(answer(null, token, "belki")).rejects.toThrow(/rsvp_invalid/);
+    await expect(answer(null, "bilinmeyen-bir-anahtar-xx", "yes")).rejects.toThrow(
+      /rsvp_not_found/,
+    );
+
+    expect((await view(null, token))[0]?.can_answer).toBe(true);
+    await answer(null, token, "yes");
+    expect((await view(null, token))[0]?.rsvp).toBe("yes");
+    // A change of mind wins until the start.
+    await answer(ada, token, "no");
+    const [row] = await db
+      .as(admin)
+      .sql<{ rsvp: string; answered: boolean }>(
+        "select rsvp, rsvp_at is not null as answered from public.workshop_applications where workshop_id = $1",
+        [id],
+      );
+    expect(row).toEqual({ rsvp: "no", answered: true });
+
+    // Once it has started, the answer stays as it is.
+    await db.sql(
+      "update public.workshops set starts_at = now() - interval '5 minutes' where id = $1",
+      [id],
+    );
+    await expect(answer(null, token, "yes")).rejects.toThrow(/rsvp_closed/);
+    expect((await view(null, token))[0]?.can_answer).toBe(false);
+  });
+
+  it("lets nobody write the token or the answer directly; admins note when they asked", async () => {
+    const id = await addWorkshop();
+    await addWithStatus(admin, id, "0555 111 22 33", "approved");
+    for (const column of ["rsvp = 'yes'", "rsvp_token = 'x'"]) {
+      await expect(
+        db.as(admin).sql(`update public.workshop_applications set ${column}`),
+      ).rejects.toThrow(/permission denied/);
+    }
+    await expect(
+      db.as(null).sql("update public.workshop_applications set rsvp_asked_at = now()"),
+    ).rejects.toThrow(/permission denied/);
+    await db
+      .as(admin)
+      .sql(
+        "update public.workshop_applications set rsvp_asked_at = now(), reminded_at = now() where workshop_id = $1",
+        [id],
+      );
+    const [row] = await db.sql<{ asked: boolean; reminded: boolean }>(
+      "select rsvp_asked_at is not null as asked, reminded_at is not null as reminded from public.workshop_applications where workshop_id = $1",
+      [id],
+    );
+    expect(row).toEqual({ asked: true, reminded: true });
   });
 });
 

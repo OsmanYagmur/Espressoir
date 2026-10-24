@@ -28,20 +28,24 @@ export interface WorkshopWhen {
   date: string;
   /** "22 Kasım Pazar · 14:00–16:30" */
   full: string;
+  /** "14:00" */
+  start: string;
 }
 
 export function workshopWhen(workshop: Pick<Workshop, "startsAt" | "endsAt">): WorkshopWhen {
   const start = new Date(workshop.startsAt);
   const date = dateFormat.format(start);
+  const time = timeFormat.format(start);
   return {
     month: monthFormat.format(start),
     day: dayFormat.format(start),
     date,
     full: format(t.workshop.when, {
       date,
-      start: timeFormat.format(start),
+      start: time,
       end: timeFormat.format(new Date(workshop.endsAt)),
     }),
+    start: time,
   };
 }
 

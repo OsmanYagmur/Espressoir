@@ -15,9 +15,11 @@ import {
   WORKSHOP_STATUSES,
   WORKSHOP_TITLE_MAX_LENGTH,
   WORKSHOP_APPLICATION_SOURCES,
+  WORKSHOP_RSVP_ANSWERS,
   COMMUNITY_METRICS,
   isWorkshopContact,
   isWorkshopPhone,
+  type WorkshopRsvpAnswer,
 } from "@espressoir/core";
 import { z } from "zod";
 
@@ -81,6 +83,12 @@ export const workshopApplicationRowSchema = z
     // Newer than the table: a database without them reads as the form's, unmarked.
     source: z.enum(WORKSHOP_APPLICATION_SOURCES).default("form"),
     attended: z.boolean().nullable().default(null),
+    // The answer page (2026-10-24); older databases have no token, so no link to send.
+    rsvp_token: z.string().nullable().default(null),
+    rsvp: z.enum(WORKSHOP_RSVP_ANSWERS).nullable().default(null),
+    rsvp_at: z.string().nullable().default(null),
+    rsvp_asked_at: z.string().nullable().default(null),
+    reminded_at: z.string().nullable().default(null),
     created_at: z.string(),
   })
   .transform((row) => ({
@@ -93,12 +101,24 @@ export const workshopApplicationRowSchema = z
     status: row.status,
     source: row.source,
     attended: row.attended,
+    rsvpToken: row.rsvp_token,
+    rsvp: row.rsvp,
+    rsvpAt: row.rsvp_at,
+    rsvpAskedAt: row.rsvp_asked_at,
+    remindedAt: row.reminded_at,
     createdAt: row.created_at,
   }));
 
-/** The columns an admin reads (the panel, the CSV download). */
-export const WORKSHOP_APPLICATION_SELECT =
-  "id, workshop_id, name, contact, experience, question, status, source, attended, created_at";
+/**
+ * The columns an admin reads (the panel, the downloads), newest first: a database that has
+ * not had a later migration yet answers the next one, and the Zod defaults fill the rest.
+ */
+export const WORKSHOP_APPLICATION_SELECTS = [
+  "id, workshop_id, name, contact, experience, question, status, source, attended, rsvp_token, rsvp, rsvp_at, rsvp_asked_at, reminded_at, created_at",
+  "id, workshop_id, name, contact, experience, question, status, source, attended, created_at",
+  "id, workshop_id, name, contact, experience, question, status, created_at",
+] as const;
+export const WORKSHOP_APPLICATION_SELECT = WORKSHOP_APPLICATION_SELECTS[0];
 
 export type WorkshopApplication = z.infer<typeof workshopApplicationRowSchema>;
 
@@ -303,4 +323,71 @@ export function toWorkshopRow(input: WorkshopInput): WorkshopRow {
     location_text: input.locationText,
     is_open: input.isOpen,
   };
+}
+
+// ── the answer page (/teyit/<token>) ─────────────────────────────────────────────────────
+
+/** What the page may show for a token: a first name and the workshop, nothing private. */
+export const workshopRsvpSchema = z
+  .object({
+    first_name: z.string(),
+    workshop_title: z.string(),
+    starts_at: z.string(),
+    ends_at: z.string(),
+    location_text: z.string().nullable(),
+    status: z.enum(WORKSHOP_STATUSES),
+    rsvp: z.enum(WORKSHOP_RSVP_ANSWERS).nullable(),
+    can_answer: z.boolean(),
+  })
+  .transform((row) => ({
+    firstName: row.first_name,
+    workshopTitle: row.workshop_title,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    locationText: row.location_text,
+    status: row.status,
+    rsvp: row.rsvp,
+    /** Approved and not started yet: the buttons are shown. */
+    canAnswer: row.can_answer,
+  }));
+
+export type WorkshopRsvp = z.infer<typeof workshopRsvpSchema>;
+
+/** The tokens the database hands out: 22 URL-safe characters. Anything else is not asked. */
+export const RSVP_TOKEN_PATTERN = /^[A-Za-z0-9_-]{22}$/;
+
+/** The page's view of a token, or null when it is unknown (the page answers 404). */
+export async function readWorkshopRsvp(
+  client: TypedSupabaseClient,
+  token: string,
+): Promise<WorkshopRsvp | null> {
+  if (!RSVP_TOKEN_PATTERN.test(token)) return null;
+  const { data, error } = await client.rpc("workshop_rsvp_v1", { p_token: token });
+  if (error) throw new Error(`Katılım okunamadı: ${error.message}`);
+  const row = data?.[0];
+  return row ? workshopRsvpSchema.parse(row) : null;
+}
+
+export const WORKSHOP_RSVP_ERRORS = [
+  "rsvp_invalid",
+  "rsvp_not_found",
+  "rsvp_not_approved",
+  "rsvp_closed",
+] as const;
+export type WorkshopRsvpError = (typeof WORKSHOP_RSVP_ERRORS)[number] | "failed";
+
+/** Records the answer; a refusal comes back as its code, never as a throw. */
+export async function answerWorkshopRsvp(
+  client: TypedSupabaseClient,
+  token: string,
+  answer: WorkshopRsvpAnswer,
+): Promise<{ ok: true } | { ok: false; error: WorkshopRsvpError }> {
+  if (!RSVP_TOKEN_PATTERN.test(token)) return { ok: false, error: "rsvp_not_found" };
+  const { error } = await client.rpc("answer_workshop_rsvp_v1", {
+    p_token: token,
+    p_answer: answer,
+  });
+  if (!error) return { ok: true };
+  const known = WORKSHOP_RSVP_ERRORS.find((code) => error.message.includes(code));
+  return { ok: false, error: known ?? "failed" };
 }

@@ -87,10 +87,15 @@ export { notificationRowSchema, type Notification } from "./notification";
 export {
   WORKSHOP_APPLICATION_ERRORS,
   WORKSHOP_APPLICATION_SELECT,
+  WORKSHOP_APPLICATION_SELECTS,
   WORKSHOP_INPUT_ERRORS,
+  WORKSHOP_RSVP_ERRORS,
+  RSVP_TOKEN_PATTERN,
   adminApplicationInputSchema,
+  answerWorkshopRsvp,
   communityStatSchema,
   fetchWorkshopRows,
+  readWorkshopRsvp,
   toAdminApplicationInsert,
   toWorkshopApplicationInsert,
   toWorkshopRow,
@@ -98,6 +103,7 @@ export {
   workshopApplicationRowSchema,
   workshopInputSchema,
   workshopRowSchema,
+  workshopRsvpSchema,
   zonedTimeToIso,
   type AdminApplicationInput,
   type CommunityStat,
@@ -107,6 +113,8 @@ export {
   type WorkshopApplicationInput,
   type WorkshopInput,
   type WorkshopInputError,
+  type WorkshopRsvp,
+  type WorkshopRsvpError,
 } from "./workshop";
 
 export {

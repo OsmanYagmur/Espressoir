@@ -80,6 +80,20 @@ test("a visitor applies; the admin sees, answers and removes the application", a
   await expect(admin.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
   await expect(application).toContainText("Onaylandı");
   await expect(application.getByRole("button", { name: `Onayla: ${name}` })).toHaveCount(0);
+
+  // The personal link rides in the WhatsApp message; the person answers without an account.
+  await expect(application).toContainText("Yanıt yok");
+  const ask = application.getByRole("link", { name: new RegExp(`^Teyit sor: ${name}`) });
+  const text = new URL((await ask.getAttribute("href")) ?? "").searchParams.get("text") ?? "";
+  const personal = /\/teyit\/[A-Za-z0-9_-]{22}/.exec(text)?.[0];
+  expect(personal, text).toBeTruthy();
+  await page.goto(personal!);
+  await expect(page.getByText("Bu atölyeye geliyor musun?")).toBeVisible();
+  await page.getByRole("button", { name: "Geliyorum" }).click();
+  await expect(page.getByText("Geleceğini söyledin. Görüşmek üzere!")).toBeVisible();
+  await admin.reload();
+  await expect(application).toContainText("Geliyor");
+  await expect(admin.getByText(/Teyit: 1 geliyor/).first()).toBeVisible();
   await application.getByRole("button", { name: `Geldi: ${name}` }).click();
   await expect(application.getByRole("button", { name: `Geldi: ${name}` })).toHaveAttribute(
     "aria-pressed",
