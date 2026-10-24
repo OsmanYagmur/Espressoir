@@ -102,7 +102,7 @@ function MemberMenu({ account }: { account: AccountSummary | null }) {
         <MenuLink href="/istatistik">{t.nav.stats}</MenuLink>
         <DropdownMenuSeparator />
         <MenuLink href="/hesap">{t.nav.account}</MenuLink>
-        {account?.isAdmin ? <MenuLink href="/panel/yonetim">{t.nav.admin}</MenuLink> : null}
+        {account?.isAdmin ? <MenuLink href="/osman">{t.nav.admin}</MenuLink> : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );

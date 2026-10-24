@@ -314,6 +314,7 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /panel");
   expect(robots).toContain("Disallow: /uygulama");
+  expect(robots).toContain("Disallow: /osman");
   expect(robots).toContain("Sitemap:");
 });
 
@@ -338,6 +339,22 @@ test("the signed-in area sends visitors to the login page", async ({ page }) => 
   await expect(page).toHaveURL(/\/giris$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş");
   await expect(page.getByLabel("E-posta")).toBeVisible();
+});
+
+test("/osman asks a visitor for an admin's e-mail and password, right there", async ({ page }) => {
+  await page.goto("/osman/atolyeler");
+  await expect(page).toHaveURL(/\/osman\/atolyeler$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Yönetim");
+  await expect(page.getByLabel("E-posta", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Parola", { exact: true })).toBeVisible();
+  // Nothing of the admin area before the sign-in, and no way in by e-mail code or Google.
+  await expect(page.getByRole("navigation", { name: "Yönetim bölümleri" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Giriş kodu gönder" })).toHaveCount(0);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+
+  // The old address still leads there.
+  await page.goto("/panel/yonetim");
+  await expect(page).toHaveURL(/\/osman\/yonetim$/);
 });
 
 test.describe("members and legal texts", () => {

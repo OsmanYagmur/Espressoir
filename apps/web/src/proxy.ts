@@ -7,7 +7,8 @@ import { getSupabasePublicEnv } from "@/lib/supabase/env";
 /**
  * Runs only for the signed-in area (see `matcher`): public pages stay static and never
  * pass through here. It refreshes the Supabase session cookie and sends visitors to the
- * right side of the login. This is a convenience, not the security boundary: every query
+ * right side of the login. /osman asks for the password itself, so it only gets the
+ * refresh. This is a convenience, not the security boundary: every query
  * is still checked by row level security in the database.
  */
 export async function proxy(request: NextRequest) {
@@ -53,5 +54,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/panel/:path*", "/hesap/:path*", "/bildirimler", "/giris"],
+  matcher: ["/panel/:path*", "/hesap/:path*", "/bildirimler", "/giris", "/osman", "/osman/:path*"],
 };

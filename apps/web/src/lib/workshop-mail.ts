@@ -37,7 +37,7 @@ export async function notifyNewApplication(
     ...(input.question ? [`${m.question}: ${input.question}`] : []),
     `${m.seatsLeft}: ${Math.max(workshop.seatsLeft - (waitlist ? 0 : 1), 0)} / ${workshop.capacity}`,
     "",
-    `${m.panel}: ${new URL("/panel/yonetim#atolyeler", getSiteUrl()).href}`,
+    `${m.panel}: ${new URL("/osman/atolyeler", getSiteUrl()).href}`,
   ];
 
   try {

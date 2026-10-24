@@ -124,7 +124,7 @@ test("a member edits and deletes their visit from the panel", async ({ page }) =
 
 test("the admin reviews the café", async ({ browser }) => {
   const admin = await sessionOf(browser, owner);
-  await admin.goto("/panel/yonetim");
+  await admin.goto("/osman/yonetim");
   const pending = admin.getByRole("list", { name: "Doğrulanmamış kafeler" });
   // A café's row is the one that links to it: its name is also a choice in other rows.
   const row = pending.getByRole("listitem").filter({ has: admin.getByRole("link", { name }) });
