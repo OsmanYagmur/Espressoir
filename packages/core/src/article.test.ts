@@ -11,7 +11,7 @@ describe("parseArticle", () => {
       parseArticle(
         "oran",
         source(
-          "title: Demleme oranı nedir?\nsummary: Kahvenin suya oranı.\nreadingMinutes: 1\norder: 4",
+          "title: Demleme oranı nedir?\nsummary: Kahvenin suya oranı.\nreadingMinutes: 1\norder: 4\nimage: bilgi-oran",
         ),
       ),
     ).toEqual({
@@ -20,6 +20,7 @@ describe("parseArticle", () => {
       summary: "Kahvenin suya oranı.",
       readingMinutes: 1,
       order: 4,
+      image: "bilgi-oran",
       paragraphs: ["Birinci paragraf.", "İkinci paragraf."],
     });
   });
@@ -28,6 +29,7 @@ describe("parseArticle", () => {
     const article = parseArticle("oran", source("title: Oran: 1:16 mı?\nsummary: Evet."));
     expect(article.title).toBe("Oran: 1:16 mı?");
     expect(article.readingMinutes).toBeNull();
+    expect(article.image).toBeNull();
   });
 
   it("stops on a file that breaks the rules, naming it", () => {
@@ -39,6 +41,9 @@ describe("parseArticle", () => {
     expect(() => parseArticle("x", source("title: Başlık\nsummary: Özet.\norder: iki"))).toThrow(
       /order/,
     );
+    expect(() =>
+      parseArticle("x", source("title: Başlık\nsummary: Özet.\nimage: ../gizli.png")),
+    ).toThrow(/image/);
     expect(() =>
       parseArticle("x", source("title: Başlık\nsummary: Özet.", "kelime ".repeat(301))),
     ).toThrow(/301 kelime/);
@@ -55,6 +60,7 @@ describe("articles", () => {
       summary: "",
       readingMinutes: null,
       order,
+      image: null,
       paragraphs: [],
     });
     expect(

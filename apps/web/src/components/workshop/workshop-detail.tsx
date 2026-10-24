@@ -2,6 +2,7 @@ import type { Workshop } from "@espressoir/db";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PhotoFigure } from "@/components/site/photo";
 import { Section, SectionHeading } from "@/components/site/section-heading";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,7 +43,7 @@ function List({ items }: { items: readonly string[] }) {
 }
 
 /**
- * A workshop's page (DESIGN.md → Atölye): the cover (crema: there is no photo), the title
+ * A workshop's page (DESIGN.md → Atölye): the cover (the program's photo, or crema), the title
  * and its sentence; day, place and seats with the one "Başvur"; the program, what to bring,
  * the questions people ask; the form. On a phone "Başvur" stays at the bottom of the
  * screen until the form comes into view.
@@ -64,9 +65,21 @@ export function WorkshopDetail({
     <>
       {/* Everything above the form; the phone's apply bar sticks to the bottom of this. */}
       <div>
-        <header className="flex min-h-48 flex-col justify-end gap-3 rounded-lg bg-crema p-6 text-on-crema md:min-h-80 md:p-12">
-          <h1 className="type-display">{workshop.title}</h1>
-          {program ? <p className="max-w-read text-lg">{program.lead}</p> : null}
+        <header className="flex flex-col gap-3">
+          {program?.photo ? (
+            <PhotoFigure
+              id={program.photo}
+              priority
+              sizes="(min-width: 672px) 640px, 100vw"
+              className="mb-3"
+            />
+          ) : (
+            <div aria-hidden className="mb-3 h-24 rounded-lg bg-crema md:h-40" />
+          )}
+          <div className="flex stagger flex-col gap-3">
+            <h1 className="type-display">{workshop.title}</h1>
+            {program ? <p className="max-w-read type-lead">{program.lead}</p> : null}
+          </div>
         </header>
 
         <Card className="mt-6 grid grid-cols-[56px_1fr] gap-4">
