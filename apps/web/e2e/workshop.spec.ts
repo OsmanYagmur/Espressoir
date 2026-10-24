@@ -75,12 +75,20 @@ test("a visitor applies; the admin sees, answers and removes the application", a
   await expect(application).toContainText("Evde demliyorum");
   await expect(application).toContainText("Uçtan uca soru.");
 
-  await application.getByRole("combobox", { name: /^Durum:/ }).selectOption({ label: "Onaylandı" });
-  await application.getByRole("combobox", { name: /^Katılım:/ }).selectOption({ label: "Geldi" });
-  await application.getByRole("button", { name: "Kaydet", exact: true }).click();
+  // One click per answer: approve, then mark that the person came.
+  await application.getByRole("button", { name: `Onayla: ${name}` }).click();
   await expect(admin.getByText("İşlem tamamlandı.").filter({ visible: true })).toBeVisible();
   await expect(application).toContainText("Onaylandı");
-  await expect(application.getByRole("combobox", { name: /^Katılım:/ })).toHaveValue("true");
+  await expect(application.getByRole("button", { name: `Onayla: ${name}` })).toHaveCount(0);
+  await application.getByRole("button", { name: `Geldi: ${name}` }).click();
+  await expect(application.getByRole("button", { name: `Geldi: ${name}` })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  // And back to waiting: the attendance buttons are for approved people only.
+  await application.getByRole("button", { name: `Beklet: ${name}` }).click();
+  await expect(application).toContainText("Bekliyor");
+  await expect(application.getByRole("button", { name: `Geldi: ${name}` })).toHaveCount(0);
 
   await application.getByRole("checkbox").check();
   await application.getByRole("button", { name: "Başvuruyu sil" }).click();
@@ -124,11 +132,20 @@ test("/osman asks for the password; the admin adds a person and downloads the li
   await expect(person).toContainText("Panelden eklendi");
   await expect(person).toContainText("Onaylandı");
 
-  // The list as a file; the handle starts with "@", so the cell gets an apostrophe.
-  const download = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Başvuruları indir (CSV)" }).first().click();
-  const csv = await readFile(await (await download).path(), "utf8");
-  expect(csv).toContain(`${name};'@panel_${stamp};Yeni başlıyorum;;Onaylandı;;Panel;`);
+  // The list as an Excel workbook (a zip of XML, stored, so the cells read as text here)
+  // and as a PDF.
+  const excel = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Excel olarak indir" }).first().click();
+  const workbook = await readFile(await (await excel).path());
+  expect(workbook.subarray(0, 2).toString()).toBe("PK");
+  expect(workbook.toString("utf8")).toContain(`<t xml:space="preserve">${name}</t>`);
+  expect(workbook.toString("utf8")).toContain(`<t xml:space="preserve">@panel_${stamp}</t>`);
+
+  const pdf = page.waitForEvent("download");
+  await page.getByRole("link", { name: "PDF olarak indir" }).first().click();
+  const file = await pdf;
+  expect(file.suggestedFilename()).toMatch(/-basvurular\.pdf$/);
+  expect((await readFile(await file.path())).subarray(0, 5).toString()).toBe("%PDF-");
 
   await person.getByRole("checkbox").check();
   await person.getByRole("button", { name: "Başvuruyu sil" }).click();

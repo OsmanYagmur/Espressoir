@@ -110,6 +110,7 @@ export function ApplyForm({ workshopId, full }: { workshopId: string; full: bool
           type="tel"
           inputMode="tel"
           autoComplete="tel"
+          placeholder={f.contactPlaceholder}
           defaultValue={values.contact}
           {...aria("contact", f.contactHint)}
         />

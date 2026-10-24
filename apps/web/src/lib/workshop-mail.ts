@@ -12,23 +12,57 @@ const m = t.workshop.mail;
 const FROM = "Espressoir <atolye@espressoir.com>";
 
 /**
- * Tells the owner about a new application by e-mail, through Resend's API (a plain HTTPS
- * request, no package). `RESEND_API_KEY` is the app's second secret and is read only
- * here; `WORKSHOP_NOTIFY_EMAIL` is where the mail goes. Without either nothing is sent and
- * the applications are still in the admin panel. A failure is logged, never shown to the
- * applicant: their application is saved either way.
+ * Where the owner hears about applications: `RESEND_API_KEY` (the app's second secret,
+ * read only in this file) and `WORKSHOP_NOTIFY_EMAIL`. Without either nothing is sent and
+ * the applications are still in the admin panel, which says what is missing.
+ */
+export function mailSetup(): { key: string; to: string } | null {
+  const key = process.env.RESEND_API_KEY?.trim();
+  const to = process.env.WORKSHOP_NOTIFY_EMAIL?.trim();
+  return key && to ? { key, to } : null;
+}
+
+/** Sends one plain-text mail through Resend's API (an HTTPS request, no package). */
+async function send(
+  subject: string,
+  lines: readonly string[],
+): Promise<"sent" | "missing" | "failed"> {
+  const setup = mailSetup();
+  if (!setup) return "missing";
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${setup.key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to: [setup.to], subject, text: lines.join("\n") }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (response.ok) return "sent";
+    console.error(`[workshop] mail refused: ${response.status} ${await response.text()}`);
+  } catch (error) {
+    console.error("[workshop] mail failed:", error instanceof Error ? error.message : error);
+  }
+  return "failed";
+}
+
+const panelLink = (workshopId?: string) =>
+  new URL(`/osman/atolyeler${workshopId ? `#atolye-${workshopId}` : ""}`, getSiteUrl()).href;
+
+/**
+ * Tells the owner about a new application: who, how to reach them, how they get on with
+ * coffee, their question, the seats left, and a link straight to the workshop in the
+ * admin panel, where one click approves or holds it. A failure is logged, never shown to
+ * the applicant: their application is saved either way.
  */
 export async function notifyNewApplication(
   input: WorkshopApplicationInput,
   workshop: Workshop,
   waitlist: boolean,
 ): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
-  const to = process.env.WORKSHOP_NOTIFY_EMAIL;
-  if (!key || !to) return;
-
-  const subject = format(waitlist ? m.waitlistSubject : m.subject, { title: workshop.title });
-  const lines = [
+  const subject = format(waitlist ? m.waitlistSubject : m.subject, {
+    title: workshop.title,
+    name: input.name,
+  });
+  await send(subject, [
     format(m.intro, { title: workshop.title, date: workshopWhen(workshop).date }),
     "",
     `${m.name}: ${input.name}`,
@@ -37,25 +71,11 @@ export async function notifyNewApplication(
     ...(input.question ? [`${m.question}: ${input.question}`] : []),
     `${m.seatsLeft}: ${Math.max(workshop.seatsLeft - (waitlist ? 0 : 1), 0)} / ${workshop.capacity}`,
     "",
-    `${m.panel}: ${new URL("/osman/atolyeler", getSiteUrl()).href}`,
-  ];
+    `${m.panel}: ${panelLink(workshop.id)}`,
+  ]);
+}
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [to], subject, text: lines.join("\n") }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) {
-      console.error(
-        `[workshop] notification mail refused: ${response.status} ${await response.text()}`,
-      );
-    }
-  } catch (error) {
-    console.error(
-      "[workshop] notification mail failed:",
-      error instanceof Error ? error.message : error,
-    );
-  }
+/** A test from the admin panel: proves the key, the domain and the address work together. */
+export function sendTestMail(): Promise<"sent" | "missing" | "failed"> {
+  return send(m.testSubject, [m.testBody, "", `${m.panel}: ${panelLink()}`]);
 }

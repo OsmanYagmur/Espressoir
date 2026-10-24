@@ -2,7 +2,10 @@ import { format, t } from "@/lib/i18n";
 
 const a = t.admin;
 
-/** What the last action did, from the `?hata=…` or `?tamam=1` it redirected to. */
+/**
+ * What the last action did, from the `?hata=…` or `?tamam=1` it redirected to
+ * (`?tamam=posta`: the workshop section's test mail went out).
+ */
 export function ActionResult({
   searchParams,
 }: {
@@ -19,7 +22,7 @@ export function ActionResult({
   }
   return tamam ? (
     <p role="status" className="mb-6 rounded-md bg-leaf-soft p-4 font-medium text-leaf">
-      {a.done}
+      {tamam === "posta" ? a.workshops.mail.sent : a.done}
     </p>
   ) : null;
 }

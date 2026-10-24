@@ -13,6 +13,7 @@ import { z } from "zod";
 import { WORKSHOP_PROGRAMS } from "@/content/atolye";
 import { requireAdmin } from "@/lib/auth";
 import { refreshWorkshops } from "@/lib/data/refresh-archive";
+import { sendTestMail } from "@/lib/workshop-mail";
 
 const SECTION = "/osman/atolyeler";
 
@@ -90,19 +91,37 @@ export async function addApplicant(formData: FormData): Promise<void> {
   back(undefined, workshopId);
 }
 
-/** Answers an application (approve, reject, waitlist) and marks whether the person came. */
-export async function updateApplication(formData: FormData): Promise<void> {
+/**
+ * Answers an application with one click: each answer is its own submit button carrying
+ * the status (approve, hold, waitlist, reject), so the form works without JavaScript.
+ */
+export async function setApplicationStatus(formData: FormData): Promise<void> {
   const parsed = z
-    .object({
-      applicationId: id,
-      workshopId: id,
-      status: z.enum(WORKSHOP_STATUSES),
-      attended: z.enum(["", "true", "false"]),
-    })
+    .object({ applicationId: id, workshopId: id, status: z.enum(WORKSHOP_STATUSES) })
     .safeParse({
       applicationId: formData.get("applicationId"),
       workshopId: formData.get("workshopId"),
       status: formData.get("status"),
+    });
+  if (!parsed.success) back("invalid");
+
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("workshop_applications")
+    .update({ status: parsed.data.status })
+    .eq("id", parsed.data.applicationId);
+  if (error) back("unknown", parsed.data.workshopId);
+  refreshWorkshops();
+  back(undefined, parsed.data.workshopId);
+}
+
+/** Marks whether an approved person came ("" takes the mark back). */
+export async function setAttendance(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ applicationId: id, workshopId: id, attended: z.enum(["", "true", "false"]) })
+    .safeParse({
+      applicationId: formData.get("applicationId"),
+      workshopId: formData.get("workshopId"),
       attended: formData.get("attended") ?? "",
     });
   if (!parsed.success) back("invalid");
@@ -111,7 +130,7 @@ export async function updateApplication(formData: FormData): Promise<void> {
   const { attended } = parsed.data;
   const { error } = await supabase
     .from("workshop_applications")
-    .update({ status: parsed.data.status, attended: attended === "" ? null : attended === "true" })
+    .update({ attended: attended === "" ? null : attended === "true" })
     .eq("id", parsed.data.applicationId);
   if (error) back("unknown", parsed.data.workshopId);
   refreshWorkshops();
@@ -135,4 +154,12 @@ export async function deleteApplication(formData: FormData): Promise<void> {
   if (error) back("unknown", parsed.data.workshopId);
   refreshWorkshops();
   back(undefined, parsed.data.workshopId);
+}
+
+/** Sends a test of the application mail to the owner's address, as set on Vercel. */
+export async function testApplicationMail(): Promise<void> {
+  await requireAdmin();
+  const result = await sendTestMail();
+  if (result === "sent") redirect(`${SECTION}?tamam=posta`);
+  back(result === "missing" ? "mail_missing" : "mail_failed");
 }

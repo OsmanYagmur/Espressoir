@@ -112,3 +112,4 @@ export {
   type ArticleTopic,
   type Recipe,
 } from "./article";
+export { columnName, xlsxWorkbook, type SheetColumn } from "./xlsx";

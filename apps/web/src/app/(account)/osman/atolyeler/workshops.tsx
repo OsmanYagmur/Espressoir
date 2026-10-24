@@ -10,8 +10,18 @@ import {
   WORKSHOP_TITLE_MAX_LENGTH,
   siteConfig,
   summarizeApplications,
+  type WorkshopStatus,
 } from "@espressoir/core";
 import type { Workshop, WorkshopApplication } from "@espressoir/db";
+import {
+  CheckIcon,
+  HourglassIcon,
+  ListPlusIcon,
+  UserCheckIcon,
+  UserXIcon,
+  XIcon,
+  type LucideIcon,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -29,7 +39,13 @@ import { format, t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { workshopFormValues, workshopWhen } from "@/lib/workshop-format";
 
-import { addApplicant, deleteApplication, saveWorkshop, updateApplication } from "./actions";
+import {
+  addApplicant,
+  deleteApplication,
+  saveWorkshop,
+  setApplicationStatus,
+  setAttendance,
+} from "./actions";
 
 const w = t.admin.workshops;
 const experiences = t.workshop.form.experiences;
@@ -205,12 +221,31 @@ function AddApplicantForm({ workshopId }: { workshopId: string }) {
   );
 }
 
+/** The answers to an application, one button each; the current one is not offered. */
+const ANSWERS: readonly { status: WorkshopStatus; label: string; Icon: LucideIcon }[] = [
+  { status: "approved", label: w.answers.approve, Icon: CheckIcon },
+  { status: "pending", label: w.answers.hold, Icon: HourglassIcon },
+  { status: "waitlist", label: w.answers.waitlist, Icon: ListPlusIcon },
+  { status: "rejected", label: w.answers.reject, Icon: XIcon },
+];
+
+/** Whether an approved person came: pressed once marks it, pressed again takes it back. */
+const ATTENDANCE: readonly { value: "true" | "false"; label: string; Icon: LucideIcon }[] = [
+  { value: "true", label: w.attendanceStates.came, Icon: UserCheckIcon },
+  { value: "false", label: w.attendanceStates.missed, Icon: UserXIcon },
+];
+
 const attendanceValue = (attended: boolean | null) =>
   attended === null ? "" : attended ? "true" : "false";
 
 function Application({ application }: { application: WorkshopApplication }) {
-  const states = w.attendanceStates;
   const date = formatLongDay(application.createdAt.slice(0, 10));
+  const ids = (
+    <>
+      <input type="hidden" name="applicationId" value={application.id} />
+      <input type="hidden" name="workshopId" value={application.workshopId} />
+    </>
+  );
   return (
     <li className="grid gap-3 border-b border-line py-4">
       <div>
@@ -233,35 +268,55 @@ function Application({ application }: { application: WorkshopApplication }) {
         ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <form action={updateApplication} className="flex flex-wrap items-center gap-2">
-          <input type="hidden" name="applicationId" value={application.id} />
-          <input type="hidden" name="workshopId" value={application.workshopId} />
-          <Select
-            name="status"
-            aria-label={`${w.status}: ${application.name}`}
-            defaultValue={application.status}
-            className="h-10 w-40"
-          >
-            {WORKSHOP_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {w.statuses[status]}
-              </option>
-            ))}
-          </Select>
-          <Select
-            name="attended"
-            aria-label={`${w.attendance}: ${application.name}`}
-            defaultValue={attendanceValue(application.attended)}
-            className="h-10 w-40"
-          >
-            <option value="">{states.unmarked}</option>
-            <option value="true">{states.came}</option>
-            <option value="false">{states.missed}</option>
-          </Select>
-          <Button type="submit" variant="secondary" size="sm">
-            {w.saveApplication}
-          </Button>
+        {/* Each button sends its own answer; the name says whose application it is. */}
+        <form action={setApplicationStatus} className="flex flex-wrap items-center gap-2">
+          {ids}
+          {ANSWERS.filter(({ status }) => status !== application.status).map(
+            ({ status, label, Icon }) => (
+              <Button
+                key={status}
+                type="submit"
+                name="status"
+                value={status}
+                variant="secondary"
+                size="sm"
+                aria-label={`${label}: ${application.name}`}
+              >
+                <Icon aria-hidden />
+                {label}
+              </Button>
+            ),
+          )}
         </form>
+        {application.status === "approved" ? (
+          <form
+            action={setAttendance}
+            aria-label={`${w.attendance}: ${application.name}`}
+            className="flex flex-wrap items-center gap-2"
+          >
+            {ids}
+            <span className="type-meta">{w.attendance}</span>
+            {ATTENDANCE.map(({ value, label, Icon }) => {
+              const pressed = attendanceValue(application.attended) === value;
+              return (
+                <Button
+                  key={value}
+                  type="submit"
+                  name="attended"
+                  value={pressed ? "" : value}
+                  variant="secondary"
+                  size="sm"
+                  aria-pressed={pressed}
+                  aria-label={`${label}: ${application.name}`}
+                  className="aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:hover:bg-ink"
+                >
+                  <Icon aria-hidden />
+                  {label}
+                </Button>
+              );
+            })}
+          </form>
+        ) : null}
         <form action={deleteApplication} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="applicationId" value={application.id} />
           <input type="hidden" name="workshopId" value={application.workshopId} />
@@ -387,14 +442,19 @@ export function WorkshopsAdmin({
               <Capacity workshop={workshop} />
               <p className="flex flex-wrap gap-x-6 gap-y-2">
                 {/* Not fetched ahead: saving here changes that very page. */}
-                <Link href={`/atolye/${workshop.id}` as Route} prefetch={false} className={link}>
+                <Link href={`/workshop/${workshop.id}` as Route} prefetch={false} className={link}>
                   {t.admin.open}
                 </Link>
                 {mine.length > 0 ? (
-                  // A file, not a page: a plain link the browser downloads.
-                  <a href={`/osman/atolyeler/${workshop.id}/csv`} download className={link}>
-                    {w.csv}
-                  </a>
+                  // Files, not pages: plain links the browser downloads.
+                  <>
+                    <a href={`/osman/atolyeler/${workshop.id}/xlsx`} download className={link}>
+                      {w.downloadXlsx}
+                    </a>
+                    <a href={`/osman/atolyeler/${workshop.id}/pdf`} download className={link}>
+                      {w.downloadPdf}
+                    </a>
+                  </>
                 ) : null}
               </p>
             </div>
