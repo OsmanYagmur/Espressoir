@@ -832,7 +832,7 @@ Still open on the owner's side (remind, don't do for them):
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
   `db:push:prod`). 4C has none. The workshop migrations (`20261023120000_workshops`,
-  `20261024120000_workshop_admin`) are on dev, not on prod.
+  `20261024120000_workshop_admin`) are on dev and prod (2026-10-24).
 - Google Analytics: the property, the service account and four Vercel variables
   (`docs/setup-analytics.md`); until then no consent bar and no visits on /osman.
 - Workshop: set the real date, price and place in `/osman` → Atölyeler (the first row holds
