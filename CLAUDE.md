@@ -159,6 +159,11 @@ data/                        owner's Notion export + reports (git-ignored)
   variables (a `NEXT_PUBLIC_` name cannot be a Vercel Secret).
 - Turborepo runs tasks in strict env mode: an env var the build reads must be listed in
   `turbo.json` (`globalEnv`) or the build silently sees it as unset.
+- **`lint`, `typecheck` and `test` depend on a `transit` task** (no package has that script;
+  `transit` depends on `^transit`): they still run in parallel, but a change in a workspace
+  package changes the hash of every package that uses it. Without it the mobile app's
+  typecheck was replayed from cache after a change in `@espressoir/core` and only CI caught
+  the error (2026-10-24). Never give a package a `transit` script.
 - `getSiteUrl()` reads `NEXT_PUBLIC_SITE_URL`, then Vercel's `VERCEL_*`, then `siteConfig.url`.
   On the live project the Vercel step never applies: "Enable access to System Environment
   Variables" is off there (seen 2026-10-11), so pages fall back to `siteConfig.url`. That is
