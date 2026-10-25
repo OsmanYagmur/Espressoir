@@ -152,7 +152,7 @@ Paylaşma; işin bitince sil.
 
 // ── importing a model's suggestions ─────────────────────────────────────────────────────
 
-export const MODEL_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const MODEL_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 const recordSchema = z.object({
   member_key: z.string().regex(/^[0-9a-f]{16}$/, "member_key 16 onaltılık karakter olmalı"),

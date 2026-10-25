@@ -9,7 +9,7 @@ import { loadCoffeeShelf as loadShelf, type CoffeeShelf } from "@espressoir/db";
 
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
-export type { CoffeeShelf, ShelfList as MyList } from "@espressoir/db";
+export type { CoffeeShelf } from "@espressoir/db";
 
 /** Null when nobody is signed in on this browser after all. */
 export async function loadCoffeeShelf(coffeeId: string): Promise<CoffeeShelf | null> {

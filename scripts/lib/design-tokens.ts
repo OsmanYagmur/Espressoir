@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { repoRoot } from "./target-env";
 
-export const TOKENS_CSS = resolve(repoRoot, "design/tokens.css");
+const TOKENS_CSS = resolve(repoRoot, "design/tokens.css");
 export const TOKENS_TS = resolve(repoRoot, "apps/web/src/lib/design-tokens.ts");
 
 /** The `--name: #hex;` declarations of the first block that `selector` opens. */

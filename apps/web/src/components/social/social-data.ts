@@ -11,8 +11,6 @@ import * as social from "@espressoir/db";
 
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
-export { SocialFailure, type SocialError } from "@espressoir/db";
-
 /** Who is signed in on this browser, if anyone. Read from the stored session: no request. */
 export async function getViewerId(): Promise<string | null> {
   const { data } = await getBrowserSupabase().auth.getSession();

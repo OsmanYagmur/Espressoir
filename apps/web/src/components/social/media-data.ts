@@ -15,9 +15,9 @@ import {
 } from "@/lib/image-resize";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
-export type UploadProblem = PhotoError["kind"] | "restricted" | "signedOut" | "failed";
+type UploadProblem = PhotoError["kind"] | "restricted" | "signedOut" | "failed";
 
-export class UploadFailure extends Error {
+class UploadFailure extends Error {
   constructor(readonly kind: UploadProblem) {
     super(kind);
   }

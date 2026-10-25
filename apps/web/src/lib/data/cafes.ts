@@ -28,7 +28,7 @@ import { cafePath } from "@/lib/routes";
 // The pure views are shared with the mobile app; re-exported so pages import from one place.
 export { byVisitDay, findCafe, latestVisits, visitsAt, visitsBy };
 
-export function cityName(code: number): string {
+function cityName(code: number): string {
   return cityByCode(code)?.name ?? "";
 }
 

@@ -34,7 +34,7 @@ export const WORKSHOP_CAPACITY_MAX = 200;
  * A phone number (digits, spaces, "+", "(", ")", "-", at least seven digits) or an
  * Instagram handle ("@" optional; letters, digits, "." and "_", up to 30).
  */
-export const WORKSHOP_CONTACT_PATTERN = /^(?:\+?[\d\s()-]*\d[\d\s()-]*|@?[A-Za-z0-9._]{1,30})$/;
+const WORKSHOP_CONTACT_PATTERN = /^(?:\+?[\d\s()-]*\d[\d\s()-]*|@?[A-Za-z0-9._]{1,30})$/;
 
 export function isWorkshopContact(value: string): boolean {
   const contact = value.trim();
