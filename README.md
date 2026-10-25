@@ -71,29 +71,31 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 ## Sayfalar
 
-| Adres                             | İçerik                                                                                                                                                |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                               | Önce kahve bilgisi: "Okumaya başla", demleme rehberleri, yazılar, sıradaki atölye, son tadım notları                                                  |
-| `/workshop`, `/workshop/[id]`     | Atölye (Kahve 101): tarih, konum, kontenjan, program, açılır kapanır sorular, başvuru formu; `/atolye` buraya gelir                                   |
-| `/teyit/[anahtar]`                | Onaylı kişinin "geliyor musun?" sayfası: WhatsApp'tan gönderilen kişisel bağlantı, Geliyorum / Gelemiyorum                                            |
-| `/bilgi`, `/bilgi/[yazi]`         | Demleme rehberleri (tarif + adımlar) ve kısa kahve yazıları, konulara ayrılmış; her biri bir Markdown dosyası                                         |
-| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)                                                                                   |
-| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                                                                                           |
-| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                                                                                                      |
-| `/istatistik`                     | Arşivin sayıları, en yüksek puanlılar, yöntemler; dağılım, marka/form/yöntem ortalamaları (n ile), saçılım                                            |
-| `/hakkinda`                       | Site ve puanlama hakkında                                                                                                                             |
-| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin; son kafe ziyaretleri                                                                                     |
-| `/kafeler`                        | Kafeler; şehre ve ada göre süzme (durum URL'de)                                                                                                       |
-| `/kafe/[sehir]/[kafe]`            | Kafenin ziyaretleri, ortalaması, içecek türüne göre ortalama (n ile)                                                                                  |
-| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                                                                                           |
-| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip                                                                           |
-| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                                                                                         |
-| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme                                                                             |
-| `/panel/isletme`                  | Resmi hesabı olduğun marka ve kafelerin tanıtımı; doğrulama başvuruların                                                                              |
-| `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)                                                                              |
-| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                                                                                               |
-| `/osman`                          | Yönetim (e-posta ve şifreyle): ziyaretler ve topluluk özeti; atölyeler, butonla yanıtlanan başvurular, kişi ekleme, katılım, Excel ve PDF; moderasyon |
-| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                                                                                     |
+| Adres                             | İçerik                                                                                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                               | Önce kahve bilgisi: "Okumaya başla", demleme rehberleri, yazılar, sıradaki atölye, son tadım notları                                                       |
+| `/workshop`, `/workshop/[id]`     | Atölye (Kahve 101): tarih ("Takvime ekle", Google Takvim), konum, kontenjan, program, açılır kapanır sorular, başvuru formu; `/atolye` buraya gelir        |
+| `/teyit/[anahtar]`                | Onaylı kişinin "geliyor musun?" sayfası: WhatsApp'tan gönderilen kişisel bağlantı, Geliyorum / Gelemiyorum                                                 |
+| `/bilgi`, `/bilgi/[yazi]`         | Demleme rehberleri (tarif, fincan sayısına göre ölçeklenen demleme asistanı ve zamanlayıcı, adımlar) ve kısa kahve yazıları; her biri bir Markdown dosyası |
+| `/ara`                            | Sitede arama: yazılar, kahveler, markalar, kafeler, üyeler; yazdıkça sonuç, `/` ya da ⌘K ile her sayfadan açılır                                           |
+| `/kahve-testi`                    | Beş soruda sana uyan demleme yöntemi ve kavrum; sonuç bağlantıyla paylaşılır                                                                               |
+| `/kahveler`                       | Tüm kahveler; arama, filtre, sıralama, kart görünümü (durum URL'de)                                                                                        |
+| `/kahve/[marka]/[kahve]`          | Tadımlar, künye, benzer kahveler, paylaşım görseli, JSON-LD                                                                                                |
+| `/marka/[slug]`                   | Markanın kahveleri ve ortalaması                                                                                                                           |
+| `/istatistik`                     | Arşivin sayıları, en yüksek puanlılar, yöntemler; dağılım, marka/form/yöntem ortalamaları (n ile), saçılım                                                 |
+| `/hakkinda`                       | Site ve puanlama hakkında                                                                                                                                  |
+| `/akis`                           | Son tadımlar: herkes ya da takip ettiklerin; son kafe ziyaretleri                                                                                          |
+| `/kafeler`                        | Kafeler; şehre ve ada göre süzme (durum URL'de)                                                                                                            |
+| `/kafe/[sehir]/[kafe]`            | Kafenin ziyaretleri, ortalaması, içecek türüne göre ortalama (n ile)                                                                                       |
+| `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                                                                                                |
+| `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip                                                                                |
+| `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                                                                                              |
+| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme                                                                                  |
+| `/panel/isletme`                  | Resmi hesabı olduğun marka ve kafelerin tanıtımı; doğrulama başvuruların                                                                                   |
+| `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)                                                                                   |
+| `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                                                                                                    |
+| `/osman`                          | Yönetim (e-posta ve şifreyle): ziyaretler ve topluluk özeti; atölyeler, butonla yanıtlanan başvurular, kişi ekleme, katılım, Excel ve PDF; moderasyon      |
+| `/kvkk`, `/gizlilik`, `/kosullar` | Yasal metinler (taslak; hukuki inceleme bekliyor)                                                                                                          |
 
 ## Rehberler
 
@@ -131,4 +133,5 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [x] **Kahve bilgisi önce** (2026-10-24): ana sayfa "Kahveyi biraz daha yakından tanı." ile başlar; yedi demleme rehberi (V60, French press, AeroPress, moka pot, espresso ayarları, Türk kahvesi, soğuk demleme: tarif kutusu, ara başlıklar, numaralı adımlar) ve üç yeni yazı (çekirdek farkları, kavrum dereceleri, su ve sıcaklık). Menü: Bilgi, Tadım notları, Atölye. Atölye artık `/workshop` ve adı Kahve 101; form ad soyad ve telefon ister, sık sorulanlar açılır kapanır. Yöneticinin panelinde ve menüsünde "Atölyeler" kısayolu.
 - [x] **Katılım teyidi** (2026-10-24): onaylı her kişinin kişisel bir bağlantısı var; panelden "Teyit sor" ve "Hatırlat" butonları WhatsApp'ı mesaj hazır yazılmış olarak açar. Kişi bağlantıda "Geliyorum" ya da "Gelemiyorum" der, panelde ve indirmelerde görünür; "Gelemiyorum" sana e-postayla bildirilir.
 - [x] **Atölye yönetimi kolaylaştı** (2026-10-24): başvurular tek tıkla yanıtlanır (Onayla, Beklet, Yedeğe al, Reddet; onaylılar için Geldi / Gelmedi), liste Excel ve PDF olarak iner (CSV kalktı), yeni başvuru e-postası Atölyeler sekmesinden denenebilir; formdaki telefon alanında örnek numara.
+- [x] **Demleme asistanı, arama ve kahve testi** (2026-10-25): her demleme rehberinde fincan sayısına göre ölçeklenen tarif ve adım adım zamanlayıcı (ekran kapanmaz; espressoda süreye göre öğütme önerisi, soğuk demlemede hazır olma saati); `/ara` ile sitede arama (`/` ya da ⌘K); `/kahve-testi`; yazılara paylaşım görseli ve "Paylaş" düğmesi; atölyeye "Takvime ekle"; Google için yapılandırılmış veri (tarif, yazı, etkinlik, gezinti yolu); sayfa geçişleri; kullanılmayan kod temizlendi.
 - [x] **Yönetim `/osman`'da** (2026-10-24): e-posta ve şifreyle giriş; Özet (Google Analytics'ten son 28 günün ziyaretleri, topluluğun sayıları, açık atölyeler), Atölyeler (istatistikler, panelden kişi ekleme, katılım takibi, başvuruları CSV indirme), Moderasyon. Ziyaret istatistiği yalnızca altta çıkan çerez sorusuna "Kabul et" diyenleri sayar. Kurulum: [docs/setup-analytics.md](./docs/setup-analytics.md)
