@@ -59,9 +59,10 @@ test.describe("home", () => {
     await expect(latest.getByRole("link", { name: /Original Taste/ })).toBeVisible();
     await expect(page.getByRole("img", { name: "Puan: 8 / 10" }).first()).toBeVisible();
 
-    await expect(
-      page.getByRole("list", { name: "Merak ettiklerin" }).getByRole("listitem"),
-    ).toHaveCount(6);
+    // Two articles from each subject: beans, tasting, the basics.
+    const reads = page.getByRole("list", { name: "Merak ettiklerin" }).getByRole("listitem");
+    await expect(reads).toHaveCount(6);
+    await expect(reads.nth(2)).toContainText("Kahve nasıl tadılır?");
     // The numbers, the top coffees and the brew methods live on the statistics page now.
     await expect(page.getByText("En yüksek puanlılar")).toHaveCount(0);
   });
@@ -276,6 +277,8 @@ test("no page is wider than a phone's screen", async ({ page }) => {
     "/bilgi",
     "/bilgi/oran",
     "/bilgi/v60",
+    "/bilgi/chemex",
+    "/bilgi/kahve-tadimi",
     "/ara",
     "/kahve-testi",
   ]) {
@@ -794,13 +797,14 @@ test.describe("articles", () => {
     await mainNav(page).getByRole("link", { name: "Bilgi" }).click();
     await expect(page).toHaveURL(/\/bilgi$/);
     const guides = page.getByRole("list", { name: "Demleme rehberleri" }).getByRole("listitem");
-    await expect(guides).toHaveCount(7);
+    await expect(guides).toHaveCount(13);
     await expect(
       page.getByRole("list", { name: "Çekirdek ve kavrum" }).getByRole("listitem"),
-    ).toHaveCount(4);
+    ).toHaveCount(9);
+    await expect(page.getByRole("list", { name: "Tadım" }).getByRole("listitem")).toHaveCount(3);
     await expect(
       page.getByRole("list", { name: "Temel bilgiler" }).getByRole("listitem"),
-    ).toHaveCount(3);
+    ).toHaveCount(7);
 
     // A guide: its recipe above numbered steps.
     await guides

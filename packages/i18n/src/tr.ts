@@ -174,11 +174,12 @@ export const tr = {
   info: {
     title: "Bilgi",
     description:
-      "Demleme rehberleri ve kahveye dair kısa yazılar: V60, AeroPress, moka pot, espresso, French press, Türk kahvesi, soğuk demleme; çekirdek, kavrum, öğütme ve su.",
+      "Demleme rehberleri ve kahveye dair kısa yazılar: V60, Chemex, AeroPress, moka pot, espresso, French press, Türk kahvesi, soğuk demleme; çekirdek, menşe, kavrum, tadım, öğütme ve kafein.",
     lead: "Demleme rehberleri ve kahveyi biraz daha tanımak için kısa yazılar. Her biri birkaç dakikada okunur.",
     topics: {
       demleme: "Demleme rehberleri",
       cekirdek: "Çekirdek ve kavrum",
+      tadim: "Tadım",
       temel: "Temel bilgiler",
     },
     recipe: {

@@ -136,6 +136,139 @@ export const PHOTOS = {
     source:
       "https://unsplash.com/photos/the-thermometer-shows-a-high-temperature-reading-6_oDBzwQMqI",
   },
+  "bilgi-filtre-makinesi": {
+    width: 1280,
+    height: 720,
+    alt: "Kırmızı bir filtre kahve makinesi; altında cam sürahisi, arkasında pencere.",
+    author: "earlybird coffee",
+    source: "https://unsplash.com/photos/red-and-black-coffee-maker-JE-MOId38SU",
+  },
+  "bilgi-kapsul": {
+    width: 1280,
+    height: 720,
+    alt: "Üst üste yığılmış, rengârenk alüminyum kahve kapsülleri.",
+    author: "Jisu Han",
+    source: "https://unsplash.com/photos/assorted-color-container-lot--LQJ7fB9amY",
+  },
+  "bilgi-chemex": {
+    width: 1280,
+    height: 720,
+    alt: "Tahta kuşaklı bir Chemex; camın dibinde demlenmiş kahve.",
+    author: "Erick Chévez",
+    source:
+      "https://unsplash.com/photos/a-coffee-pot-sitting-on-top-of-a-wooden-cutting-board-yCcx7BXE7i8",
+  },
+  "bilgi-kalita": {
+    width: 1280,
+    height: 720,
+    alt: "Yukarıdan bakış: dalgalı kâğıt filtreli bir Kalita Wave'de ıslanmış öğütülmüş kahve.",
+    author: "Hrushi Chavhan",
+    source: "https://unsplash.com/photos/a-close-up-of-a-cup-of-coffee-on-a-table-K6_Y1QkhJl8",
+  },
+  "bilgi-buzlu-filtre": {
+    width: 1280,
+    height: 720,
+    alt: "Cam bir sürahiden buz dolu bir bardağa kahve dökülüyor.",
+    author: "Nathan Dumlao",
+    source: "https://unsplash.com/photos/person-pouring-coffee-on-rock-glass-VMlO-arqpOs",
+  },
+  "bilgi-sifon": {
+    width: 1280,
+    height: 720,
+    alt: "Bir kafenin tezgâhında yan yana duran cam sifon demlikler.",
+    author: "Joey Huang",
+    source: "https://unsplash.com/photos/a-counter-with-a-lot-of-glasses-on-it-Kz7H6SRUTuk",
+  },
+  "bilgi-espresso-icecekleri": {
+    width: 1280,
+    height: 720,
+    alt: "Bitkilerin arasında, köpüğüne desen çizilmiş sütlü kahveler.",
+    author: "Nathan Dumlao",
+    source:
+      "https://unsplash.com/photos/shallow-focus-photography-of-coffee-late-in-mug-on-table-zUNs99PGDg0",
+  },
+  "bilgi-paket": {
+    width: 1280,
+    height: 720,
+    alt: "Ağzı açık bir paketin içinde kavrulmuş kahve çekirdekleri.",
+    author: "Nadia Valko",
+    source: "https://unsplash.com/photos/brown-coffee-beans-inside-white-sack-7QlJ79Cj43w",
+  },
+  "bilgi-isleme": {
+    width: 1280,
+    height: 720,
+    alt: "Güneşte kurumaya bırakılmış kırmızı ve turuncu kahve meyveleri.",
+    author: "roedy rustam",
+    source:
+      "https://unsplash.com/photos/red-coffee-beans-drying-in-the-sun-on-green-mats-Sf0scDJC7ig",
+  },
+  "bilgi-mense": {
+    width: 1280,
+    height: 720,
+    alt: "Dağların önünde, bir yamaçta sıra sıra kahve ağaçları.",
+    author: "PROJETO CAFÉ GATO-MOURISCO",
+    source:
+      "https://unsplash.com/photos/rows-of-coffee-plants-on-a-hillside-with-mountains-N_1lnzUYuAs",
+  },
+  "bilgi-harman": {
+    width: 1280,
+    height: 720,
+    alt: "Kareyi dolduran, farklı tonlarda kavrulmuş kahve çekirdekleri.",
+    author: "Fatih Mehmet YILDIZ",
+    source: "https://unsplash.com/photos/roasted-brown-coffee-beans-4KqHNQ3sJ6g",
+  },
+  "bilgi-kafeinsiz": {
+    width: 1280,
+    height: 720,
+    alt: "Kavrulmamış, yeşil kahve çekirdekleri.",
+    author: "wisnu dwi wibowo",
+    source:
+      "https://unsplash.com/photos/a-pile-of-green-coffee-beans-sitting-on-top-of-a-table-tC0YW-s5QNk",
+  },
+  "bilgi-tadim": {
+    width: 1280,
+    height: 720,
+    alt: "Tadım masasında sıralı fincanlar; biri kaşıkla kahvenin üstündeki kabuğu kırıyor.",
+    author: "René Porter",
+    source: "https://unsplash.com/photos/person-mixing-black-coffee-7RYrEvbqFM8",
+  },
+  "bilgi-tat-notalari": {
+    width: 1280,
+    height: 720,
+    alt: "Tahta bir tepside kahve çekirdekleri ve bitter çikolata parçaları.",
+    author: "NordWood Themes",
+    source:
+      "https://unsplash.com/photos/chocolate-and-coffee-seeds-on-table-near-bowls-d9vsO3166UI",
+  },
+  "bilgi-ekstraksiyon": {
+    width: 1280,
+    height: 720,
+    alt: "Espresso makinesinden iki küçük bardağa akan espresso.",
+    author: "Kevin Butz",
+    source: "https://unsplash.com/photos/espresso-cups-on-espresso-maker-BBFRIGifYQ8",
+  },
+  "bilgi-kafein": {
+    width: 1280,
+    height: 720,
+    alt: "Ahşap bir masada dumanı tüten bir fincan kahve.",
+    author: "Charmil Gandhi",
+    source: "https://unsplash.com/photos/steaming-cup-of-coffee-on-a-wooden-table-MK60jE_6zXU",
+  },
+  "bilgi-ekipman": {
+    width: 1280,
+    height: 720,
+    alt: "Bir tezgâhta yan yana iki kahve değirmeni; birinin haznesi çekirdek dolu.",
+    author: "Crew",
+    source: "https://unsplash.com/photos/black-coffee-maker-0cpACSYMnCo",
+  },
+  "bilgi-kulturler": {
+    width: 1280,
+    height: 720,
+    alt: "Oymalı toprak bir demlikten (jebena) küçük bir fincana kahve dökülüyor.",
+    author: "Amanuel Kebede",
+    source:
+      "https://unsplash.com/photos/pouring-coffee-from-a-traditional-jug-into-a-cup-v-NdnkoKEQs",
+  },
 } as const satisfies Record<string, Photo>;
 
 export type PhotoId = keyof typeof PHOTOS;

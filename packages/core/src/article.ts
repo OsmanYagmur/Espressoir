@@ -16,7 +16,7 @@ export const ARTICLE_WORDS_MAX = 300;
 export const GUIDE_WORDS_MAX = 600;
 
 /** The Bilgi page's sections, in the order they are shown. */
-export const ARTICLE_TOPICS = ["demleme", "cekirdek", "temel"] as const;
+export const ARTICLE_TOPICS = ["demleme", "cekirdek", "tadim", "temel"] as const;
 export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
 
 /** A file that is an article, and the address it gets: "ogutme.md" → "ogutme". */

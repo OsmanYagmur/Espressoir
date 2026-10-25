@@ -10,7 +10,7 @@ Yeni yazı için bir dosya ekle, başka bir şeye dokunma. İki tür var.
 title: Soru olarak kısa bir başlık? (en fazla 60 karakter)
 summary: İki cümlelik cevap (en fazla 200 karakter).
 readingMinutes: 2
-order: 30
+order: 50
 topic: temel
 image: bilgi-ogutme
 ---
@@ -48,8 +48,9 @@ Giriş paragrafı.
 2. Filtreyi ıslat.
 ```
 
-`topic` zorunlu ve `/bilgi`'deki bölümü seçer: `demleme`, `cekirdek` ya da `temel`. `order`
-listedeki sıradır (demleme 10'lar, çekirdek 20'ler, temel 30'lar). `readingMinutes`, `image` ve
+`topic` zorunlu ve `/bilgi`'deki bölümü seçer: `demleme`, `cekirdek`, `tadim` ya da `temel`. `order`
+listedeki sıradır (demleme 10'lar ve 20'ler, çekirdek 30'lar, tadım 40'lar, temel 50'ler); ana sayfa
+ilk yedi rehberi ve her konunun ilk iki yazısını gösterir. `readingMinutes`, `image` ve
 `temperature` isteğe bağlı. `image` yazının tek fotoğrafıdır, `src/content/photos.ts` içindeki
 adıyla (dosyaları `public/images/` altında, 640 ve 1280 piksel genişlikte iki WebP). `icon`
 rehberin kartındaki ikondur, `src/content/icons.ts` içindeki adıyla. Kahve bilgisi yalnızca
