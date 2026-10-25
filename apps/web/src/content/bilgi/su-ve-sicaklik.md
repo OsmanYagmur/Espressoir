@@ -2,7 +2,7 @@
 title: Kahve için hangi su, kaç derece?
 summary: Bir fincan kahvenin neredeyse tamamı su. Hafif mineralli, kokusuz bir su ve 90–96 °C, iyi bir fincanın yarısıdır.
 readingMinutes: 2
-order: 32
+order: 52
 topic: temel
 image: bilgi-su
 ---

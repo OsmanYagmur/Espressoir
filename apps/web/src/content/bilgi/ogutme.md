@@ -2,7 +2,7 @@
 title: Öğütme neden bu kadar önemli?
 summary: Öğütme inceldikçe kahve suya daha hızlı geçer. Fazla ince öğütme acı, fazla iri öğütme ekşi ve sulu bir fincan verir.
 readingMinutes: 2
-order: 30
+order: 50
 topic: temel
 image: bilgi-ogutme
 ---

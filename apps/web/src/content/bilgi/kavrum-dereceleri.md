@@ -2,7 +2,7 @@
 title: Açık, orta, koyu kavrum: fark ne?
 summary: Kavrum uzadıkça çekirdeğin kendi tadı azalır, kavrumun tadı artar. Açık kavrum meyvemsi ve asidik, koyu kavrum acı, gövdeli ve isli olur.
 readingMinutes: 2
-order: 21
+order: 31
 topic: cekirdek
 image: bilgi-kavrum
 ---

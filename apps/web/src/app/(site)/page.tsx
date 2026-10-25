@@ -1,3 +1,4 @@
+import { ARTICLE_TOPICS } from "@espressoir/core";
 import { ArrowRightIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -23,7 +24,10 @@ import { website } from "@/lib/structured-data";
 import { cn } from "@/lib/utils";
 
 const LATEST_COUNT = 3;
-const INFO_COUNT = 6;
+/** The classic methods: seven guides and "Bütün yazılar" fill two rows of four. */
+const GUIDES_COUNT = 7;
+/** Articles from each subject but the guides', in their list order. */
+const READS_PER_TOPIC = 2;
 
 const HERO_PHOTO = "ana-demleme";
 
@@ -44,8 +48,10 @@ export default async function HomePage() {
   ]);
   const workshop = workshops[0];
   const latest = loggedTastings(archive).slice(0, LATEST_COUNT);
-  const guides = articles.filter(isGuide);
-  const reads = articles.filter((article) => !isGuide(article)).slice(0, INFO_COUNT);
+  const guides = articles.filter(isGuide).slice(0, GUIDES_COUNT);
+  const reads = ARTICLE_TOPICS.filter((topic) => topic !== "demleme").flatMap((topic) =>
+    articles.filter((article) => article.topic === topic).slice(0, READS_PER_TOPIC),
+  );
 
   return (
     <PageShell>

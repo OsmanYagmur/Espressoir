@@ -2,7 +2,7 @@
 title: Çekirdekler neden bu kadar farklı tadar?
 summary: Tür, çeşit, yetiştiği yer ve işleme yöntemi. Aynı ülkeden iki kahve bile bu yüzden birbirine hiç benzemeyebilir.
 readingMinutes: 2
-order: 20
+order: 30
 topic: cekirdek
 image: bilgi-cekirdek
 ---
