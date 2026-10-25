@@ -4,15 +4,19 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ArticleBody } from "@/components/info/article-body";
+import { BrewAssistant } from "@/components/info/brew-assistant";
 import { InfoCard } from "@/components/info/info-card";
 import { RecipeCard } from "@/components/info/recipe-card";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PhotoFigure } from "@/components/site/photo";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { Section, SectionHeading } from "@/components/site/section-heading";
+import { ShareButton } from "@/components/site/share-button";
 import { getArticle, getArticles } from "@/lib/data/articles";
 import { format, t } from "@/lib/i18n";
+import { article as articleData, breadcrumbs } from "@/lib/structured-data";
 
 type Props = PageProps<"/bilgi/[slug]">;
 
@@ -30,6 +34,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: article.title,
     description: article.summary,
     alternates: { canonical: `/bilgi/${article.slug}` },
+    openGraph: {
+      type: "article",
+      title: article.title,
+      description: article.summary,
+      url: `/bilgi/${article.slug}`,
+    },
   };
 }
 
@@ -59,6 +69,15 @@ async function Article({ params }: Pick<Props, "params">) {
 
   return (
     <article>
+      <JsonLd
+        data={[
+          articleData(article),
+          breadcrumbs([
+            { name: t.info.title, path: "/bilgi" },
+            { name: article.title, path: `/bilgi/${article.slug}` },
+          ]),
+        ]}
+      />
       <PageHeading
         size="title"
         kicker={
@@ -74,6 +93,7 @@ async function Article({ params }: Pick<Props, "params">) {
             {format(t.info.readingTime, { minutes: article.readingMinutes })}
           </p>
         ) : null}
+        <ShareButton title={article.title} text={article.summary} />
       </PageHeading>
       {article.photo ? (
         <PhotoFigure
@@ -84,6 +104,7 @@ async function Article({ params }: Pick<Props, "params">) {
         />
       ) : null}
       {article.recipe ? <RecipeCard recipe={article.recipe} /> : null}
+      {article.brewPlan ? <BrewAssistant plan={article.brewPlan} /> : null}
       <ArticleBody blocks={article.blocks} />
       {others.length > 0 ? (
         <Section id="diger-yazilar">

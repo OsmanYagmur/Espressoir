@@ -9,6 +9,12 @@ const mainNav = (page: Page) => page.getByRole("navigation", { name: "Ana menü"
 /** The catalog pages sit in a member's menu; everyone finds them in the footer. */
 const exploreNav = (page: Page) => page.getByRole("navigation", { name: "Keşfet" });
 
+/** Every schema.org object the page describes itself with (one script may hold a list). */
+async function structuredData(page: Page): Promise<Record<string, unknown>[]> {
+  const scripts = await page.locator('script[type="application/ld+json"]').allTextContents();
+  return scripts.flatMap((text) => [JSON.parse(text)].flat() as Record<string, unknown>[]);
+}
+
 test.describe("home", () => {
   test("leads with the guides, then the workshop and the latest tasting notes", async ({
     page,
@@ -90,7 +96,7 @@ test.describe("coffee list", () => {
     await expect(page).toHaveURL(/min=8/);
     await expect(coffeeList(page).getByRole("listitem")).toHaveCount(2);
 
-    await page.getByLabel("Ara").fill("RİST");
+    await page.getByRole("searchbox", { name: "Ara" }).fill("RİST");
     await expect(coffeeList(page).getByRole("listitem")).toHaveCount(1);
     await expect(coffeeList(page)).toContainText("Ristretto (Siyah Kapsül)");
 
@@ -133,14 +139,28 @@ test.describe("coffee page", () => {
     await expect(tastings).toContainText("Kapsül Makinesi · Nespresso C30");
     await expect(page.getByText("Nespresso Original")).toBeVisible();
 
-    const jsonLd = JSON.parse(
-      (await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}",
+    const jsonLd = await structuredData(page);
+    expect(jsonLd).toContainEqual(
+      expect.objectContaining({
+        "@type": "Product",
+        name: "Nespresso Ristretto (Siyah Kapsül)",
+        aggregateRating: expect.objectContaining({
+          ratingValue: 9,
+          ratingCount: 1,
+          bestRating: 10,
+        }),
+      }),
     );
-    expect(jsonLd).toMatchObject({
-      "@type": "Product",
-      name: "Nespresso Ristretto (Siyah Kapsül)",
-      aggregateRating: { ratingValue: 9, ratingCount: 1, bestRating: 10 },
-    });
+    expect(jsonLd).toContainEqual(
+      expect.objectContaining({
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          expect.objectContaining({ name: "Kahveler" }),
+          expect.objectContaining({ name: "Nespresso" }),
+          expect.objectContaining({ name: "Ristretto (Siyah Kapsül)" }),
+        ],
+      }),
+    );
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
       /opengraph-image/,
@@ -256,6 +276,8 @@ test("no page is wider than a phone's screen", async ({ page }) => {
     "/bilgi",
     "/bilgi/oran",
     "/bilgi/v60",
+    "/ara",
+    "/kahve-testi",
   ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -322,6 +344,7 @@ test("search engines get a sitemap and are kept out of the signed-in area", asyn
   expect(sitemap).toContain("/kafe/istanbul/ornek-kahve-atolyesi</loc>");
   expect(sitemap).toContain("/workshop</loc>");
   expect(sitemap).toContain("/bilgi/ogutme</loc>");
+  expect(sitemap).toContain("/kahve-testi</loc>");
 
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toContain("Disallow: /panel");
@@ -787,7 +810,7 @@ test.describe("articles", () => {
     await expect(page).toHaveURL(/\/bilgi\/v60$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("V60 nedir, nasıl demlenir?");
     await expect(page.getByRole("heading", { name: "Tarif" })).toBeVisible();
-    await expect(page.getByText("240 ml", { exact: true })).toBeVisible();
+    await expect(page.getByText("240 ml", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Nasıl demlenir?", exact: true })).toBeVisible();
     await expect(
       page.getByRole("listitem").filter({ hasText: /demlenme \(bloom\)/ }),
@@ -815,5 +838,200 @@ test.describe("articles", () => {
   test("an article that does not exist is a 404", async ({ page }) => {
     const response = await page.goto("/bilgi/boyle-bir-yazi-yok");
     expect(response?.status()).toBe(404);
+  });
+});
+
+test.describe("brewing assistant", () => {
+  // The clock is Playwright's, so a three-minute brew takes no time at all.
+  test.use({ timezoneId: "Europe/Istanbul" });
+
+  test("scales a guide's recipe and walks through its stages", async ({ page }) => {
+    await page.clock.install({ time: new Date("2026-10-24T09:00:00+03:00") });
+    await page.goto("/bilgi/v60");
+    const assistant = page.getByRole("region", { name: "Birlikte demleyelim" });
+    await expect(assistant).toContainText("1:16");
+
+    await assistant.getByRole("button", { name: "2 fincan" }).click();
+    await expect(assistant.getByRole("button", { name: "2 fincan" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(assistant).toContainText("30 g");
+    await expect(assistant).toContainText("480 ml");
+    await expect(assistant).toContainText("Terazide 80 ml olana kadar");
+
+    await assistant.getByRole("button", { name: "Başlat" }).click();
+    await page.clock.fastForward(46_000);
+    await expect(assistant).toContainText("İlk döküş");
+    await expect(assistant).toContainText("Terazide 280 ml olana kadar");
+    await expect(assistant).toContainText("Sıradaki: son döküş");
+    await expect(assistant.getByRole("button", { name: "2 fincan" })).toBeDisabled();
+
+    await assistant.getByRole("button", { name: "Duraklat" }).click();
+    await expect(assistant.getByRole("button", { name: "Devam et" })).toBeVisible();
+    await assistant.getByRole("button", { name: "Devam et" }).click();
+    await page.clock.fastForward(140_000);
+    await expect(assistant).toContainText("Afiyet olsun.");
+    await expect(assistant.getByRole("link", { name: "Bu fincanı deftere yaz" })).toHaveAttribute(
+      "href",
+      "/panel/tadim/yeni",
+    );
+
+    await assistant.getByRole("button", { name: "Baştan" }).click();
+    await expect(assistant.getByRole("button", { name: "Başlat" })).toBeVisible();
+  });
+
+  test("times an espresso and says what to change", async ({ page }) => {
+    await page.clock.install({ time: new Date("2026-10-24T09:00:00+03:00") });
+    await page.goto("/bilgi/espresso-ayarlari");
+    const assistant = page.getByRole("region", { name: "Birlikte demleyelim" });
+    await expect(assistant).toContainText("Hedef: 25–30 saniye");
+    await assistant.getByRole("button", { name: "Başlat" }).click();
+    await page.clock.fastForward(27_000);
+    await assistant.getByRole("button", { name: "Durdur" }).click();
+    await expect(assistant).toContainText("27 saniye");
+    await expect(assistant).toContainText("Tam aralıkta.");
+  });
+
+  test("says when a cold brew set up now will be ready", async ({ page }) => {
+    await page.clock.install({ time: new Date("2026-10-24T20:00:00+03:00") });
+    await page.goto("/bilgi/soguk-demleme");
+    await expect(page.getByRole("region", { name: "Birlikte demleyelim" })).toContainText(
+      "Şimdi kurarsan yarın 08:00 ile yarın 14:00 arasında hazır.",
+    );
+  });
+});
+
+test.describe("search", () => {
+  test("opens from anywhere with /, finds as you type and keeps the words in the URL", async ({
+    page,
+  }) => {
+    await page.goto("/hakkinda");
+    await expect(page.getByRole("link", { name: "Ara" })).toHaveAttribute("href", "/ara");
+    await page.keyboard.press("/");
+    await expect(page).toHaveURL(/\/ara$/);
+    const box = page.getByRole("searchbox", { name: "Ne arıyorsun?" });
+    await expect(box).toBeFocused();
+
+    // The brand comes first: its name is the whole query, its coffees only mention it.
+    await box.fill("nespresso");
+    await expect(page).toHaveURL(/\?q=nespresso$/);
+    const groups = page.getByRole("main").getByRole("region");
+    await expect(groups.first().getByRole("heading")).toHaveText("Markalar");
+    await expect(groups.first().getByRole("link", { name: /Nespresso/ })).toHaveAttribute(
+      "href",
+      "/marka/nespresso",
+    );
+
+    await box.fill("siyah kapsul");
+    const coffee = page.getByRole("link", { name: /Ristretto \(Siyah Kapsül\)/ });
+    await expect(coffee).toBeVisible();
+    await box.press("ArrowDown");
+    await expect(coffee).toBeFocused();
+    await coffee.press("Enter");
+    await expect(page).toHaveURL(/\/kahve\/nespresso\/ristretto-siyah-kapsul$/);
+  });
+
+  test("says so when nothing matches, and a shared search opens with its results", async ({
+    page,
+  }) => {
+    await page.goto("/ara?q=kavrum");
+    await expect(page.getByRole("link", { name: /Açık, orta, koyu kavrum/ })).toBeVisible();
+    await page.getByRole("searchbox").fill("zzzz");
+    await expect(page.getByText("“zzzz” için bir şey bulamadım.", { exact: false })).toBeVisible();
+  });
+});
+
+test.describe("coffee quiz", () => {
+  test("asks five questions and names a method and a roast, also from a shared link", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "Teste başla" }).click();
+    await expect(page).toHaveURL(/\/kahve-testi$/);
+    await expect(page.getByText("Soru 1 / 5")).toBeVisible();
+
+    await page.getByRole("button", { name: /^Meyve ve canlılık/ }).click();
+    await expect(page.getByText("Soru 2 / 5")).toBeVisible();
+    await page.getByRole("button", { name: "Önceki soru" }).click();
+    await expect(page.getByText("Soru 1 / 5")).toBeVisible();
+    await page.getByRole("button", { name: /^Meyve ve canlılık/ }).click();
+    await page.getByRole("button", { name: /^Sade/ }).click();
+    await page.getByRole("button", { name: /^Hafif ve berrak/ }).click();
+    await page.getByRole("button", { name: /^Beş dakika kadar/ }).click();
+    await page.getByRole("button", { name: /^Filtre demlik/ }).click();
+
+    await expect(page).toHaveURL(/\?c=00014$/);
+    await expect(page.getByRole("heading", { level: 2, name: "V60" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Açık kavrum" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Rehberi aç" })).toHaveAttribute(
+      "href",
+      "/bilgi/v60",
+    );
+
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 2, name: "V60" })).toBeVisible();
+    await page.getByRole("button", { name: "Baştan başla" }).click();
+    await expect(page.getByText("Soru 1 / 5")).toBeVisible();
+    await expect(page).toHaveURL(/\/kahve-testi$/);
+  });
+});
+
+test.describe("sharing and search engines", () => {
+  test("a guide is a recipe, the home page a site with a search box", async ({ page }) => {
+    await page.goto("/bilgi/v60");
+    await expect(page.getByRole("button", { name: "Paylaş" })).toBeVisible();
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      /\/bilgi\/v60\/opengraph-image/,
+    );
+    const guide = await structuredData(page);
+    expect(guide).toContainEqual(
+      expect.objectContaining({
+        "@type": "Recipe",
+        name: "V60 nedir, nasıl demlenir?",
+        totalTime: "PT3M",
+        recipeInstructions: expect.arrayContaining([
+          expect.objectContaining({ "@type": "HowToStep", position: 1 }),
+        ]),
+      }),
+    );
+    expect(guide).toContainEqual(expect.objectContaining({ "@type": "BreadcrumbList" }));
+
+    await page.goto("/bilgi/ogutme");
+    expect(await structuredData(page)).toContainEqual(
+      expect.objectContaining({ "@type": "Article", headline: "Öğütme neden bu kadar önemli?" }),
+    );
+
+    await page.goto("/");
+    expect(await structuredData(page)).toContainEqual(
+      expect.objectContaining({
+        "@type": "WebSite",
+        potentialAction: expect.objectContaining({ "@type": "SearchAction" }),
+      }),
+    );
+  });
+
+  test("a workshop is an event that goes into a calendar", async ({ page, request }) => {
+    await page.goto("/workshop");
+    expect(await structuredData(page)).toContainEqual(
+      expect.objectContaining({ "@type": "Event", name: "Kahve 101", maximumAttendeeCapacity: 8 }),
+    );
+    await expect(page.getByRole("link", { name: "Google Takvim" })).toHaveAttribute(
+      "href",
+      /^https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE&text=Kahve%20101/,
+    );
+    const file = await page.getByRole("link", { name: "Takvime ekle" }).getAttribute("href");
+    expect(file).toMatch(/^\/workshop\/[0-9a-f-]+\/takvim$/);
+    const response = await request.get(file!);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("text/calendar");
+    const ics = await response.text();
+    expect(ics).toContain("BEGIN:VEVENT");
+    expect(ics).toContain("SUMMARY:Kahve 101");
+
+    expect(
+      (await request.get("/workshop/00000000-0000-0000-0000-000000000000/takvim")).status(),
+    ).toBe(404);
   });
 });

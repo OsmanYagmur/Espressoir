@@ -15,7 +15,7 @@ const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
 ];
 
 /** Where members change things. */
-export const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
+const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
 
 /**
  * Every change made in the signed-in area refreshes the public pages, and the router
@@ -23,7 +23,7 @@ export const SIGNED_IN_AREA = /^\/(panel|hesap|bildirimler)(\/|$)/;
  * of the archive right after each save, and the next quick save would land in the middle
  * of it (see lib/data/refresh-archive.ts). So links wait to be clicked there.
  */
-export const prefetchFrom = (pathname: string | null) =>
+const prefetchFrom = (pathname: string | null) =>
   pathname !== null && SIGNED_IN_AREA.test(pathname) ? false : undefined;
 
 function NavLinkList({ pathname, className }: { pathname: string | null; className?: string }) {

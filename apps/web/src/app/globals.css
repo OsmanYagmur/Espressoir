@@ -128,6 +128,35 @@
   }
 }
 
+/*
+ * Page transitions (React's <ViewTransition>, components/site/page-transition.tsx). Moving
+ * to another page, the old column fades out quickly while the new page fades in (the
+ * browser's own cross-fade). Clicks pass through while it plays, and "reduce motion" turns
+ * it off.
+ */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(.page-exit) {
+  animation: var(--motion-fast) var(--motion-ease) both page-fade reverse;
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
 /* One entrance after another: animate-delay-80 waits 80ms. */
 @utility animate-delay-* {
   animation-delay: calc(--value(integer) * 1ms);

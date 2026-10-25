@@ -11,7 +11,7 @@ const legal = t.legal;
 
 export type LegalKey = "kvkk" | "privacy" | "terms";
 
-export const LEGAL_ROUTES: Record<LegalKey, Route> = {
+const LEGAL_ROUTES: Record<LegalKey, Route> = {
   kvkk: "/kvkk",
   privacy: "/gizlilik",
   terms: "/kosullar",

@@ -4,12 +4,15 @@ import Link from "next/link";
 import { AccountMenu } from "@/components/account/account-menu";
 import { t } from "@/lib/i18n";
 
+import { SearchLink } from "@/components/search/search-link";
+
 import { Wordmark } from "./logo";
 import { NavLinks } from "./nav-links";
 
 /**
- * SiteHeader (DESIGN.md): the name, three links, and on the right "Giriş" or the member's
- * picture with their menu. No menu button: under 560px the links move to a second row.
+ * SiteHeader (DESIGN.md): the name, three links, and on the right the search button and
+ * "Giriş" or the member's picture with their menu. No menu button: under 560px the links
+ * move to a second row.
  */
 export function SiteHeader() {
   return (
@@ -29,7 +32,10 @@ export function SiteHeader() {
         <nav aria-label={t.nav.label} className="max-xs:order-3 max-xs:w-full">
           <NavLinks />
         </nav>
-        <AccountMenu />
+        <div className="flex items-center gap-2">
+          <SearchLink />
+          <AccountMenu />
+        </div>
       </div>
     </header>
   );

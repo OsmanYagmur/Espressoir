@@ -19,6 +19,4 @@ export {
   tastingsOf,
   toListItems,
   topCoffees,
-  type BrandSummary,
-  type HomeSummary,
 } from "@espressoir/db";

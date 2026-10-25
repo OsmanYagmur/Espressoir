@@ -8,10 +8,12 @@ import { CoffeeList } from "@/components/coffee/coffee-list";
 import { ScoreBadge } from "@/components/coffee/score-badge";
 import { TasteProfile } from "@/components/coffee/taste-profile";
 import { TastingCard } from "@/components/coffee/tasting-card";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { Section, SectionHeading } from "@/components/site/section-heading";
+import { ShareButton } from "@/components/site/share-button";
 import { CoffeeActions } from "@/components/social/coffee-actions";
 import { ReportButton } from "@/components/social/report-button";
 import { ScoreColumns } from "@/components/stats/score-columns";
@@ -27,6 +29,7 @@ import { countryName, formatAverage, formatDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { brandPath, coffeePath } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/site-url";
+import { breadcrumbs } from "@/lib/structured-data";
 
 type Props = PageProps<"/kahve/[marka]/[kahve]">;
 
@@ -109,14 +112,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/**
- * schema.org Product with the tastings as Reviews, so search results can show the score.
- * "<" is escaped because the JSON is written into a <script> tag.
- */
-function JsonLd({ coffee, tastings }: { coffee: Coffee; tastings: Tasting[] }) {
+/** schema.org Product with the tastings as Reviews, so search results can show the score. */
+function productData(coffee: Coffee, tastings: Tasting[]) {
   const url = new URL(coffeePath(coffee.brand.slug, coffee.slug), getSiteUrl()).toString();
   const rated = tastings.filter((tasting) => tasting.score !== null);
-  const data = {
+  return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: `${coffee.brand.name} ${coffee.name}`,
@@ -156,12 +156,6 @@ function JsonLd({ coffee, tastings }: { coffee: Coffee; tastings: Tasting[] }) {
         }
       : {}),
   };
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
-    />
-  );
 }
 
 // The page itself does not read the URL: it renders at once with a placeholder, and the
@@ -196,7 +190,16 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
 
   return (
     <>
-      <JsonLd coffee={coffee} tastings={logged} />
+      <JsonLd
+        data={[
+          productData(coffee, logged),
+          breadcrumbs([
+            { name: t.nav.coffees, path: "/kahveler" },
+            { name: coffee.brand.name, path: brandPath(coffee.brand.slug) },
+            { name: coffee.name, path: coffeePath(coffee.brand.slug, coffee.slug) },
+          ]),
+        ]}
+      />
       <PageHeading
         title={coffee.name}
         kicker={
@@ -227,6 +230,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
                 .filter(Boolean)
                 .join(" · ")}
         </p>
+        <ShareButton title={`${coffee.brand.name} ${coffee.name}`} />
       </PageHeading>
 
       {coffee.isReviewed ? null : (

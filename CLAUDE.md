@@ -61,13 +61,15 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              (/, /kahveler, /kahve, /marka, /istatistik, /hakkinda, /u/[username],
                              /u/[username]/liste/[slug], /workshop, /workshop/[id] (+ actions.ts:
                              the application), /bilgi, /bilgi/[slug],
-                             /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar)
+                             /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar, /ara, /kahve-testi,
+                             /workshop/[id]/takvim (route: the .ics file))
 apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
                              /hesap, /hesap/kurulum, /bildirimler,
                              /osman (admin: overview), /osman/atolyeler (+ [id]/xlsx, [id]/pdf),
                              /osman/yonetim (moderation); admin-area.tsx asks for the password
                              (dynamic; session read behind <Suspense>)
-apps/web/src/app/teyit/      /teyit/[token] (a workshop applicant's "are you coming?" page; per request)
+apps/web/src/app/teyit/      /teyit/[token] (a workshop applicant's "are you coming?" page; per request),
+                             /teyit/[token]/takvim (route: their workshop as an .ics file)
 apps/web/src/app/auth/       /auth/callback (route: code exchange), /auth/confirm (link → one click)
 apps/web/src/app/api/        /api/arsiv-tazele (the app asks for a cache refresh; POST, bearer token)
 apps/web/src/app/            root layout (fonts), 404/error/loading, icon + apple-icon (drawn),
@@ -77,16 +79,19 @@ apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /h
 apps/web/src/components/     ui/ (button, chip, card, field, dropdown), site/ (header, footer,
                              page heading, legal page), coffee/ (TastingCard, ScoreBadge,
                              TasteProfile), stats/ (charts), workshop/ (EventCard, ApplyForm),
-                             info/ (InfoCard), panel/ (forms, coffee picker), account/ (account
-                             menu, Turnstile, form message), social/ (follow, feed, like,
-                             comments, report)
+                             info/ (InfoCard, GuideCard, RecipeCard, BrewAssistant), panel/ (forms,
+                             coffee picker), account/ (account menu, Turnstile, form message),
+                             social/ (follow, feed, like, comments, report), search/ (box, header
+                             button), quiz/ (the quiz, its band)
 apps/web/src/content/        atolye/ (workshop programs, TS, one per kind), bilgi/ (articles,
-                             one Markdown file each; README says the format)
+                             one Markdown file each; README says the format), demleme.ts (the
+                             brewing assistant's plans), kahve-testi.ts (the quiz)
 apps/web/src/lib/            auth.ts (requireUser/requireSession), auth-config.ts (public switches),
-                             session-cookie.ts (useHasSession: "is someone signed in?" for islands)
+                             session-cookie.ts (useHasSession: "is someone signed in?" for islands),
+                             structured-data.ts (JSON-LD), workshop-calendar.ts (.ics, Google link)
 apps/web/src/lib/data/       archive.ts (the one cached read), selectors.ts (re-exports the
                              pure views from @espressoir/db), workshops.ts (their own cached
-                             read), articles.ts, today.ts (the year, cached)
+                             read), articles.ts, today.ts (the year, cached), search-index.ts
 apps/mobile/                 React Native app (no Expo): index.js, src/App.tsx (navigators),
                              src/navigation.ts (routes, router), src/screens, src/components,
                              src/lib (supabase, archive, session, theme, notifications, photo,
@@ -96,7 +101,8 @@ apps/web/e2e/                archive.spec (public, sample data) · panel.spec, a
                              community.spec, moderation.spec (need Supabase + its mail catcher)
                              · helpers.ts
 packages/core                siteConfig, fold/slug, score tiers, catalog enums, stats, list filter,
-                             account rules (usernames, TERMS_VERSION)
+                             account rules (usernames, TERMS_VERSION), brew (assistant), search,
+                             calendar (.ics), quiz
 packages/db                  generated types, read models (archive, profile; Zod), input schemas
 packages/i18n | config       UI copy (tr.ts, legal-tr.ts) · shared tsconfig/eslint
 scripts/                     db-push, gen-types, import-notion (+ notion/), admin-bootstrap,
@@ -770,6 +776,53 @@ The admin area and visit statistics (2026-10-24):
   plus the workshop pages. Setup: `docs/setup-analytics.md`.
 - **Legal sections are linkable by title** (`/gizlilik#cerezler`, slugified).
 
+Brewing assistant, search, quiz and sharing (2026-10-25; owner's choices from a review of
+the site, branch `site-yenilikleri`):
+
+- **The brewing assistant** (`BrewAssistant`, under a guide's recipe) scales the recipe to
+  the cups the method makes at once and runs a clock through the guide's steps: what to do
+  now, where the scale should stand, what comes next. It keeps the screen on while it runs
+  (Wake Lock), a phone buzzes at each stage, and an espresso plan is a shot timer that says
+  how the shot ran (`shot`: too fast under 20 s, the target 25–30 s, too slow over 35 s). A
+  cold brew gets the hours it is ready between instead of a clock. The plans are content
+  (`content/demleme.ts`, one per guide slug, its words from the guide); the arithmetic is
+  `@espressoir/core` (`brew.ts`). A plan whose dose or water disagrees with the guide's
+  recipe, or that names no guide, stops the build (`lib/data/articles.ts`).
+- **Search is a page, not a modal** (`/ara`; DESIGN.md has no pop-ups): static, the index
+  (articles, coffees, brands, cafés, members) built from the archive and the articles
+  (`lib/data/search-index.ts`) and matched in the browser (`search` in `@espressoir/core`:
+  folded, every word must match, a word's start counts more, groups ordered by their best
+  match). The words stay in the address (`?q=`, `replaceState`), arrow keys walk the
+  results. The header's search button (`SearchLink`) and the keys `/` and ⌘K / Ctrl+K open
+  it; the button reads no URL (the header is in every static shell: a `usePathname` there
+  stopped the build). `noindex`; the home page's `WebSite` data names it as the SearchAction.
+  When the archive is split, the index moves with it.
+- **The coffee quiz** (`/kahve-testi`): five questions, each answer giving points to methods
+  and roasts (`content/kahve-testi.ts`); the winner by `tally` (`@espressoir/core`, ties to
+  the earlier in a fixed order). Every method is a guide (a missing one stops the build); what
+  it says about roasts and origins comes from `design/icerik.md`. Complete answers live in the
+  address (`?c=00014`), so a result can be shared. Options are buttons (a press answers and
+  moves on), not radios: arrow keys on a radio group would answer on their own.
+- **Sharing:** `ShareButton` opens the phone's share sheet (`navigator.share`) or copies the
+  address and says so. Articles have their own share image
+  (`bilgi/[slug]/opengraph-image.tsx`: the question, a guide's numbers), the quiz too.
+- **Calendars:** `/workshop/<id>/takvim` and `/teyit/<token>/takvim` answer an .ics file
+  (`icsCalendar`, UTC times, RFC 5545 folding and escaping, a uid made of the start and the
+  title so both files update one entry); `CalendarLinks` shows it beside a Google Calendar
+  link (Android's calendar opens no .ics files). The answer page shows them after a "yes".
+- **Structured data** (`lib/structured-data.ts`, written by `<JsonLd>`): guides are
+  `Recipe` (steps, ingredients, `totalTime` from the plan), articles `Article`, a workshop an
+  `Event` with its seats, every such page a `BreadcrumbList`, a coffee still a `Product`.
+- **Page transitions** are React's `<ViewTransition>` in `PageTransition` (inside
+  `PageShell`): leaving a page, its column fades out while the browser cross-fades to the
+  next. Only once hydrated: rendered on the server it would let React's streaming runtime
+  start a transition while the first HTML is still arriving, which Chrome refuses with an
+  uncaught `InvalidStateError` on every load. Shared-element morphs were tried and dropped:
+  the destination's content arrives through `<Suspense>` (params), so no pair ever formed.
+  "Reduce motion" turns transitions off (`globals.css`). An automated browser in a hidden
+  window holds a transition until it can paint: check transitions with Playwright, not a
+  background tab.
+
 - **Not done in 2B, on purpose:** the single `archive` read is still one read. Splitting it
   (see the decisions below) pays off with many writers, not during an invite-only beta, and is
   safer as a change of its own: do it before signup opens to everyone.
@@ -836,7 +889,10 @@ The admin area and visit statistics (2026-10-24):
       2026-10-24): the home page leads with coffee knowledge, seven brewing guides and three
       articles with photos, topics on `/bilgi`, the menu Bilgi · Tadım notları · Atölye,
       `/workshop` and Kahve 101, a phone-only form, questions that open and close, and the
-      admin's Atölyeler shortcut.
+      admin's Atölyeler shortcut. Then (branch `site-yenilikleri`, 2026-10-25, after a review
+      of the site with the owner): the brewing assistant on every guide, search (`/ara`), the
+      coffee quiz, share images and a share button, workshop calendar files, structured data,
+      page transitions, and unused code removed.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an

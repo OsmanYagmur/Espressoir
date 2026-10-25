@@ -79,7 +79,7 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 ## Yerleşim
 
 - Mobil önce: tek kolon, 16px yan boşluk. Okuma sütunu en fazla 640px, kart ızgaraları en fazla 1080px.
-- Üst menü: Bilgi, Tadım notları, Atölye + Giriş ya da profil resmi. Kafeler ve İstatistik profil menüsünde. Hamburger menü yok; 560px altında bağlantılar ikinci satıra iner.
+- Üst menü: Bilgi, Tadım notları, Atölye + arama düğmesi + Giriş ya da profil resmi. Kafeler ve İstatistik profil menüsünde. Hamburger menü yok; 560px altında bağlantılar ikinci satıra iner.
 
 ## Görseller ve ikonlar
 
@@ -101,6 +101,7 @@ Espressoir bir kahve tadım defteri ve arkadaş çevresine açılan kahve atöly
 - Süreler ve eğri `tokens.css`'te: `--motion-fast` (150ms) hover, odak ve menü için; `--motion-slow` (700ms) sayfayla gelen hareket için; ikisi de `--motion-ease` ile yavaşlayarak biter.
 - Sayfa açılınca başlık, alt cümle ve kart listeleri sırayla hafifçe yukarı kayarak belirir (60ms arayla); puan ve kontenjan çubukları soldan dolar; kapak fotoğrafı çerçevesine yerleşir. Hepsi bir kez oynar.
 - Hover: kart 2px yükselir ve kenarlığı `--line-strong` olur; karttaki fotoğraf hafifçe büyür; menü bağlantısının alt çizgisi soldan uzar; logonun çubukları yukarıdan aşağı sırayla yeniden dolar; birincil butondaki ok sağa kayar. Butona basınca 1px iner.
+- Sayfa değişirken eski sayfanın içeriği hızla (`--motion-fast`) solar, yenisi tarayıcının kendi geçişiyle belirir. Yalnızca bir bağlantıya tıklayınca; ilk açılışta ve yenilemede geçiş yok.
 - "Hareketi azalt" tercihi açıksa hiçbiri oynamaz; sayfa ilk hâliyle durur.
 - Kaydırmaya bağlı animasyon, açılır pencere ve modal yok; çerez bildirimi altta tek satır: bir cümle, "Ayrıntılar" bağlantısı, eşit ağırlıkta "Reddet" ve "Kabul et" (ikisi de ikincil buton). Yalnızca Google Analytics tanımlıyken ve ziyaretçi henüz cevap vermemişken görünür.
 
@@ -126,17 +127,27 @@ Sınıf adları `components.css` ile aynıdır.
 
 **GuideCard**: ana sayfada bir demleme yöntemi; kartın tamamı rehbere giden tek bağlantı. `--sunk` daire içinde Lucide ikon (V60 huni, AeroPress silindir, moka alev, French press aşağı ok, espresso basınç göstergesi, Türk kahvesi fincan, soğuk demleme kar tanesi), yöntemin adı (`card-title`), "15 g · 240 ml" (`figure`), "2,5–3 dk · orta öğütme" (`meta`), `--accent-ink` ok. Hover: kart 2px yükselir, ikon hafifçe yatar, ok sağa kayar.
 
-**SiteHeader** (`.es-header`): logo (işaret + "Espressoir"), üç bağlantı (etkin olana `aria-current="page"`: `--ink` + 2px `--accent` alt çizgi), sağda "Giriş" (`es-btn--secondary es-btn--sm`) ya da 32px avatar.
+**SiteHeader** (`.es-header`): logo (işaret + "Espressoir"), üç bağlantı (etkin olana `aria-current="page"`: `--ink` + 2px `--accent` alt çizgi), sağda 40px arama düğmesi (Lucide büyüteç, `--ink-2`, hover `--sunk` zemin; `/` ya da ⌘K ile de açılır) ve "Giriş" (`es-btn--secondary es-btn--sm`) ya da 32px avatar.
+
+**BrewAssistant**: rehberde tarif kutusunun altında, kart. "Birlikte demleyelim" (`card-title`) ve bir cümle; birden çok fincan yapılabilen yöntemde "Kaç fincan?" seçim chip'leri ve ölçeklenmiş kahve · su · oran (`figure`); büyük saat (mono, `/ 3:00` yanında) ve altında tek `--accent` ilerleme çubuğu; `--sunk` kutuda "Şimdi": adımın adı, ne yapılacağı, "Terazide 140 ml olana kadar", sıradaki adım; birincil "Başlat" (çalışırken "Duraklat", espressoda "Durdur"), ikincil "Baştan"; altta adımlar listesi (zaman `figure`, işarete bakılan anlar "yaklaşık"), şimdiki adım `--sunk` zeminde, geçenler `--ink-3`. Bitince "Afiyet olsun." ve ikincil "Bu fincanı deftere yaz". Soğuk demlemede saat yok: "Şimdi kurarsan yarın 08:00 ile yarın 14:00 arasında hazır."
+
+**QuizBand**: kahve testine giden kart: soru başlığı (`card-title`), bir cümle, ikincil "Teste başla" ve ok.
+
+**ShareButton**: metin bağlantısı görünümünde "Paylaş" (Lucide paylaş ikonu); telefonda paylaşım menüsünü açar, açamazsa bağlantıyı kopyalayıp "Bağlantı kopyalandı." der.
 
 ## Sayfalar
 
-**Ana sayfa:** önce kahve bilgisi. SiteHeader → hero (`--crema` bant: solda `display` başlık, tek `lead` cümle, tek birincil buton "Okumaya başla" (/bilgi); yanında yalnızca "Nasıl çalışır?" bağlantısı; sağda 4:3 demleme fotoğrafı, mobilde metnin altında) → demleme rehberleri (GuideCard ızgarası: mobilde iki, masaüstünde dört sütun; son hücre "Bütün yazılar") → "Merak ettiklerin" (altı InfoCard, rehber olmayan yazılar) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadım notları (üç TastingCard + "Tümünü gör") → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
+**Ana sayfa:** önce kahve bilgisi. SiteHeader → hero (`--crema` bant: solda `display` başlık, tek `lead` cümle, tek birincil buton "Okumaya başla" (/bilgi); yanında yalnızca "Nasıl çalışır?" bağlantısı; sağda 4:3 demleme fotoğrafı, mobilde metnin altında) → demleme rehberleri (GuideCard ızgarası: mobilde iki, masaüstünde dört sütun; son hücre "Bütün yazılar"; altında QuizBand) → "Merak ettiklerin" (altı InfoCard, rehber olmayan yazılar) → sıradaki atölye (EventCard, ikincil buton; atölye yoksa gizli) → son tadım notları (üç TastingCard + "Tümünü gör") → alt bilgi (slogan, KVKK, Gizlilik, Koşullar).
 
-**Atölye (/workshop):** kapak fotoğrafı → `display` başlık + `lead` → tarih karosu, saat, konum, kontenjan → birincil "Başvur" (mobilde altta sabit `.es-sticky`, forma kayar) → "Ne yapacağız?" numaralı akış, süreler `figure` → "Yanında getir" / "Biz hazırlıyoruz" → sık sorulanlar (her soru açılır kapanır, hepsi kapalı başlar; tarayıcının kendi `<details>` öğesi, yanında dönen bir ok) → ApplyForm.
+**Atölye (/workshop):** kapak fotoğrafı → `display` başlık + `lead` → tarih karosu, saat ("Takvime ekle" ve "Google Takvim" bağlantılarıyla), konum, kontenjan → birincil "Başvur" (mobilde altta sabit `.es-sticky`, forma kayar) → "Ne yapacağız?" numaralı akış, süreler `figure` → "Yanında getir" / "Biz hazırlıyoruz" → sık sorulanlar (her soru açılır kapanır, hepsi kapalı başlar; tarayıcının kendi `<details>` öğesi, yanında dönen bir ok) → ApplyForm.
 
 **Tadım detayı:** kahve adı (`display`), kavurucu ve yöntem, büyük ScoreBadge, TasteProfile, tat notaları, not, beğeni ve yorumlar.
 
-**Bilgi (/bilgi):** konulara ayrılmış InfoCard ızgaraları: Demleme rehberleri, Çekirdek ve kavrum, Temel bilgiler. Yazı düz paragraflardır, en fazla 300 kelime. Demleme rehberi ise en fazla 600 kelime olabilir; başlığın ve fotoğrafın altında tarif kutusu (kahve, su, sıcaklık, süre, öğütme; ölçüler `figure`), sonra ara başlıklar ve numaralı adımlar (atölye programıyla aynı numaralar) bulunur. Her yazının tek görseli var (yazı sayfasında başlığın altında, fotoğrafçısıyla).
+**Bilgi (/bilgi):** konulara ayrılmış InfoCard ızgaraları: Demleme rehberleri, Çekirdek ve kavrum, Temel bilgiler. Yazı düz paragraflardır, en fazla 300 kelime. Demleme rehberi ise en fazla 600 kelime olabilir; başlığın ve fotoğrafın altında tarif kutusu (kahve, su, sıcaklık, süre, öğütme; ölçüler `figure`), sonra BrewAssistant, sonra ara başlıklar ve numaralı adımlar (atölye programıyla aynı numaralar) bulunur. Her yazının tek görseli var (yazı sayfasında başlığın altında, fotoğrafçısıyla). Başlığın altında okuma süresi ve ShareButton. Sayfanın başında QuizBand.
+
+**Ara (/ara):** `title` başlık, büyük arama kutusu (etiket "Ne arıyorsun?"), yazdıkça sonuçlar: Yazılar, Kahveler, Markalar, Kafeler, Üyeler; her grup küçük etiket başlıklı, her sonuç tek bağlantı (ad + bir satır `meta`). Kutu boşken rehberlere ve teste giden chip'ler.
+
+**Kahve testi (/kahve-testi):** `display` soru başlığı ve `lead`; "Soru 2 / 5" (`meta`) ve `--ink-2` ilerleme çubuğu; soru (`title`) ve seçenekler (kenarlıklı kart düğmeler, ad + ipucu); "Önceki soru" metin bağlantısı. Sonuçta yöntem (`display`), rehberin özeti ve ölçüleri, birincil "Rehberi aç", ShareButton, kavrum kartı (kavrum, tadı, pakette bakılacak yer) ve ikincil "Baştan başla".
 
 ## Eski tasarımdan kaldırılacaklar
 

@@ -116,3 +116,32 @@ export {
   type Recipe,
 } from "./article";
 export { columnName, xlsxWorkbook, type SheetColumn } from "./xlsx";
+export {
+  brewState,
+  clampCups,
+  formatClock,
+  formatRatio,
+  readyWindow,
+  recipeRange,
+  scaleRecipe,
+  scaledPour,
+  shotVerdict,
+  type BrewPlan,
+  type BrewStage,
+  type BrewState,
+  type ShotTarget,
+  type ShotVerdict,
+  type SteepPlan,
+  type TimedPlan,
+} from "./brew";
+export {
+  SEARCH_KINDS,
+  prepareSearch,
+  search,
+  type PreparedEntry,
+  type SearchEntry,
+  type SearchGroup,
+  type SearchKind,
+} from "./search";
+export { googleCalendarUrl, icsCalendar, type CalendarEvent } from "./calendar";
+export { decodeAnswers, encodeAnswers, tally, type Weights } from "./quiz";

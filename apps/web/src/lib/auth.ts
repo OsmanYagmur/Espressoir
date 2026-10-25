@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export interface CurrentUser {
+interface CurrentUser {
   id: string;
   /** From the sign-in session; never stored in the public schema. */
   email: string | null;

@@ -120,7 +120,7 @@ const request = ({
   ...rest,
 });
 
-export interface VisitReport {
+interface VisitReport {
   days: number;
   totals: { users: number; sessions: number; views: number };
   /** YYYY-MM-DD, oldest first; days without a visit are missing. */
