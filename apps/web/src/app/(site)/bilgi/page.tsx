@@ -2,6 +2,7 @@ import { ARTICLE_TOPICS } from "@espressoir/core";
 import type { Metadata } from "next";
 
 import { InfoCard } from "@/components/info/info-card";
+import { QuizBand } from "@/components/quiz/quiz-band";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { Section, SectionHeading } from "@/components/site/section-heading";
@@ -25,6 +26,13 @@ export default async function InfoPage() {
   return (
     <PageShell>
       <PageHeading title={t.info.title} lead={t.info.lead} />
+      <QuizBand
+        id="kahve-testi"
+        title={t.home.quizTitle}
+        lead={t.home.quizLead}
+        action={t.home.quizCta}
+        className="mb-12 md:mb-16"
+      />
       {topics.map(({ topic, articles: group }, index) => (
         <Section key={topic} id={topic} className={index === 0 ? "mt-0 md:mt-0" : undefined}>
           <SectionHeading id={topic} title={t.info.topics[topic]} />

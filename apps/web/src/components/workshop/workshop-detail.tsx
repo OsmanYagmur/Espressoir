@@ -3,15 +3,21 @@ import { ChevronDownIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { JsonLd } from "@/components/site/json-ld";
 import { PhotoFigure } from "@/components/site/photo";
 import { Section, SectionHeading } from "@/components/site/section-heading";
+import { ShareButton } from "@/components/site/share-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { programOf } from "@/content/atolye";
 import { format, t } from "@/lib/i18n";
+import { getSiteUrl } from "@/lib/site-url";
+import { breadcrumbs, workshopEvent } from "@/lib/structured-data";
+import { workshopCalendarEvent } from "@/lib/workshop-calendar";
 import { workshopWhen } from "@/lib/workshop-format";
 
 import { ApplyForm } from "./apply-form";
+import { CalendarLinks } from "./calendar-links";
 import { Capacity, DateTile, EventCard } from "./event-card";
 
 const w = t.workshop;
@@ -61,9 +67,22 @@ export function WorkshopDetail({
   const when = workshopWhen(workshop);
   const full = workshop.seatsLeft === 0;
   const faq = [...(program?.faq ?? []), { question: w.priceQuestion, answer: workshop.priceText }];
+  const path = `/workshop/${workshop.id}`;
 
   return (
     <>
+      <JsonLd
+        data={[
+          workshopEvent(workshop, {
+            description: program?.lead ?? null,
+            photo: program?.photo ?? null,
+          }),
+          breadcrumbs([
+            { name: t.nav.workshop, path: "/workshop" },
+            { name: workshop.title, path },
+          ]),
+        ]}
+      />
       {/* Everything above the form; the phone's apply bar sticks to the bottom of this. */}
       <div>
         <header className="flex flex-col gap-3">
@@ -80,6 +99,7 @@ export function WorkshopDetail({
           <div className="flex stagger flex-col gap-3">
             <h1 className="type-display">{workshop.title}</h1>
             {program ? <p className="max-w-read type-lead">{program.lead}</p> : null}
+            <ShareButton title={workshop.title} text={program?.lead} path={path} />
           </div>
         </header>
 
@@ -87,6 +107,11 @@ export function WorkshopDetail({
           <DateTile workshop={workshop} />
           <div className="flex min-w-0 flex-col gap-3">
             <p className="font-semibold">{when.full}</p>
+            <CalendarLinks
+              event={workshopCalendarEvent(workshop, new URL(path, getSiteUrl()).toString())}
+              file={`${path}/takvim` as Route}
+              className="type-meta"
+            />
             <p className="type-meta">
               {workshop.locationText ? `${workshop.locationText} · ` : null}
               {w.location}

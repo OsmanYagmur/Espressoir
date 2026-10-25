@@ -1,6 +1,6 @@
 import { readWorkshopRsvp, WORKSHOP_RSVP_ERRORS, type WorkshopRsvp } from "@espressoir/db";
 import { CheckIcon, XIcon } from "lucide-react";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -8,8 +8,11 @@ import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CalendarLinks } from "@/components/workshop/calendar-links";
 import { format, t } from "@/lib/i18n";
+import { getSiteUrl } from "@/lib/site-url";
 import { createPublicClient } from "@/lib/supabase/public";
+import { workshopCalendarEvent } from "@/lib/workshop-calendar";
 import { workshopWhen } from "@/lib/workshop-format";
 
 import { answerRsvp } from "./actions";
@@ -83,6 +86,20 @@ async function Rsvp({ params, searchParams }: Pick<Props, "params" | "searchPara
           </p>
         ) : null}
         <Status rsvp={rsvp} />
+        {rsvp.status === "approved" && rsvp.rsvp === "yes" && rsvp.canAnswer ? (
+          <CalendarLinks
+            event={workshopCalendarEvent(
+              {
+                title: rsvp.workshopTitle,
+                startsAt: rsvp.startsAt,
+                endsAt: rsvp.endsAt,
+                locationText: rsvp.locationText,
+              },
+              `${getSiteUrl().origin}/teyit/${token}`,
+            )}
+            file={`/teyit/${token}/takvim` as Route}
+          />
+        ) : null}
         {rsvp.canAnswer ? (
           <form action={answerRsvp} className="flex flex-col gap-4">
             <input type="hidden" name="token" value={token} />

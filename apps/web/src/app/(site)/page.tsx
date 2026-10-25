@@ -5,6 +5,8 @@ import Link from "next/link";
 import { TastingCard } from "@/components/coffee/tasting-card";
 import { GuideCard } from "@/components/info/guide-card";
 import { InfoCard } from "@/components/info/info-card";
+import { QuizBand } from "@/components/quiz/quiz-band";
+import { JsonLd } from "@/components/site/json-ld";
 import { PageShell } from "@/components/site/page-shell";
 import { PhotoCredit, PhotoImage } from "@/components/site/photo";
 import { Section, SectionHeading } from "@/components/site/section-heading";
@@ -17,6 +19,7 @@ import { loggedTastings } from "@/lib/data/selectors";
 import { getCurrentYear } from "@/lib/data/today";
 import { getOpenWorkshops } from "@/lib/data/workshops";
 import { t } from "@/lib/i18n";
+import { website } from "@/lib/structured-data";
 import { cn } from "@/lib/utils";
 
 const LATEST_COUNT = 3;
@@ -29,8 +32,8 @@ const arrow = "transition-transform group-hover/cta:translate-x-1";
 
 /**
  * The home page (DESIGN.md → Sayfalar), a coffee guide first: one sentence on what is here
- * and one main action (start reading), the brewing methods with their numbers, the articles,
- * the next workshop, the latest tasting notes.
+ * and one main action (start reading), the brewing methods with their numbers, the way
+ * into the coffee quiz, the articles, the next workshop, the latest tasting notes.
  */
 export default async function HomePage() {
   const [archive, workshops, articles, currentYear] = await Promise.all([
@@ -46,6 +49,7 @@ export default async function HomePage() {
 
   return (
     <PageShell>
+      <JsonLd data={website()} />
       <section
         aria-labelledby="giris"
         className="grid overflow-hidden rounded-lg bg-crema text-on-crema md:grid-cols-[1.1fr_1fr]"
@@ -110,6 +114,13 @@ export default async function HomePage() {
               </Link>
             </li>
           </ul>
+          <QuizBand
+            id="kahve-testi"
+            title={t.home.quizTitle}
+            lead={t.home.quizLead}
+            action={t.home.quizCta}
+            className="mt-4"
+          />
         </Section>
       ) : null}
 

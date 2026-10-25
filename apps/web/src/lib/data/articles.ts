@@ -3,9 +3,17 @@ import "server-only";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ARTICLE_FILE, parseArticle, sortArticles, type Article } from "@espressoir/core";
+import {
+  ARTICLE_FILE,
+  parseArticle,
+  recipeRange,
+  sortArticles,
+  type Article,
+  type BrewPlan,
+} from "@espressoir/core";
 import { cacheLife } from "next/cache";
 
+import { BREW_PLANS } from "@/content/demleme";
 import { isArticleIconId, type ArticleIconId } from "@/content/icons";
 import { isPhotoId, type PhotoId } from "@/content/photos";
 
@@ -17,6 +25,8 @@ const DIRECTORY = join(process.cwd(), "src/content/bilgi");
 export interface SiteArticle extends Article {
   photo: PhotoId | null;
   iconId: ArticleIconId | null;
+  /** A guide's brewing assistant (src/content/demleme.ts); null: none. */
+  brewPlan: BrewPlan | null;
 }
 
 /** A brewing guide: an article with a recipe. */
@@ -24,15 +34,33 @@ export type SiteGuide = SiteArticle & { recipe: NonNullable<Article["recipe"]> }
 
 export const isGuide = (article: SiteArticle): article is SiteGuide => article.recipe !== null;
 
+/** Whether `value` lies within the numbers a recipe writes ("15–17 g", "1 l"). */
+function within(value: number, text: string): boolean {
+  const range = recipeRange(text);
+  return range !== null && value >= range[0] && value <= range[1];
+}
+
 function checked(article: Article): SiteArticle {
-  const { image, icon, slug } = article;
+  const { image, icon, slug, recipe } = article;
+  const problem = (sentence: string) => new Error(`Bilgi yazısı "${slug}.md": ${sentence}`);
   if (image !== null && !isPhotoId(image)) {
-    throw new Error(`Bilgi yazısı "${slug}.md": image "${image}" src/content/photos.ts içinde yok.`);
+    throw problem(`image "${image}" src/content/photos.ts içinde yok.`);
   }
   if (icon !== null && !isArticleIconId(icon)) {
-    throw new Error(`Bilgi yazısı "${slug}.md": icon "${icon}" src/content/icons.ts içinde yok.`);
+    throw problem(`icon "${icon}" src/content/icons.ts içinde yok.`);
   }
-  return { ...article, photo: image, iconId: icon };
+  const brewPlan = BREW_PLANS[slug] ?? null;
+  if (brewPlan !== null) {
+    // The assistant scales the recipe the page shows: the two must say the same.
+    if (recipe === null) throw problem("demleme planı var ama yazı bir rehber değil (method: yok).");
+    if (!within(brewPlan.dose, recipe.dose)) {
+      throw problem(`src/content/demleme.ts'teki ${brewPlan.dose} g, tarifteki "${recipe.dose}" değil.`);
+    }
+    if (!within(brewPlan.water, recipe.water)) {
+      throw problem(`src/content/demleme.ts'teki su ${brewPlan.water}, tarifteki "${recipe.water}" değil.`);
+    }
+  }
+  return { ...article, photo: image, iconId: icon, brewPlan };
 }
 
 /**
@@ -55,6 +83,10 @@ export async function getArticles(): Promise<SiteArticle[]> {
         : [];
     }),
   );
+  const orphan = Object.keys(BREW_PLANS).find(
+    (slug) => !articles.some((article) => article.slug === slug),
+  );
+  if (orphan) throw new Error(`src/content/demleme.ts: "${orphan}" adında bir rehber yok.`);
   return sortArticles(articles);
 }
 
