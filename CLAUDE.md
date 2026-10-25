@@ -242,9 +242,10 @@ data/                        owner's Notion export + reports (git-ignored)
   panel's shortcuts have the same two). Visitors find Kahveler, Kafeler, İstatistik and Hakkında
   in the footer.
 - **The site leads with coffee knowledge** (owner's request, 2026-10-24): the home page's one
-  action is "Okumaya başla" (`/bilgi`), then the brewing guides (`GuideCard`, fed by the
-  guides' recipes), six other articles, the next workshop, the latest tasting notes. The
-  workshop is no longer the hero's button.
+  action is "Okumaya başla" (`/bilgi`), then the first seven brewing guides (`GuideCard`, fed
+  by the guides' recipes; with "Bütün yazılar" they fill two rows of four), the first two
+  articles of each other topic, the next workshop, the latest tasting notes. The workshop is
+  no longer the hero's button.
 - Coffee, brand, café and member names are written as they are (no CSS uppercasing anywhere);
   give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
@@ -706,8 +707,10 @@ Workshops and articles (2026-10-23):
   plain paragraphs, parsed by `parseArticle` (`@espressoir/core`, no package) and shipped with
   the server functions (`outputFileTracingIncludes`). A broken file stops the build with a
   sentence. Coffee facts come from `design/icerik.md` only (it lists its sources at the end).
-- **Two kinds, three topics** (2026-10-24): every file names its `topic` (`ARTICLE_TOPICS`:
-  `demleme`, `cekirdek`, `temel`; `/bilgi` shows one section each). A file with `method:` is a
+- **Two kinds, four topics** (2026-10-24; `tadim` added 2026-10-25): every file names its
+  `topic` (`ARTICLE_TOPICS`: `demleme`, `cekirdek`, `tadim`, `temel`; `/bilgi` shows one
+  section each, in that order; `order` runs 10–29, 30s, 40s, 50s). A plain article may sit
+  under `demleme` too (the capsule machine: no recipe numbers worth stating). A file with `method:` is a
   brewing guide: its recipe in the header (`dose`, `water`, optional `temperature`, `time`,
   `grind`), `## ` subheadings and numbered steps in the text, at most `GUIDE_WORDS_MAX` (600)
   words; an article stays plain paragraphs, at most 300. The body is `blocks`
@@ -892,7 +895,12 @@ the site, branch `site-yenilikleri`):
       admin's Atölyeler shortcut. Then (branch `site-yenilikleri`, 2026-10-25, after a review
       of the site with the owner): the brewing assistant on every guide, search (`/ara`), the
       coffee quiz, share images and a share button, workshop calendar files, structured data,
-      page transitions, and unused code removed.
+      page transitions, and unused code removed. Then (branch `bilgi-icerik`, 2026-10-25,
+      the owner's picks from twenty ideas): eighteen more pieces with photos — five guides
+      with assistant plans (filter machine, Chemex, Kalita Wave, Japanese iced coffee,
+      siphon), the capsule machine, espresso drinks, the coffee bag, processing, origins,
+      single origin and blends, decaf, tasting, flavour notes, extraction, caffeine, first
+      equipment, coffee cultures — and the `tadim` topic.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
