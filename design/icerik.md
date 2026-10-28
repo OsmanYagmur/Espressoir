@@ -5,7 +5,7 @@ Bu dosyadaki metinler sitede olduğu gibi kullanılır. Kahveyle ilgili bilgi ek
 ## Atölye: Kahve 101
 
 - **Başlık:** Kahve 101
-- **Alt cümle:** Kahveye giriş: iki saatte üç demleme yöntemi ve bir mini tadım.
+- **Alt cümle:** Kahveye giriş: V60 ve French press ile demleme pratiği ve bir mini tadım.
 - **Kimler için:** Kahveyi seven ama nereden başlayacağını bilmeyen herkes. Hiçbir ön bilgi gerekmez.
 
 ### Ne yapacağız?
