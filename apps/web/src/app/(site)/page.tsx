@@ -88,7 +88,7 @@ export default async function HomePage() {
       <JsonLd data={website()} />
       <section
         aria-labelledby="giris"
-        className="grid items-center gap-y-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-x-20"
+        className="grid items-center gap-y-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:gap-x-12"
       >
         <div className="flex stagger flex-col gap-5">
           <p className="type-kicker">{t.home.heroKicker}</p>
@@ -99,23 +99,22 @@ export default async function HomePage() {
           <p className="max-w-read type-lead">{t.home.heroLead}</p>
           <HeroActions />
         </div>
-        {/* The photo, then the sample entry overlapping its lower edge: centred while the
-            hero is one column, nudged towards the text beside it from 1024px. In the flow,
-            not positioned over the photo, so it never covers it or leaves its column. */}
-        <div className="flex flex-col">
-          <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-sunk md:aspect-video lg:aspect-4/3">
+        {/* The photo and the sample entry side by side, neither covering the other; on a
+            phone one under the other. In a row the photo takes the card's height. */}
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_19rem] sm:gap-6">
+          <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-sunk sm:aspect-auto sm:min-h-72">
             <PhotoImage
               id={HERO_PHOTO}
               priority
-              sizes="(min-width: 1024px) 520px, 100vw"
+              sizes="(min-width: 1280px) 300px, (min-width: 640px) 60vw, 100vw"
               className="absolute inset-0 size-full motion-safe:animate-settle"
             />
             <PhotoCredit
               id={HERO_PHOTO}
-              className="absolute top-3 right-3 rounded-full bg-bg/85 px-3 py-1 text-ink"
+              className="absolute right-3 bottom-3 rounded-full bg-bg/85 px-3 py-1 text-ink"
             />
           </div>
-          <SampleTasting className="relative mx-4 -mt-16 self-stretch motion-safe:animate-rise motion-safe:animate-delay-300 sm:mx-0 sm:w-96 sm:self-center lg:-mt-24 lg:-ml-10 lg:w-84 lg:self-start" />
+          <SampleTasting className="motion-safe:animate-rise motion-safe:animate-delay-300" />
         </div>
       </section>
 

@@ -221,8 +221,8 @@ data/                        owner's Notion export + reports (git-ignored)
   icons (1.5 stroke, 20px), no emoji.
 - **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm`
   only in the header and the cookie bar). Cards are framed by `--line`, never by a shadow;
-  `shadow-raised` is for what floats over the page (the Keşfet panel, menus, the hero's
-  sample card), `shadow-sticky` for bars fixed to the bottom. Not everything is a card: steps
+  `shadow-raised` is for what floats over the page (the Keşfet panel, menus),
+  `shadow-sticky` for bars fixed to the bottom. Not everything is a card: steps
   and lists are divided by lines; a list with nothing in it is an `EmptyState` (dashed, a
   sentence, the next step). A TastingCard is a single link; lists of coffees, cafés and
   suggestions are rows that are each one link. Scores never change colour; a missing score is
@@ -270,8 +270,9 @@ data/                        owner's Notion export + reports (git-ignored)
   Her fincanı hatırla.", the one main action "İlk tadımını kaydet" (`HeroActions`: a visitor
   goes to `/giris`, which says joining is by invitation and what is open meanwhile; a member
   sees "Tadım ekle" and goes to the form) and "Kahveleri keşfet". Beside it a photo and
-  `SampleTasting`, drawn with the real tasting parts and labelled "Örnek kayıt" (never a real
-  member's entry). Then "Nasıl çalışır?" (three steps, shared with the About page as
+  `SampleTasting` side by side, neither covering the other (owner's choice, 2026-10-28: text |
+  photo | card from 1280px, the pair under the text below that, stacked on a phone), the card
+  drawn with the real tasting parts and labelled "Örnek kayıt" (never a real member's entry). Then "Nasıl çalışır?" (three steps, shared with the About page as
   `t.home.how`), the latest three tastings, the six best-liked coffees (`topCoffees`), three
   guides and "Bütün rehberler", the quiz, one featured article beside four rows, the next
   workshop.
