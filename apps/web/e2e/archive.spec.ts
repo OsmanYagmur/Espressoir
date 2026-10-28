@@ -9,10 +9,16 @@ const mainNav = (page: Page) => page.getByRole("navigation", { name: "Ana menü"
 /** The catalog pages sit in a member's menu; everyone finds them in the footer. */
 const exploreNav = (page: Page) => page.getByRole("navigation", { name: "Keşfet" });
 
-/** On a phone the catalog's filters wait behind a button; on a wide screen they are open. */
+/**
+ * On a phone the catalog's filters wait behind a button; on a wide screen they are open.
+ * Decided by the viewport, not by looking for the button: the explorer replaces the
+ * prerendered list only once the browser runs, and a check made before that sees nothing.
+ */
 async function openFilters(page: Page) {
-  const toggle = page.getByRole("button", { name: /^Filtreler( \(\d+\))?$/ });
-  if (await toggle.isVisible()) await toggle.click();
+  if ((page.viewportSize()?.width ?? 1280) < 768) {
+    await page.getByRole("button", { name: /^Filtreler( \(\d+\))?$/ }).click();
+  }
+  await expect(page.getByLabel("Marka")).toBeVisible();
 }
 
 /** Every schema.org object the page describes itself with (one script may hold a list). */
