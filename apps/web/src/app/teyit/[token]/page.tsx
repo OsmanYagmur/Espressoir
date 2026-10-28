@@ -51,7 +51,7 @@ function Status({ rsvp }: { rsvp: WorkshopRsvp }) {
     <p
       role="status"
       className={
-        yes ? "rounded-md bg-leaf-soft p-4 font-medium text-leaf" : "rounded-md bg-sunk p-4"
+        yes ? "rounded-md bg-sage-soft p-4 font-medium text-sage-ink" : "rounded-md bg-sunk p-4"
       }
     >
       {yes ? r.answeredYes : r.answeredNo}

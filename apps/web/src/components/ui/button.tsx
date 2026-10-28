@@ -5,10 +5,11 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Button (DESIGN.md): `primary` is the one main action of a screen, `secondary` every other
- * action, `text` an inline link. `sm` only for the header's sign-in. A button that changes
- * the page is an <a> (`asChild` around a Link), one that does something is a <button>.
- * Disabled, its label says why ("Kontenjan doldu").
+ * Button (DESIGN.md): `primary` is the one main action of a screen, in espresso (cream in
+ * the dark theme); `secondary` every other action; `text` an inline link. `sm` only in the
+ * header and the cookie bar. A button that changes the page is an <a> (`asChild` around a
+ * Link), one that does something is a <button>. Disabled, its label says why ("Kontenjan
+ * doldu").
  */
 const buttonVariants = cva(
   "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-transparent font-semibold whitespace-nowrap no-underline transition-[color,background-color,border-color,translate] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0 [&_svg]:stroke-[1.5]",
@@ -16,9 +17,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-accent text-on-accent hover:bg-accent-ink disabled:hover:bg-accent aria-disabled:hover:bg-accent",
-        secondary:
-          "border-line-strong bg-transparent text-ink hover:bg-sunk disabled:hover:bg-transparent",
+          "bg-primary text-on-primary hover:bg-primary-hover disabled:hover:bg-primary aria-disabled:hover:bg-primary",
+        secondary: "border-line-strong bg-surface text-ink hover:bg-sunk disabled:hover:bg-surface",
         text: "border-0 bg-transparent text-accent-ink underline underline-offset-3",
       },
       size: {

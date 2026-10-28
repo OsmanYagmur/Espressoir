@@ -14,6 +14,7 @@ export const legalTr = {
     "Taslak: bu metin henüz hukuki incelemeden geçmedi ve yürürlüğe girmeden önce değişebilir.",
   updated: "Son güncelleme: 24 Ekim 2026",
   related: "İlgili metinler",
+  contents: "Bu sayfada",
   kvkk: {
     title: "KVKK aydınlatma metni",
     short: "KVKK",

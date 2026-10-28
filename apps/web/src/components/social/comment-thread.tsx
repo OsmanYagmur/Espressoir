@@ -9,6 +9,7 @@ import { OfficialBadge } from "@/components/business/official-badge";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { format, t } from "@/lib/i18n";
 import { profilePath } from "@/lib/routes";
 import { useHasSession } from "@/lib/session-cookie";
@@ -259,6 +260,8 @@ export function CommentThread({
 }) {
   const signedIn = useHasSession();
   const [state, setState] = useState<Loaded>({ status: "loading" });
+  // Bumped by "Tekrar dene": reads the comments again after a failure.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -277,20 +280,34 @@ export function CommentThread({
     return () => {
       cancelled = true;
     };
-  }, [signedIn, tastingId]);
+  }, [signedIn, tastingId, attempt]);
 
   if (state.status === "loading") {
     return (
-      <p role="status" className="py-6 text-ink-2">
-        {s.commentsLoading}
-      </p>
+      <div role="status" className="flex flex-col gap-3 py-6">
+        <span className="sr-only">{s.commentsLoading}</span>
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16 w-3/4" />
+      </div>
     );
   }
   if (state.status === "failed") {
     return (
-      <p role="alert" className="py-6 font-medium text-danger">
-        {s.commentsFailed}
-      </p>
+      <div className="flex flex-col items-start gap-3 py-6">
+        <p role="alert" className="font-medium text-danger">
+          {s.commentsFailed}
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setState({ status: "loading" });
+            setAttempt((value) => value + 1);
+          }}
+        >
+          {t.states.retry}
+        </Button>
+      </div>
     );
   }
 

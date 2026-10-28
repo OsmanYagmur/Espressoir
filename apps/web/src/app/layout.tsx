@@ -1,9 +1,10 @@
 import { siteConfig } from "@espressoir/core";
 import type { Metadata, Viewport } from "next";
-import { Archivo, Fraunces, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 
 import { Analytics } from "@/components/site/analytics";
 import { ConsentBar } from "@/components/site/consent-bar";
+import { MemberTabBar } from "@/components/site/member-nav";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { ThemeProvider } from "@/components/site/theme-provider";
@@ -13,26 +14,21 @@ import { getSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
 
-// Each family fills the token of the same name (design/tokens.css). latin-ext carries the
-// Turkish letters (ğ, ş, ı, İ).
+// Two families, each filling the token of the same name (design/tokens.css): Fraunces for
+// titles and names (its italic for the home page's second line), Manrope for everything
+// else, numbers included. latin-ext carries the Turkish letters (ğ, ş, ı, İ).
 const display = Fraunces({
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
 });
 
-const sans = Archivo({
+const sans = Manrope({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
-  display: "swap",
-});
-
-const mono = IBM_Plex_Mono({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
   display: "swap",
 });
 
@@ -68,11 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="tr"
-      suppressHydrationWarning
-      className={`${display.variable} ${sans.variable} ${mono.variable}`}
-    >
+    <html lang="tr" suppressHydrationWarning className={`${display.variable} ${sans.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <ThemeProvider>
           <a
@@ -86,6 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <MemberTabBar />
           <ConsentBar />
           <Analytics />
         </ThemeProvider>

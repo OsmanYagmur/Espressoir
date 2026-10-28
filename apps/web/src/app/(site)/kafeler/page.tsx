@@ -1,10 +1,12 @@
 import { cityByCode } from "@espressoir/core";
+import { StoreIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { CafeExplorer } from "@/components/cafe/cafe-explorer";
 import { CafeList } from "@/components/cafe/cafe-list";
+import { EmptyState } from "@/components/site/empty-state";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
 import { Button } from "@/components/ui/button";
@@ -41,7 +43,7 @@ export default async function CafesPage() {
         </Button>
       </PageHeading>
       {cards.length === 0 ? (
-        <p className="text-ink-2">{c.emptyArchive}</p>
+        <EmptyState icon={StoreIcon} title={c.emptyArchive} body={c.emptyArchiveHint} />
       ) : (
         // As on the coffee list: the complete list is prerendered, and the filters take
         // over once the browser knows the URL.

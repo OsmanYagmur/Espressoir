@@ -20,6 +20,7 @@ import { DataTable } from "@/components/stats/data-table";
 import { GroupMeans, type GroupRow } from "@/components/stats/group-means";
 import { ScatterPlot } from "@/components/stats/scatter-plot";
 import { ScoreColumns } from "@/components/stats/score-columns";
+import { BarTable } from "@/components/stats/bar-table";
 import { Timeline } from "@/components/stats/timeline";
 import { getArchive } from "@/lib/data/archive";
 import {
@@ -40,6 +41,8 @@ export const metadata: Metadata = {
 };
 
 const TOP_COUNT = 5;
+/** How many of the latest months with tastings show before "Bütün ayları göster". */
+const RECENT_MONTHS = 12;
 
 function withLabels(
   groups: GroupSummary[],
@@ -137,6 +140,7 @@ export default async function StatsPage() {
   const months = monthlyCounts(
     logged.flatMap((tasting) => (tasting.tastedAt ? [tasting.tastedAt] : [])),
   );
+  const recentMonths = months.filter((entry) => entry.count > 0).slice(-RECENT_MONTHS);
   const unrated = logged.length - summary.n;
   const groupColumns = [
     t.stats.columns.n,
@@ -169,7 +173,7 @@ export default async function StatsPage() {
                   </Link>
                   <p className="type-meta">{coffee.brand.name}</p>
                 </div>
-                <ScoreBadge score={coffee.stats.avgScore} size="sm" />
+                <ScoreBadge score={coffee.stats.avgScore} size="sm" empty={t.score.emptyCoffee} />
               </li>
             ))}
           </ol>
@@ -250,16 +254,32 @@ export default async function StatsPage() {
             }
             hint={t.stats.timelineNote}
           />
-          <div className="mt-4">
-            <Timeline months={months} />
-          </div>
-          <DataTable
-            caption={t.stats.timelineTitle}
-            columns={[t.stats.columns.month, t.stats.columns.count]}
-            rows={months
-              .filter((entry) => entry.count > 0)
-              .map((entry) => [formatMonth(entry.month), entry.count])}
+          {/* Months with tastings first, as rows that print their counts; the calendar
+              with its empty months (quiet stretches as gaps) one click away. */}
+          <BarTable
+            caption={format(t.stats.timelineRecent, { count: recentMonths.length })}
+            rows={recentMonths.map((entry) => ({
+              key: entry.month,
+              label: formatMonth(entry.month),
+              value: entry.count,
+            }))}
           />
+          <details className="group mt-4">
+            <summary className="cursor-pointer text-sm text-accent-ink underline underline-offset-3">
+              {t.stats.timelineAll}
+            </summary>
+            <p className="mt-3 type-meta">{t.stats.timelineAllNote}</p>
+            <div className="mt-4">
+              <Timeline months={months} />
+            </div>
+            <DataTable
+              caption={t.stats.timelineTitle}
+              columns={[t.stats.columns.month, t.stats.columns.count]}
+              rows={months
+                .filter((entry) => entry.count > 0)
+                .map((entry) => [formatMonth(entry.month), entry.count])}
+            />
+          </details>
         </Section>
       </div>
 

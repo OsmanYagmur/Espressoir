@@ -59,7 +59,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             style={{
               display: "flex",
               marginTop: 28,
-              fontFamily: OG_FONTS.mono,
+              fontFamily: OG_FONTS.sans,
+              fontWeight: 600,
               fontSize: 34,
               color: OG_COLORS["ink-2"],
             }}

@@ -20,8 +20,8 @@ export default function Image() {
           paddingBottom: 40,
         }}
       >
-        <OgTitle text={t.home.heroTitle} fontSize={96} />
-        <div style={{ fontSize: 32, marginTop: 24, maxWidth: 900, color: OG_COLORS["ink-2"] }}>
+        <OgTitle text={`${t.home.heroTitle} ${t.home.heroTitleSecond}`} fontSize={76} />
+        <div style={{ fontSize: 30, marginTop: 24, maxWidth: 940, color: OG_COLORS["ink-2"] }}>
           {t.home.heroLead}
         </div>
       </div>

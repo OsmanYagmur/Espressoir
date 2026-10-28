@@ -74,7 +74,7 @@ async function Visits({ formApplications }: { formApplications: number }) {
             caption={o.pagesTitle}
             rows={report.pages.map(({ path, views }) => ({
               key: path,
-              label: <span className="font-mono text-sm">{path}</span>,
+              label: <span className="text-sm tabular-nums">{path}</span>,
               value: views,
             }))}
           />

@@ -56,7 +56,7 @@ export function ApplyForm({ workshopId, full }: { workshopId: string; full: bool
         ref={doneRef}
         tabIndex={-1}
         role="status"
-        className="rounded-md bg-leaf-soft p-4 font-medium text-leaf"
+        className="rounded-md bg-sage-soft p-4 font-medium text-sage-ink"
       >
         {t.workshop.success}
       </p>

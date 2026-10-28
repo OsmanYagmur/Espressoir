@@ -23,7 +23,7 @@ export function ArticleBody({ blocks }: { blocks: readonly ArticleBlock[] }) {
                 <li key={item} className="grid grid-cols-[32px_1fr] gap-x-3">
                   <span
                     aria-hidden
-                    className="grid size-8 place-items-center rounded-full bg-sunk font-mono text-sm"
+                    className="grid size-8 place-items-center rounded-full bg-sunk text-sm font-semibold tabular-nums"
                   >
                     {step + 1}
                   </span>

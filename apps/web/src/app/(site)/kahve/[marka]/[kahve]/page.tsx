@@ -10,6 +10,7 @@ import { TasteProfile } from "@/components/coffee/taste-profile";
 import { TastingCard } from "@/components/coffee/tasting-card";
 import { JsonLd } from "@/components/site/json-ld";
 import { PageHeading } from "@/components/site/page-heading";
+import { EmptyState } from "@/components/site/empty-state";
 import { PageShell } from "@/components/site/page-shell";
 import { PageSkeleton } from "@/components/site/page-skeleton";
 import { Section, SectionHeading } from "@/components/site/section-heading";
@@ -214,7 +215,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
           </nav>
         }
       >
-        <ScoreBadge score={stats.avgScore} />
+        <ScoreBadge score={stats.avgScore} empty={t.score.emptyCoffee} />
         <p className="type-meta">
           {stats.tastingCount === 0
             ? t.coffee.wishlist
@@ -246,7 +247,7 @@ async function CoffeeDetail({ params }: Pick<Props, "params">) {
         <Section id="tadimlar">
           <SectionHeading id="tadimlar" title={t.coffeeDetail.tastingsTitle} />
           {logged.length === 0 ? (
-            <p className="text-ink-2">{t.coffeeDetail.notTastedYet}</p>
+            <EmptyState title={t.coffeeDetail.notTastedYet} body={t.coffeeDetail.firstTasting} />
           ) : (
             <ol aria-labelledby="tadimlar" className="flex flex-col gap-4">
               {logged.map((tasting) => (

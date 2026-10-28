@@ -9,6 +9,7 @@ import { OfficialBadge } from "@/components/business/official-badge";
 import { VisitCard } from "@/components/cafe/visit-item";
 import { TasteProfile } from "@/components/coffee/taste-profile";
 import { TastingCard } from "@/components/coffee/tasting-card";
+import { EmptyState } from "@/components/site/empty-state";
 import { FieldStrip } from "@/components/site/field-strip";
 import { PageHeading } from "@/components/site/page-heading";
 import { PageShell } from "@/components/site/page-shell";
@@ -192,7 +193,7 @@ async function ProfileDetail({ params }: Pick<Props, "params">) {
       <Section id="tadimlar">
         <SectionHeading id="tadimlar" title={p.tastingsTitle} aside={count(tastings.length)} />
         {tastings.length === 0 ? (
-          <p className="text-ink-2">{p.empty}</p>
+          <EmptyState title={p.empty} />
         ) : (
           <ul aria-labelledby="tadimlar" className="grid gap-4 md:grid-cols-2">
             {tastings.map((tasting) => (

@@ -20,8 +20,7 @@ export const OG_COLORS = designTokens.light;
 
 export const OG_FONTS = {
   display: "Fraunces",
-  sans: "Archivo",
-  mono: '"Plex Mono", "Plex Mono Ext"',
+  sans: '"Manrope", "Manrope Ext"',
 } as const;
 
 // The font files live inside the app (src/assets/fonts) and are read by literal paths, so
@@ -40,17 +39,22 @@ const font = (file: string) => readFile(join(process.cwd(), "src/assets/fonts", 
 // latin-ext carries the Turkish letters (İ, ı, ş, ğ).
 const fonts = await Promise.all([
   font("fraunces-600-normal.woff"),
-  font("archivo-400-normal.woff"),
-  font("archivo-600-normal.woff"),
-  font("ibm-plex-mono-latin-500-normal.woff"),
-  font("ibm-plex-mono-latin-ext-500-normal.woff"),
+  font("manrope-latin-400-normal.woff"),
+  font("manrope-latin-600-normal.woff"),
+  font("manrope-latin-ext-400-normal.woff"),
+  font("manrope-latin-ext-600-normal.woff"),
 ]).then(
-  ([fraunces, archivo, archivoSemibold, plexMono, plexMonoExt]) => [
+  ([fraunces, manrope, manropeSemibold, manropeExt, manropeExtSemibold]) => [
     { name: "Fraunces", weight: 600 as const, style: "normal" as const, data: fraunces },
-    { name: "Archivo", weight: 400 as const, style: "normal" as const, data: archivo },
-    { name: "Archivo", weight: 600 as const, style: "normal" as const, data: archivoSemibold },
-    { name: "Plex Mono", weight: 500 as const, style: "normal" as const, data: plexMono },
-    { name: "Plex Mono Ext", weight: 500 as const, style: "normal" as const, data: plexMonoExt },
+    { name: "Manrope", weight: 400 as const, style: "normal" as const, data: manrope },
+    { name: "Manrope", weight: 600 as const, style: "normal" as const, data: manropeSemibold },
+    { name: "Manrope Ext", weight: 400 as const, style: "normal" as const, data: manropeExt },
+    {
+      name: "Manrope Ext",
+      weight: 600 as const,
+      style: "normal" as const,
+      data: manropeExtSemibold,
+    },
   ],
   (error: unknown) => (error instanceof Error ? error : new Error(String(error))),
 );

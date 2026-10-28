@@ -11,22 +11,39 @@ function scoreText(score: number): string {
 
 /**
  * ScoreBadge (DESIGN.md): the number and one bar in the accent colour, its length the
- * score × 10 %. The colour never changes with the score. Without a score: "—".
+ * score × 10 %. The colour never changes with the score. Without a score it says so in
+ * words ("Puan verilmedi", for a coffee "Henüz puanlanmadı") instead of a bare dash.
  */
 export function ScoreBadge({
   score,
   size = "md",
+  empty = t.score.empty,
   className,
 }: {
   score: number | null;
   size?: "sm" | "md";
+  /** What a missing score reads as. */
+  empty?: string;
   className?: string;
 }) {
-  const text = score === null ? "—" : scoreText(score);
+  if (score === null) {
+    return (
+      <span
+        className={cn(
+          "inline-flex shrink-0 text-right type-meta",
+          size === "sm" ? "max-w-24" : "max-w-28",
+          className,
+        )}
+      >
+        {empty}
+      </span>
+    );
+  }
+  const text = scoreText(score);
   return (
     <span
       role="img"
-      aria-label={score === null ? t.score.none : format(t.score.aria, { score: text })}
+      aria-label={format(t.score.aria, { score: text })}
       className={cn(
         "inline-flex shrink-0 flex-col",
         size === "sm" ? "min-w-14" : "min-w-19",
@@ -36,22 +53,19 @@ export function ScoreBadge({
       <span className="flex items-baseline gap-1">
         <span
           className={cn(
-            "font-mono font-medium tabular-nums",
+            "font-semibold tracking-tight text-ink tabular-nums",
             size === "sm" ? "text-xl" : "text-4xl/8",
-            score === null ? "text-ink-3" : "text-ink",
           )}
         >
           {text}
         </span>
-        <span className="font-mono text-sm text-ink-2">/{SCORE_MAX}</span>
+        <span className="text-sm text-ink-2 tabular-nums">/{SCORE_MAX}</span>
       </span>
       <span className="mt-1 h-1 w-full overflow-hidden rounded-full bg-sunk">
-        {score === null ? null : (
-          <span
-            className="block h-full origin-left rounded-full bg-accent motion-safe:animate-fill motion-safe:animate-delay-150"
-            style={{ width: `${(score / SCORE_MAX) * 100}%` }}
-          />
-        )}
+        <span
+          className="block h-full origin-left rounded-full bg-accent motion-safe:animate-fill motion-safe:animate-delay-150"
+          style={{ width: `${(score / SCORE_MAX) * 100}%` }}
+        />
       </span>
     </span>
   );

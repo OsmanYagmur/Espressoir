@@ -20,8 +20,14 @@ function scoreText(score: number): string {
 function Score({ score }: { score: number | null }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", width: 240 }}>
-      <div style={{ display: "flex", alignItems: "baseline", fontFamily: OG_FONTS.mono }}>
-        <div style={{ fontSize: 120, color: score === null ? OG_COLORS["ink-3"] : OG_COLORS.ink }}>
+      <div style={{ display: "flex", alignItems: "baseline", fontFamily: OG_FONTS.sans }}>
+        <div
+          style={{
+            fontSize: 120,
+            fontWeight: 600,
+            color: score === null ? OG_COLORS["ink-3"] : OG_COLORS.ink,
+          }}
+        >
           {score === null ? "—" : scoreText(score)}
         </div>
         <div

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import { ScoreBadge } from "./score-badge";
@@ -45,7 +46,7 @@ export function RecommendationList({
               <p className="type-meta">{row.brandName}</p>
               <p className="mt-1">{row.reason}</p>
             </div>
-            <ScoreBadge score={row.avgScore} size="sm" />
+            <ScoreBadge score={row.avgScore} size="sm" empty={t.score.emptyCoffee} />
           </Link>
         </li>
       ))}

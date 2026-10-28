@@ -25,18 +25,22 @@
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-on-accent: var(--on-accent);
   --color-crema: var(--crema);
   --color-on-crema: var(--on-crema);
-  --color-leaf: var(--leaf);
-  --color-leaf-soft: var(--leaf-soft);
+  --color-sage: var(--sage);
+  --color-sage-ink: var(--sage-ink);
+  --color-sage-soft: var(--sage-soft);
   --color-danger: var(--danger);
   --color-focus: var(--focus);
 
-  /* The 4px scale: p-1 = --space-1 (4px) … p-16 = --space-16 (64px). */
+  /* The 4px scale: p-1 = --space-1 (4px) … p-24 = --space-24 (96px). */
   --spacing: var(--space-1);
 
   --radius-*: initial;
@@ -46,12 +50,12 @@
   --radius-full: var(--radius-full);
 
   --shadow-*: initial;
+  --shadow-raised: var(--shadow-raised);
   --shadow-sticky: var(--shadow-sticky);
 
   --font-*: initial;
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
 
   --font-weight-*: initial;
   --font-weight-normal: 400;
@@ -67,7 +71,7 @@
   --text-lg: 18px;
   --text-lg--line-height: 28px;
   --text-xl: 20px;
-  --text-xl--line-height: 24px;
+  --text-xl--line-height: 26px;
   --text-2xl: 22px;
   --text-2xl--line-height: 28px;
   --text-3xl: 24px;
@@ -83,9 +87,9 @@
 
   --breakpoint-xs: 35rem;
 
-  /* Reading column and card grids. */
+  /* Reading column, the narrower column of a form or a long list, and the page. */
   --container-read: 40rem;
-  --container-grid: 67.5rem;
+  --container-grid: 72rem;
 
   /* Motion (DESIGN.md → Durumlar ve hareket): quick for hovers, slow for what arrives with a page. */
   --default-transition-duration: var(--motion-fast);
@@ -181,7 +185,8 @@
   }
 }
 
-/* Type styles (DESIGN.md → Tipografi). */
+/* Type styles (DESIGN.md → Tipografi). Two families: Fraunces for titles and names, Manrope
+   for everything else; numbers take Manrope's tabular figures so columns line up. */
 @utility type-display {
   @apply font-display text-6xl font-semibold tracking-[-0.01em] md:text-7xl;
 }
@@ -189,7 +194,7 @@
   @apply font-display text-4xl font-semibold md:text-5xl;
 }
 @utility type-card-title {
-  @apply font-display text-2xl font-semibold;
+  @apply font-display text-xl font-semibold md:text-2xl;
 }
 @utility type-lead {
   @apply text-lg text-ink-2;
@@ -201,7 +206,11 @@
   @apply text-sm text-ink-2;
 }
 @utility type-figure {
-  @apply font-mono text-sm tabular-nums;
+  @apply text-sm font-medium tabular-nums;
+}
+/* The small line above a title that says where it belongs ("Kişisel kahve defterin"). */
+@utility type-kicker {
+  @apply text-sm font-semibold text-accent-ink;
 }
 
 @layer base {
