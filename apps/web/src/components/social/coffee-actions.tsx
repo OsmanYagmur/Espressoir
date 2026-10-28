@@ -1,6 +1,8 @@
 "use client";
 
 import { LIST_TITLE_MAX_LENGTH } from "@espressoir/core";
+import { CheckIcon, PlusIcon } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
@@ -18,9 +20,25 @@ import type { CoffeeShelf } from "./list-data";
 
 const l = t.lists;
 
+/** The page's main action: a tasting of this coffee (the form opens with it chosen). */
+function AddTasting({ coffeeId, signedIn }: { coffeeId: string; signedIn: boolean }) {
+  return (
+    <Button asChild>
+      <Link
+        href={signedIn ? (`/panel/tadim/yeni/${coffeeId}` as Route) : "/giris"}
+        prefetch={false}
+      >
+        <PlusIcon aria-hidden />
+        {t.nav.addTasting}
+      </Link>
+    </Button>
+  );
+}
+
 /**
- * What a member can do with a coffee besides tasting it: put it on their "want to try"
- * list with one click, and add it to (or take it off) their own lists.
+ * What a member can do with a coffee: add a tasting of it (the page's one primary action),
+ * put it on their "want to try" list with one click (a status of their own, shown on their
+ * profile), and add it to (or take it off) the lists they made themselves.
  *
  * The page is static and the same for everyone, so this works out in the browser who is
  * looking. Visitors get links to the login; for a member the current state is read from
@@ -57,6 +75,7 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
   if (!signedIn) {
     return (
       <div className="flex flex-wrap gap-2">
+        <AddTasting coffeeId={coffeeId} signedIn={false} />
         <Button asChild variant="secondary">
           <Link href="/giris" prefetch={false}>
             {l.want.add}
@@ -77,8 +96,8 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
         {l.add.failed}
       </p>
     ) : (
-      <div aria-hidden>
-        <div className="h-12" />
+      <div className="flex flex-wrap gap-2">
+        <AddTasting coffeeId={coffeeId} signedIn />
       </div>
     );
   }
@@ -148,14 +167,16 @@ export function CoffeeActions({ coffeeId }: { coffeeId: string }) {
   return (
     <div>
       <div className="flex flex-wrap gap-2">
+        <AddTasting coffeeId={coffeeId} signedIn />
         <Button
           type="button"
           variant="secondary"
           aria-pressed={shelf.wantsToTry}
           disabled={busy}
-          className="aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:hover:bg-ink"
+          className="aria-pressed:border-sage-ink aria-pressed:bg-sage-soft aria-pressed:text-sage-ink aria-pressed:hover:bg-sage-soft"
           onClick={() => void toggleWant()}
         >
+          {shelf.wantsToTry ? <CheckIcon aria-hidden /> : null}
           {shelf.wantsToTry ? l.want.added : l.want.add}
         </Button>
         <Button

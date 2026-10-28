@@ -200,7 +200,7 @@ export function LoginForm({ variant = "member" }: { variant?: "member" | "admin"
                 autoComplete="one-time-code"
                 maxLength={12}
                 autoFocus
-                className="font-mono text-lg tracking-[0.3em]"
+                className="text-lg font-semibold tracking-[0.3em] tabular-nums"
               />
             </Field>
           ) : (

@@ -106,7 +106,9 @@ export function WorkshopDetail({
         <Card className="mt-6 grid grid-cols-[56px_1fr] gap-4">
           <DateTile workshop={workshop} />
           <div className="flex min-w-0 flex-col gap-3">
-            <p className="font-semibold">{when.full}</p>
+            <p className="font-semibold">
+              {when.full} · {when.duration}
+            </p>
             <CalendarLinks
               event={workshopCalendarEvent(workshop, new URL(path, getSiteUrl()).toString())}
               file={`${path}/takvim` as Route}
@@ -138,7 +140,7 @@ export function WorkshopDetail({
                   <li key={step.title} className="grid grid-cols-[32px_1fr] gap-x-3">
                     <span
                       aria-hidden
-                      className="grid size-8 place-items-center rounded-full bg-sunk font-mono text-sm"
+                      className="grid size-8 place-items-center rounded-full bg-sunk text-sm font-semibold tabular-nums"
                     >
                       {index + 1}
                     </span>

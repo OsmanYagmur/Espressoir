@@ -4,7 +4,7 @@ import type { WorkshopProgram } from "./types";
 // "kahveye-giris": workshop rows name their program by it.
 export const kahveyeGiris: WorkshopProgram = {
   name: "Kahve 101",
-  lead: "Kahveye giriş: iki saatte üç demleme yöntemi ve bir mini tadım.",
+  lead: "Kahveye giriş: V60 ve French press ile demleme pratiği ve bir mini tadım.",
   photo: "atolye-mutfak",
   audience: "Kahveyi seven ama nereden başlayacağını bilmeyen herkes. Hiçbir ön bilgi gerekmez.",
   steps: [

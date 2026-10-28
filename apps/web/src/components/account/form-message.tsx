@@ -15,7 +15,7 @@ export function FormMessage({
     <p
       role={tone === "error" ? "alert" : "status"}
       className={cn(
-        tone === "error" ? "font-medium text-danger" : "rounded-md bg-leaf-soft p-4 text-leaf",
+        tone === "error" ? "font-medium text-danger" : "rounded-md bg-sage-soft p-4 text-sage-ink",
         className,
       )}
     >

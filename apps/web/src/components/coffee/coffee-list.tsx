@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Chip } from "@/components/ui/chip";
+import { Chip, Chips } from "@/components/ui/chip";
 import { cardClass } from "@/components/ui/card";
 import type { CoffeeCard } from "@/lib/coffee-cards";
 import { format, t } from "@/lib/i18n";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import { ScoreBadge } from "./score-badge";
 
+/** What the coffee is: form, the brand's intensity, origin (methods are chips of their own). */
 function facts(coffee: CoffeeCard): string[] {
   return [
     coffee.form ? t.coffee.forms[coffee.form] : null,
@@ -15,21 +16,35 @@ function facts(coffee: CoffeeCard): string[] {
       ? `${t.coffee.fields.intensity.toLocaleLowerCase("tr")} ${coffee.brandIntensity}`
       : null,
     coffee.originLabel,
-    ...coffee.methodLabels,
   ].filter((fact): fact is string => fact !== null);
 }
 
+/** How many tastings stand behind the average, and the last one's day: "2 tadım · 12 Eki". */
 function Status({ coffee }: { coffee: CoffeeCard }) {
   if (coffee.wishlisted || coffee.tastingCount === 0) {
     return <Chip>{t.coffee.wishlist}</Chip>;
   }
   return (
     <span className="type-meta">
-      {coffee.lastTastedLabel ?? t.coffee.undated}
-      {coffee.tastingCount > 1
-        ? ` · ${format(t.coffee.tastingCount, { count: coffee.tastingCount })}`
-        : null}
+      {format(t.coffee.tastingCount, { count: coffee.tastingCount })}
+      {coffee.lastTastedLabel ? ` · ${coffee.lastTastedLabel}` : null}
     </span>
+  );
+}
+
+/** The brewing methods it was tasted with, as sage chips (at most three, then "+2"). */
+function Methods({ labels }: { labels: readonly string[] }) {
+  if (labels.length === 0) return null;
+  const shown = labels.slice(0, 3);
+  return (
+    <Chips>
+      {shown.map((label) => (
+        <Chip key={label} variant="method">
+          {label}
+        </Chip>
+      ))}
+      {labels.length > shown.length ? <Chip>+{labels.length - shown.length}</Chip> : null}
+    </Chips>
   );
 }
 
@@ -71,9 +86,12 @@ export function CoffeeList({
                   </Heading>
                   {showBrand ? <p className="type-meta">{coffee.brandName}</p> : null}
                 </div>
-                <ScoreBadge score={coffee.avgScore} />
+                <ScoreBadge score={coffee.avgScore} empty={t.score.emptyCoffee} />
               </div>
-              <p className="type-meta">{facts(coffee).join(" · ") || t.coffee.unknown}</p>
+              {facts(coffee).length > 0 ? (
+                <p className="type-meta">{facts(coffee).join(" · ")}</p>
+              ) : null}
+              <Methods labels={coffee.methodLabels} />
               <div className="mt-auto border-t border-line pt-3">
                 <Status coffee={coffee} />
               </div>
@@ -97,7 +115,7 @@ export function CoffeeList({
                 {coffee.name}
               </Heading>
               <p className="type-meta">
-                {[showBrand ? coffee.brandName : null, ...facts(coffee)]
+                {[showBrand ? coffee.brandName : null, ...facts(coffee), ...coffee.methodLabels]
                   .filter(Boolean)
                   .join(" · ") || t.coffee.unknown}
               </p>
@@ -105,7 +123,7 @@ export function CoffeeList({
             <div className="max-md:order-last max-md:col-span-2 md:text-right">
               <Status coffee={coffee} />
             </div>
-            <ScoreBadge score={coffee.avgScore} size="sm" />
+            <ScoreBadge score={coffee.avgScore} size="sm" empty={t.score.emptyCoffee} />
           </Link>
         </li>
       ))}

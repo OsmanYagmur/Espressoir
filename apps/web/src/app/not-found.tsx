@@ -12,6 +12,11 @@ export default function NotFound() {
         <Button asChild>
           <Link href="/">{t.states.backHome}</Link>
         </Button>
+        <Button asChild variant="secondary">
+          <Link href="/kahveler" prefetch={false}>
+            {t.home.cta.explore}
+          </Link>
+        </Button>
       </PageHeading>
     </PageShell>
   );

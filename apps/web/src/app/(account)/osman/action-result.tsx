@@ -21,7 +21,7 @@ export function ActionResult({
     );
   }
   return tamam ? (
-    <p role="status" className="mb-6 rounded-md bg-leaf-soft p-4 font-medium text-leaf">
+    <p role="status" className="mb-6 rounded-md bg-sage-soft p-4 font-medium text-sage-ink">
       {tamam === "posta" ? a.workshops.mail.sent : a.done}
     </p>
   ) : null;

@@ -4,6 +4,7 @@ import { foldTurkish } from "@espressoir/core";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
+import { EmptyState } from "@/components/site/empty-state";
 import { cardClass } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/field";
 import type { CafeCard } from "@/lib/data/cafes";
@@ -110,7 +111,7 @@ export function CafeExplorer({
       {visible.length > 0 ? (
         <CafeList cafes={visible} heading="h2" label={c.title} />
       ) : (
-        <p className="py-8 text-ink-2">{c.empty}</p>
+        <EmptyState title={c.empty} body={c.emptyHint} />
       )}
     </div>
   );

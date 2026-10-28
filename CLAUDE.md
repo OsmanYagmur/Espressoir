@@ -63,7 +63,8 @@ apps/web/src/app/(site)/     public pages — layout sets ensureStatic = 'naviga
                              the application), /bilgi, /bilgi/[slug],
                              /akis, /tadim/[id], /kvkk, /gizlilik, /kosullar, /ara, /kahve-testi,
                              /workshop/[id]/takvim (route: the .ics file))
-apps/web/src/app/(account)/  /giris, /panel, /panel/listeler, /panel/oneriler, /panel/kafe/*, /panel/isletme/*,
+apps/web/src/app/(account)/  /giris, /panel, /panel/tadim/yeni[/<coffee id>], /panel/listeler, /panel/oneriler,
+                             /panel/kafe/*, /panel/isletme/*,
                              /hesap, /hesap/kurulum, /bildirimler,
                              /osman (admin: overview), /osman/atolyeler (+ [id]/xlsx, [id]/pdf),
                              /osman/yonetim (moderation); admin-area.tsx asks for the password
@@ -76,10 +77,13 @@ apps/web/src/app/            root layout (fonts), 404/error/loading, icon + appl
                              sitemap, robots, OG image
 apps/web/src/proxy.ts        session refresh + redirects, matcher = /panel/*, /hesap/*,
                              /bildirimler, /giris only
-apps/web/src/components/     ui/ (button, chip, card, field, dropdown), site/ (header, footer,
-                             page heading, legal page), coffee/ (TastingCard, ScoreBadge,
+apps/web/src/components/     ui/ (button, chip, card, field, dropdown), site/ (header, nav-links:
+                             the Keşfet panel, member-nav: "Tadım ekle" + the phone tab bar,
+                             footer, page heading, empty state, legal page), home/ (hero
+                             actions, sample tasting), coffee/ (TastingCard, ScoreBadge,
                              TasteProfile), stats/ (charts), workshop/ (EventCard, ApplyForm),
-                             info/ (InfoCard, GuideCard, RecipeCard, BrewAssistant), panel/ (forms,
+                             info/ (InfoCard, FeaturedArticle, ArticleRow, GuideCard, RecipeCard,
+                             BrewAssistant), panel/ (forms,
                              coffee picker), account/ (account menu, Turnstile, form message),
                              social/ (follow, feed, like, comments, report), search/ (box, header
                              button), quiz/ (the quiz, its band)
@@ -113,7 +117,8 @@ supabase/                    migrations/, rollbacks/, templates/ (auth e-mails),
                              tests/local-shim.sql
 design/                      DESIGN.md (rules), tokens.css (every value), components.css
                              (reference only), icerik.md (copy and coffee facts)
-docs/                        setup-supabase, setup-auth, deploy-vercel, backup
+docs/                        setup-supabase, setup-auth, deploy-vercel, backup, launch-checklist
+                             (what only the owner can supply before opening up)
 data/                        owner's Notion export + reports (git-ignored)
 ```
 
@@ -194,21 +199,34 @@ data/                        owner's Notion export + reports (git-ignored)
   version RPCs (`_v2`) instead of changing signatures. Regenerate types after each migration
   (CI fails on stale `database.types.ts`).
 - **Design = `design/DESIGN.md`** (replaced the "tasting form" and its two looks on
-  2026-10-23, at the owner's request): cream paper (`--bg`), espresso ink (`--ink`), one
-  cinnamon accent (`--accent`) for the primary button, the active menu line, score bars and the
-  focus ring only. Every colour, space, radius and font family comes from `design/tokens.css`,
-  imported by `app/globals.css` into a layer of its own and mapped onto Tailwind's theme
+  2026-10-23; palette, type and home page reworked from the owner's brief on 2026-10-28):
+  Warm Cream paper (`--bg #F6F1E9`), Soft White cards (`--surface`), Espresso Brown ink and
+  primary button (`--ink`, `--primary`; cream in the dark theme), Burnt Copper (`--accent`)
+  for the active menu line, score bars, the logo, links (`--accent-ink`) and the focus ring
+  only, and Sage (`--sage`, `--sage-ink`, `--sage-soft`; was `--leaf`) for brewing methods,
+  filters, pressed choices and success. Every colour, space, radius and font family comes
+  from `design/tokens.css`, imported by `app/globals.css` into a layer of its own and mapped
+  onto Tailwind's theme
   (`bg-surface`, `text-ink-2`, `border-line`, `rounded-lg`, `shadow-sticky`…); Tailwind's own
   palette, radii, shadows and type sizes are switched off, so a class can only name a token.
-  Spacing uses the token steps (1, 2, 3, 4, 6, 8, 12, 16). Type styles are utilities
-  (`type-display`, `type-title`, `type-card-title`, `type-lead`, `type-label`, `type-meta`,
-  `type-figure`). Fraunces (titles, names), Archivo (everything else), IBM Plex Mono (numbers
-  only), loaded by next/font into `--font-display/sans/mono`. No uppercase labels, no numbered
-  headings, smallest text 14px, Lucide icons (1.5 stroke, 20px), no emoji.
-- **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm` is
-  the header's "Giriş" only). Cards are framed by `--line`, never by a shadow; the one shadow
-  is the phone's sticky bar. A TastingCard is a single link; lists of coffees, cafés and
-  suggestions are rows that are each one link. Scores never change colour.
+  Spacing uses the token steps (1, 2, 3, 4, 6, 8, 12, 16, 20, 24); sections sit 48px apart,
+  80px from 768px; the page is at most 1152px (`max-w-grid`). Type styles are utilities
+  (`type-display`, `type-title`, `type-card-title`, `type-lead`, `type-kicker`, `type-label`,
+  `type-meta`, `type-figure`). Two families (owner's brief, 2026-10-28): Fraunces (titles,
+  names, the hero's italic line) and Manrope (everything else), loaded by next/font into
+  `--font-display/sans`; numbers are Manrope's `tabular-nums`, there is no monospace. The
+  share images draw the same two from `src/assets/fonts` (Manrope as latin + latin-ext
+  files, registered as two names); the admin PDF still embeds Archivo (one file with every
+  Turkish letter). No uppercase labels, no numbered headings, smallest text 14px, Lucide
+  icons (1.5 stroke, 20px), no emoji.
+- **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm`
+  only in the header and the cookie bar). Cards are framed by `--line`, never by a shadow;
+  `shadow-raised` is for what floats over the page (the Keşfet panel, menus, the hero's
+  sample card), `shadow-sticky` for bars fixed to the bottom. Not everything is a card: steps
+  and lists are divided by lines; a list with nothing in it is an `EmptyState` (dashed, a
+  sentence, the next step). A TastingCard is a single link; lists of coffees, cafés and
+  suggestions are rows that are each one link. Scores never change colour; a missing score is
+  words ("Puan verilmedi", "Henüz puanlanmadı"), never a dash.
 - **The logo is one drawing** (`lib/logo.ts`, DESIGN.md → Logo; the owner picked it from ten
   drafts on 2026-10-24): a coffee bean woven from score bars, eight rows of rounded bars in
   an oval with a swinging gap for the crease, computed once as `LOGO_BARS`. `LogoMark` /
@@ -236,16 +254,32 @@ data/                        owner's Notion export + reports (git-ignored)
   colour, manifest, share images, the global error page, the drawn icons) read
   `lib/design-tokens.ts`, generated by `pnpm tokens:gen`; a test fails while it disagrees with
   `tokens.css`.
-- **Menu:** Bilgi, Tadım notları (`/akis`), Atölye (`/workshop`), then "Giriş" or the member's
-  picture, whose menu holds Profil, Panel, Bildirimler (with the unread count), Kahveler,
-  Kafeler, İstatistik, Hesap, and for admins Atölyeler (`/osman/atolyeler`) and Yönetim (the
-  panel's shortcuts have the same two). Visitors find Kahveler, Kafeler, İstatistik and Hakkında
-  in the footer.
-- **The site leads with coffee knowledge** (owner's request, 2026-10-24): the home page's one
-  action is "Okumaya başla" (`/bilgi`), then the first seven brewing guides (`GuideCard`, fed
-  by the guides' recipes; with "Bütün yazılar" they fill two rows of four), the first two
-  articles of each other topic, the next workshop, the latest tasting notes. The workshop is
-  no longer the hero's button.
+- **Menu** (2026-10-28): Keşfet (a disclosure button, not an app menu, opening Kahveler,
+  Tadım notları, Kafeler, İstatistik with a line each; current for every page under them),
+  Rehberler (`/bilgi`), Atölye (`/workshop`); on the right the search button, "Tadım ekle"
+  for members from 768px (`AddTastingLink`), then "Giriş" or the member's picture, whose menu
+  holds Profil, Panel, Bildirimler (with the unread count), Kahveler, Kafeler, İstatistik,
+  Hesap, and for admins Atölyeler (`/osman/atolyeler`) and Yönetim (the panel's shortcuts
+  have the same two). On a phone members get `MemberTabBar` at the bottom (Akış, Keşfet,
+  Ekle, Defterim = `/panel`), decided from the session cookie like the account menu; pages
+  with a bar of their own (the tasting and visit forms, the workshop) and sign-in, setup and
+  admin pages have none (`OWN_BOTTOM`). The footer lists every place in four groups
+  (Espressoir, Keşfet, Öğren, Yasal metinler); no contact line until there is a real address.
+- **The home page leads with the notebook** (owner's brief, 2026-10-28; it replaced the
+  knowledge-first home of 2026-10-24): "Kişisel kahve defterin", "İçtiğin kahveleri kaydet.
+  Her fincanı hatırla.", the one main action "İlk tadımını kaydet" (`HeroActions`: a visitor
+  goes to `/giris`, which says joining is by invitation and what is open meanwhile; a member
+  sees "Tadım ekle" and goes to the form) and "Kahveleri keşfet". Beside it a photo and
+  `SampleTasting`, drawn with the real tasting parts and labelled "Örnek kayıt" (never a real
+  member's entry). Then "Nasıl çalışır?" (three steps, shared with the About page as
+  `t.home.how`), the latest three tastings, the six best-liked coffees (`topCoffees`), three
+  guides and "Bütün rehberler", the quiz, one featured article beside four rows, the next
+  workshop.
+- **A coffee's page has "Tadım ekle" as its primary action:** `/panel/tadim/yeni/<coffee
+id>` opens the form with that coffee chosen (the id in the path, like the café form;
+  `new-tasting.tsx` reads a coffee missing from the cached archive from `coffee_overview`).
+- **A workshop's duration is derived** from its start and end (`workshopWhen().duration`,
+  "2,5 saat"); program step minutes are content and are not summed against it.
 - Coffee, brand, café and member names are written as they are (no CSS uppercasing anywhere);
   give English brand text `lang="en"`.
 - Notes/comments are plain text, rendered escaped (no HTML/markdown).
@@ -900,7 +934,15 @@ the site, branch `site-yenilikleri`):
       with assistant plans (filter machine, Chemex, Kalita Wave, Japanese iced coffee,
       siphon), the capsule machine, espresso drinks, the coffee bag, processing, origins,
       single origin and blends, decaf, tasting, flavour notes, extraction, caffeine, first
-      equipment, coffee cultures — and the `tadim` topic.
+      equipment, coffee cultures — and the `tadim` topic. Then (branch `defter-tasarimi`,
+      2026-10-28, from the owner's UI/UX brief): the Warm Cream / Espresso / Burnt Copper /
+      Sage palette and a warmer dark theme, Fraunces + Manrope (no monospace), the notebook-
+      first home page with a sample entry, the Keşfet menu, the members' phone tab bar and
+      "Tadım ekle" in the header, a grouped footer, the catalog's search-first filters with
+      removable chips, "Tadım ekle" on a coffee's page, `/bilgi` as a hub (search, topics, a
+      featured guide), a scannable recipe box with the ratio, the timeline's months-with-
+      tastings view, empty states and retries, the About page in five parts, clearer legal
+      pages, and `docs/launch-checklist.md` for what the owner still has to supply.
 
 Decisions made with the owner: repo goes private (backups as encrypted Actions artifacts);
 email + password login in Phase 1; React Native for mobile (hence the monorepo; Expo until 2026-10-17); CI tests run on an
@@ -955,6 +997,10 @@ Phase 4 decisions (owner-approved 2026-10-15):
   profile and lists.
 
 Still open on the owner's side (remind, don't do for them):
+
+- **`docs/launch-checklist.md`** lists what the code cannot supply (contact address, legal
+  review, the workshop's real date, price and the 2 h program vs. 2,5 h slot, backups,
+  CAPTCHA). Keep it current; never fill those gaps with invented values.
 
 - **Apply each step's migration before merging its PR** (`pnpm db:push:dev`, then
   `db:push:prod`). 4C has none. The workshop migrations (`20261023120000_workshops`,

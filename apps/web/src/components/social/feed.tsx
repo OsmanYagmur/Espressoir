@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { TastingCard } from "@/components/coffee/tasting-card";
+import { EmptyState } from "@/components/site/empty-state";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import { useHasSession } from "@/lib/session-cookie";
@@ -80,14 +81,22 @@ function OlderList({
   );
 }
 
-function More({ state, shown, onMore }: { state: Older; shown: boolean; onMore: () => void }) {
-  if (state.failed) {
-    return (
-      <p role="alert" className="py-6 font-medium text-danger">
+/** A failed read says so and offers to try again. */
+function Failed({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-start gap-3 py-6">
+      <p role="alert" className="font-medium text-danger">
         {f.failed}
       </p>
-    );
-  }
+      <Button type="button" variant="secondary" onClick={onRetry}>
+        {t.states.retry}
+      </Button>
+    </div>
+  );
+}
+
+function More({ state, shown, onMore }: { state: Older; shown: boolean; onMore: () => void }) {
+  if (state.failed) return <Failed onRetry={onMore} />;
   if (state.done) {
     return shown ? <p className="py-6 type-meta">{f.end}</p> : null;
   }
@@ -114,7 +123,7 @@ function EveryoneFeed({
 }) {
   const { state, more } = useOlderPages("tasting_feed", cursor, complete);
   if (cursor === null) {
-    return <p className="py-8 text-ink-2">{f.empty}</p>;
+    return <EmptyState title={f.empty} body={f.emptyHint} className="my-6" />;
   }
   return (
     <>
@@ -129,6 +138,8 @@ function EveryoneFeed({
 function FollowingFeed({ currentYear }: { currentYear: number }) {
   const signedIn = useHasSession();
   const [first, setFirst] = useState<Tasting[] | "failed" | null>(null);
+  // Bumped by "Tekrar dene": reads the first page again after a failure.
+  const [attempt, setAttempt] = useState(0);
   const loaded = Array.isArray(first) ? first : [];
   const { state, more } = useOlderPages(
     "following_feed",
@@ -151,7 +162,7 @@ function FollowingFeed({ currentYear }: { currentYear: number }) {
     return () => {
       cancelled = true;
     };
-  }, [signedIn]);
+  }, [signedIn, attempt]);
 
   if (!signedIn) {
     return (
@@ -174,13 +185,16 @@ function FollowingFeed({ currentYear }: { currentYear: number }) {
   }
   if (first === "failed") {
     return (
-      <p role="alert" className="py-8 font-medium text-danger">
-        {f.failed}
-      </p>
+      <Failed
+        onRetry={() => {
+          setFirst(null);
+          setAttempt((value) => value + 1);
+        }}
+      />
     );
   }
   if (first.length === 0) {
-    return <p className="py-8 text-ink-2">{f.followingEmpty}</p>;
+    return <EmptyState title={f.followingEmpty} className="my-6" />;
   }
   return (
     <>
@@ -193,7 +207,7 @@ function FollowingFeed({ currentYear }: { currentYear: number }) {
 /** "Cafés": the latest visits, rendered on the server; the café list holds the rest. */
 function CafesFeed({ cafes }: { cafes: React.ReactNode }) {
   if (cafes === null) {
-    return <p className="py-8 text-ink-2">{f.cafesEmpty}</p>;
+    return <EmptyState title={f.cafesEmpty} className="my-6" />;
   }
   return (
     <>

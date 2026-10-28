@@ -36,7 +36,7 @@ export function GuideCard({ guide }: { guide: SiteGuide }) {
     >
       <span
         aria-hidden
-        className="mb-2 grid size-11 place-items-center rounded-full bg-sunk transition-[rotate] group-hover:-rotate-12"
+        className="mb-2 grid size-11 place-items-center rounded-full bg-sage-soft text-sage-ink transition-[rotate] group-hover:-rotate-12"
       >
         <Icon className="size-5 stroke-[1.5]" />
       </span>

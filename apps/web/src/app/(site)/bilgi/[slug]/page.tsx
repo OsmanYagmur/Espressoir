@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
+import { formatRatio } from "@espressoir/core";
+import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ArticleBody } from "@/components/info/article-body";
 import { BrewAssistant } from "@/components/info/brew-assistant";
-import { InfoCard } from "@/components/info/info-card";
+import { ArticleRow } from "@/components/info/article-row";
 import { RecipeCard } from "@/components/info/recipe-card";
 import { JsonLd } from "@/components/site/json-ld";
 import { PageHeading } from "@/components/site/page-heading";
@@ -21,7 +22,7 @@ import { article as articleData, breadcrumbs } from "@/lib/structured-data";
 type Props = PageProps<"/bilgi/[slug]">;
 
 /** How many other articles follow one. */
-const OTHERS = 2;
+const OTHERS = 4;
 
 export async function generateStaticParams() {
   return (await getArticles()).map((article) => ({ slug: article.slug }));
@@ -81,9 +82,18 @@ async function Article({ params }: Pick<Props, "params">) {
       <PageHeading
         size="title"
         kicker={
-          <Link href="/bilgi" className="text-accent-ink underline underline-offset-3">
-            {t.info.back}
-          </Link>
+          <nav aria-label={t.coffeeDetail.breadcrumb}>
+            <Link href="/bilgi" className="text-accent-ink underline underline-offset-3">
+              {t.info.title}
+            </Link>
+            {" / "}
+            <Link
+              href={`/bilgi#${article.topic}` as Route}
+              className="text-accent-ink underline underline-offset-3"
+            >
+              {t.info.topics[article.topic]}
+            </Link>
+          </nav>
         }
         title={article.title}
         lead={article.summary}
@@ -103,16 +113,25 @@ async function Article({ params }: Pick<Props, "params">) {
           className="mb-8"
         />
       ) : null}
-      {article.recipe ? <RecipeCard recipe={article.recipe} /> : null}
+      {article.recipe ? (
+        <RecipeCard
+          recipe={article.recipe}
+          ratio={
+            article.brewPlan
+              ? formatRatio(article.brewPlan.dose, article.brewPlan.water)
+              : undefined
+          }
+        />
+      ) : null}
       {article.brewPlan ? <BrewAssistant plan={article.brewPlan} /> : null}
       <ArticleBody blocks={article.blocks} />
       {others.length > 0 ? (
         <Section id="diger-yazilar">
           <SectionHeading id="diger-yazilar" title={t.info.otherTitle} />
-          <ul className="grid stagger gap-4">
+          <ul className="divide-y divide-line border-y border-line">
             {others.map((other) => (
               <li key={other.slug}>
-                <InfoCard article={other} />
+                <ArticleRow article={other} />
               </li>
             ))}
           </ul>

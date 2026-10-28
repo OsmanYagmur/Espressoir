@@ -42,7 +42,7 @@ export function CafeList({
                     .filter(Boolean)
                     .join(" · ")}
             </p>
-            <ScoreBadge score={cafe.avgScore} size="sm" />
+            <ScoreBadge score={cafe.avgScore} size="sm" empty={t.score.emptyCoffee} />
           </Link>
         </li>
       ))}

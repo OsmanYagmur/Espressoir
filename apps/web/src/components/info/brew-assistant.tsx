@@ -43,7 +43,7 @@ function Amounts({ plan, cups }: { plan: BrewPlan; cups: number }) {
       {rows.map(({ label, value }) => (
         <div key={label} className="flex items-baseline gap-2">
           <dt className="type-meta">{label}</dt>
-          <dd className="font-mono tabular-nums">{value}</dd>
+          <dd className="font-semibold tabular-nums">{value}</dd>
         </div>
       ))}
     </dl>
@@ -199,10 +199,10 @@ function TimedAssistant({ plan }: { plan: TimedPlan }) {
           })}
           className="flex items-baseline gap-2"
         >
-          <span className="font-mono text-6xl font-medium tabular-nums md:text-7xl">
+          <span className="text-6xl font-semibold tracking-tight tabular-nums md:text-7xl">
             {formatClock(elapsed)}
           </span>
-          <span aria-hidden className="font-mono text-lg text-ink-2 tabular-nums">
+          <span aria-hidden className="text-lg text-ink-2 tabular-nums">
             / {formatClock(plan.end)}
           </span>
         </p>

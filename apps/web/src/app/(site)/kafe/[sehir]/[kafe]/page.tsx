@@ -99,7 +99,7 @@ async function CafeDetail({ params }: Pick<Props, "params">) {
           </nav>
         }
       >
-        <ScoreBadge score={cafe.avgScore} />
+        <ScoreBadge score={cafe.avgScore} empty={t.score.emptyCoffee} />
         <p className="type-meta">
           {cafe.visitCount === 0
             ? c.noVisits

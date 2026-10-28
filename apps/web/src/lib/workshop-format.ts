@@ -30,6 +30,17 @@ export interface WorkshopWhen {
   full: string;
   /** "14:00" */
   start: string;
+  /** How long, from the start and end the admin set: "2,5 saat", "90 dk". */
+  duration: string;
+}
+
+/** "2 saat", "2,5 saat" for whole and half hours, minutes otherwise ("100 dk"). */
+function durationText(minutes: number): string {
+  if (minutes >= 60 && minutes % 30 === 0) {
+    const hours = minutes / 60;
+    return format(t.workshop.hours, { hours: String(hours).replace(".", ",") });
+  }
+  return format(t.workshop.minutes, { minutes });
 }
 
 export function workshopWhen(workshop: Pick<Workshop, "startsAt" | "endsAt">): WorkshopWhen {
@@ -46,6 +57,9 @@ export function workshopWhen(workshop: Pick<Workshop, "startsAt" | "endsAt">): W
       end: timeFormat.format(new Date(workshop.endsAt)),
     }),
     start: time,
+    duration: durationText(
+      Math.round((new Date(workshop.endsAt).getTime() - start.getTime()) / 60_000),
+    ),
   };
 }
 

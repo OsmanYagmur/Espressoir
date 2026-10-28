@@ -122,7 +122,7 @@ async function ListDetail({ params }: Pick<Props, "params">) {
                 <p className="type-meta">{coffee.brand.name}</p>
                 {note ? <p className="mt-2 [overflow-wrap:anywhere]">{note}</p> : null}
               </div>
-              <ScoreBadge score={coffee.stats.avgScore} size="sm" />
+              <ScoreBadge score={coffee.stats.avgScore} size="sm" empty={t.score.emptyCoffee} />
             </li>
           ))}
         </ol>
