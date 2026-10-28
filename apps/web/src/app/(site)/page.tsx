@@ -99,8 +99,11 @@ export default async function HomePage() {
           <p className="max-w-read type-lead">{t.home.heroLead}</p>
           <HeroActions />
         </div>
-        <div className="relative lg:pb-12">
-          <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-sunk md:aspect-video lg:aspect-square">
+        {/* The photo, then the sample entry overlapping its lower edge: centred while the
+            hero is one column, nudged towards the text beside it from 1024px. In the flow,
+            not positioned over the photo, so it never covers it or leaves its column. */}
+        <div className="flex flex-col">
+          <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-sunk md:aspect-video lg:aspect-4/3">
             <PhotoImage
               id={HERO_PHOTO}
               priority
@@ -112,7 +115,7 @@ export default async function HomePage() {
               className="absolute top-3 right-3 rounded-full bg-bg/85 px-3 py-1 text-ink"
             />
           </div>
-          <SampleTasting className="relative mx-4 -mt-16 max-w-sm motion-safe:animate-rise motion-safe:animate-delay-300 md:mx-8 lg:absolute lg:bottom-0 lg:-left-10 lg:mx-0 lg:mt-0 lg:w-76 lg:max-w-none xl:w-84" />
+          <SampleTasting className="relative mx-4 -mt-16 self-stretch motion-safe:animate-rise motion-safe:animate-delay-300 sm:mx-0 sm:w-96 sm:self-center lg:-mt-24 lg:-ml-10 lg:w-84 lg:self-start" />
         </div>
       </section>
 
