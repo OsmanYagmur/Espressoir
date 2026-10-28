@@ -13,17 +13,16 @@ const SAMPLE_TAGS = [
 ] as const;
 
 /**
- * The hero's preview of a tasting, drawn with the same parts as a real one (score, method,
- * flavour notes, taste profile, note) and labelled as a sample, so it shows what the form
- * records without passing for anybody's entry. Not a link: there is nothing behind it.
+ * The hero's preview of a tasting, beside the photo: drawn with the same parts as a real
+ * one (score, method, flavour notes, taste profile, note) and labelled as a sample, so it
+ * shows what the form records without passing for anybody's entry. A plain card, framed
+ * by a line like every other: nothing floats over the photo. Not a link: there is nothing
+ * behind it.
  */
 export function SampleTasting({ className }: { className?: string }) {
   return (
     <figure
-      className={cn(
-        "flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 shadow-raised",
-        className,
-      )}
+      className={cn("flex flex-col gap-4 rounded-lg border border-line bg-surface p-5", className)}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col items-start gap-2">
