@@ -12,8 +12,9 @@ const arrow = "transition-transform group-hover/cta:translate-x-1";
 
 /**
  * The hero's two actions. A visitor's main action leads to the sign-in page, which says
- * that joining is by invitation; the line under the buttons says it too and offers the
- * public notes meanwhile, so nobody meets a dead end. A member (the browser holds a
+ * that joining is by invitation and takes requests for one; the line under the buttons
+ * says it too ("Davet iste") and offers the public notes meanwhile, so nobody meets a dead
+ * end. A member (the browser holds a
  * session; the static page renders the visitor's version first) goes straight to the form.
  */
 export function HeroActions() {
@@ -37,6 +38,13 @@ export function HeroActions() {
       {signedIn ? null : (
         <p className="max-w-read type-meta">
           {t.home.inviteNote}{" "}
+          <Link
+            href={"/giris#davet" as Route}
+            prefetch={false}
+            className="font-semibold text-accent-ink underline underline-offset-3"
+          >
+            {t.home.inviteRequest}
+          </Link>{" "}
           <Link
             href="/akis"
             prefetch={false}

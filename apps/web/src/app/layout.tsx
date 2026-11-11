@@ -20,14 +20,24 @@ import "./globals.css";
 const display = Fraunces({
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600"],
-  style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
 });
 
+// The italic is one line on the home page: loaded when that line is drawn, not preloaded
+// on every page (it was two of the six font files each page fetched ahead).
+const displayItalic = Fraunces({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500"],
+  style: ["italic"],
+  variable: "--font-display-italic",
+  display: "swap",
+  preload: false,
+});
+
 const sans = Manrope({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -64,7 +74,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="tr" suppressHydrationWarning className={`${display.variable} ${sans.variable}`}>
+    <html
+      lang="tr"
+      suppressHydrationWarning
+      className={`${display.variable} ${displayItalic.variable} ${sans.variable}`}
+    >
       <body className="flex min-h-dvh flex-col">
         <ThemeProvider>
           <a

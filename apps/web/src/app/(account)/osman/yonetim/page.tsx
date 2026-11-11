@@ -2,7 +2,6 @@ import {
   MODERATION_NOTE_MAX_LENGTH,
   RESTRICTION_DAYS,
   cityByCode,
-  siteConfig,
   type ReportTarget,
 } from "@espressoir/core";
 import type { TypedSupabaseClient } from "@espressoir/db";
@@ -19,12 +18,9 @@ import { formatLongDay } from "@/lib/format";
 import { format, t } from "@/lib/i18n";
 import { mediaUrl, smallMediaUrl } from "@/lib/media";
 import { brandPath, coffeePath, listPath, profilePath, tastingPath } from "@/lib/routes";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 import {
-  cancelInvitation,
   removePhoto,
-  inviteMember,
   mergeBrand,
   mergeCafe,
   mergeCoffee,
@@ -39,6 +35,8 @@ import {
 } from "./actions";
 import { ActionResult } from "../action-result";
 import { AdminArea } from "../admin-area";
+import { Empty } from "./empty";
+import { InviteRequests, Invitations } from "./invitations";
 
 export const metadata: Metadata = {
   title: t.admin.title,
@@ -327,96 +325,6 @@ function ReviewCafeForm({ cafeId }: { cafeId: string }) {
         {a.review}
       </Button>
     </form>
-  );
-}
-
-function Empty({ children }: { children: string }) {
-  return <p className="text-ink-2">{children}</p>;
-}
-
-// An invitation's link runs out within the hour, so the time it was sent matters.
-const sentFormat = new Intl.DateTimeFormat(siteConfig.locale, {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: siteConfig.timeZone,
-});
-
-/**
- * Invitations: the way in while signup is closed. Uses the secret key (see
- * lib/supabase/admin.ts), and is rendered only for an admin (AdminArea).
- */
-async function Invitations() {
-  const admin = createAdminClient();
-  if (!admin) return <Empty>{a.invites.unavailable}</Empty>;
-
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
-  const pending = (data?.users ?? [])
-    .filter((user) => user.invited_at && !user.email_confirmed_at && user.email)
-    .sort((x, y) => (y.invited_at ?? "").localeCompare(x.invited_at ?? ""));
-
-  return (
-    <>
-      <form action={inviteMember} className="grid gap-3 pb-2">
-        <p className="type-meta">{a.invites.hint}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            type="email"
-            name="email"
-            aria-label={a.invites.email}
-            placeholder={a.invites.email}
-            autoComplete="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            required
-            className={`${field} w-72 max-w-full`}
-          />
-          <Button type="submit" size="sm">
-            {a.invites.send}
-          </Button>
-        </div>
-      </form>
-
-      <p className="pt-6 type-label">{a.invites.pendingTitle}</p>
-      {error ? (
-        <Empty>{a.invites.listFailed}</Empty>
-      ) : pending.length === 0 ? (
-        <Empty>{a.invites.pendingEmpty}</Empty>
-      ) : (
-        <ul aria-label={a.invites.pendingTitle} className="border-t border-line">
-          {pending.map((user) => (
-            <li
-              key={user.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3"
-            >
-              <p className="min-w-0 [overflow-wrap:anywhere]">
-                <span className="text-sm">{user.email}</span>{" "}
-                <span className="type-meta">
-                  {format(a.invites.sentAt, {
-                    date: sentFormat.format(new Date(user.invited_at!)),
-                  })}
-                </span>
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <form action={inviteMember}>
-                  <input type="hidden" name="email" value={user.email} />
-                  <Button type="submit" variant="secondary" size="sm">
-                    {a.invites.resend}
-                  </Button>
-                </form>
-                <form action={cancelInvitation}>
-                  <input type="hidden" name="userId" value={user.id} />
-                  <Button type="submit" variant="secondary" size="sm">
-                    {a.invites.cancel}
-                  </Button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
   );
 }
 
@@ -1038,6 +946,14 @@ async function ModerationPanel({
       <Section id="davetler">
         <SectionHeading id="davetler" title={a.invites.title} />
         <Invitations />
+        <SectionHeading
+          id="davet-istekleri"
+          level={3}
+          title={a.invites.requestsTitle}
+          hint={a.invites.requestsHint}
+          className="mt-10"
+        />
+        <InviteRequests supabase={supabase} />
       </Section>
       <Section id="sikayetler">
         <SectionHeading id="sikayetler" title={a.reportsTitle} />

@@ -225,21 +225,60 @@ async function callbackUrl(): Promise<string | null> {
   return origin ? new URL(AUTH_CALLBACK_PATH, origin).toString() : null;
 }
 
-/** Sends an invitation, or a fresh one to an address whose invitation ran out. */
-export async function inviteMember(formData: FormData): Promise<void> {
-  await requireAdmin();
-  const email = z.email().max(254).safeParse(text(formData, "email").toLowerCase());
-  if (!email.success) back("invite_email");
+/** Sends the invitation e-mail; answers the panel's error code when it could not. */
+async function sendInvitation(address: string): Promise<string | null> {
+  const email = z.email().max(254).safeParse(address.trim().toLowerCase());
+  if (!email.success) return "invite_email";
 
   const admin = createAdminClient();
   const redirectTo = await callbackUrl();
-  if (!admin || !redirectTo) back("invite_unavailable");
+  if (!admin || !redirectTo) return "invite_unavailable";
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email.data, { redirectTo });
+  if (!error) return null;
+  const known = AUTH_ERRORS[error.code ?? ""];
+  if (!known) console.error("[admin] invitation refused:", error.status, error.code);
+  return known ?? "unknown";
+}
+
+/** Sends an invitation, or a fresh one to an address whose invitation ran out. */
+export async function inviteMember(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const failed = await sendInvitation(text(formData, "email"));
+  back(failed ?? undefined);
+}
+
+/**
+ * Answers a request from the "Davet iste" form: `invite` sends the invitation and marks
+ * the request as invited (an address that already has an account is marked too: there is
+ * nothing left to send), `dismiss` only closes it. The row is read and written as the
+ * signed-in admin (RLS), the e-mail goes out with the secret key like every invitation.
+ */
+export async function answerInviteRequest(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ requestId: id, answer: z.enum(["invite", "dismiss"]) })
+    .safeParse({ requestId: formData.get("requestId"), answer: formData.get("answer") });
+  if (!parsed.success) back("invalid");
+
+  const { supabase } = await requireAdmin();
+  const { data: request } = await supabase
+    .from("invite_requests")
+    .select("email")
+    .eq("id", parsed.data.requestId)
+    .maybeSingle();
+  if (!request) back("target_not_found");
+
+  if (parsed.data.answer === "invite") {
+    const failed = await sendInvitation(request.email);
+    if (failed && failed !== "invite_exists") back(failed);
+  }
+  const { error } = await supabase
+    .from("invite_requests")
+    .update({ status: parsed.data.answer === "invite" ? "invited" : "dismissed" })
+    .eq("id", parsed.data.requestId);
   if (error) {
-    const known = AUTH_ERRORS[error.code ?? ""];
-    if (!known) console.error("[admin] invitation refused:", error.status, error.code);
-    back(known ?? "unknown");
+    console.error("[admin] invitation request not updated:", error.code);
+    back("unknown");
   }
   back();
 }

@@ -221,8 +221,8 @@ data/                        owner's Notion export + reports (git-ignored)
   icons (1.5 stroke, 20px), no emoji.
 - **One primary action per screen** (`Button` variants `primary`, `secondary`, `text`; `sm`
   only in the header and the cookie bar). Cards are framed by `--line`, never by a shadow;
-  `shadow-raised` is for what floats over the page (the Keşfet panel, menus, the hero's
-  sample card), `shadow-sticky` for bars fixed to the bottom. Not everything is a card: steps
+  `shadow-raised` is for what floats over the page (the Keşfet panel, menus),
+  `shadow-sticky` for bars fixed to the bottom. Not everything is a card: steps
   and lists are divided by lines; a list with nothing in it is an `EmptyState` (dashed, a
   sentence, the next step). A TastingCard is a single link; lists of coffees, cafés and
   suggestions are rows that are each one link. Scores never change colour; a missing score is
@@ -270,8 +270,9 @@ data/                        owner's Notion export + reports (git-ignored)
   Her fincanı hatırla.", the one main action "İlk tadımını kaydet" (`HeroActions`: a visitor
   goes to `/giris`, which says joining is by invitation and what is open meanwhile; a member
   sees "Tadım ekle" and goes to the form) and "Kahveleri keşfet". Beside it a photo and
-  `SampleTasting`, drawn with the real tasting parts and labelled "Örnek kayıt" (never a real
-  member's entry). Then "Nasıl çalışır?" (three steps, shared with the About page as
+  `SampleTasting` side by side, neither covering the other (owner's choice, 2026-10-28: text |
+  photo | card from 1280px, the pair under the text below that, stacked on a phone), the card
+  drawn with the real tasting parts and labelled "Örnek kayıt" (never a real member's entry). Then "Nasıl çalışır?" (three steps, shared with the About page as
   `t.home.how`), the latest three tastings, the six best-liked coffees (`topCoffees`), three
   guides and "Bütün rehberler", the quiz, one featured article beside four rows, the next
   workshop.
@@ -374,6 +375,22 @@ Community (Phase 2B):
   or `.filter({ visible: true })`, not bare `getByText`, after a client-side navigation.
 
 Invitations (Phase 2D):
+
+- **Visitors ask, the admin answers** (2026-11-11, the owner's choice from an audit of the
+  site): `invite_requests` (e-mail, optional note, consent; status `pending` / `invited` /
+  `dismissed`, text with a check mirrored as `INVITE_REQUEST_STATUSES`). Anyone inserts the
+  form's three columns, nobody but an admin reads; the trigger tidies the address, stamps
+  the time and stops floods (20 per 10 minutes, table-wide). The form is on `/giris`
+  (`#davet`, `InviteRequestForm`, Server Action `requestInvite` with the public key and a
+  honeypot); an address that already asked gets the same thanks, so the form never says who
+  is on the list. `/osman` → Moderasyon → Davetler lists open requests
+  (`yonetim/invitations.tsx`); `answerInviteRequest` sends the invitation with the same
+  Auth admin call and marks the row.
+- **Response headers** live in `next.config.ts` (`SECURITY_HEADERS`: nosniff, referrer
+  policy, frame options, permissions policy; a week of cache for `public/images`). No CSP
+  yet: Turnstile, GA and Supabase need allowances and a wrong one breaks sign-in.
+- **Fraunces italic is its own next/font instance** (`--font-display-italic`, not
+  preloaded; class `font-display-italic`): it is one line on the home page.
 
 - **`/osman` → Moderasyon → Davetler** sends, re-sends and withdraws invitations with Supabase's Auth
   admin API (`inviteMember`, `cancelInvitation`). The link leads to the origin of the request,
@@ -1025,8 +1042,10 @@ Still open on the owner's side (remind, don't do for them):
   Prod has no backups yet: **nobody outside the owner's own addresses is invited before that.**
 - Have the KVKK texts reviewed and fill in the contact address (`CONTACT` in `legal-tr.ts`);
   signup stays closed to the public until then.
-- `www.espressoir.com` serves the site instead of redirecting to the apex: set it to redirect
-  in Vercel → Domains.
+- `www.espressoir.com` is redirected to the apex in `next.config.ts` (2026-11-11); setting it
+  to redirect in Vercel → Domains as well is optional.
+- Apply `20261111120000_invite_requests` to dev and prod before merging `temizlik-ve-davet`,
+  and register the site with Google Search Console (`/sitemap.xml`).
 - **CAPTCHA:** the owner asked (2026-10-17) to drop the robot check from the app, where it
   hung. Protection is per Supabase project, so dropping it is the owner's switch on prod
   (docs/setup-auth.md §5) and covers the website too. Acceptable while signup is closed (no

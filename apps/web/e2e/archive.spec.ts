@@ -483,8 +483,29 @@ test.describe("members and legal texts", () => {
     await page.getByRole("banner").getByRole("link", { name: "Giriş" }).click();
     await expect(page).toHaveURL(/\/giris$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Giriş");
-    await expect(page.getByText(/Kayıt şimdilik davetle\./)).toBeVisible();
+    // The home page stays in the document, hidden, after the click.
+    await expect(
+      page.getByText(/Kayıt şimdilik davetle\./).filter({ visible: true }),
+    ).toBeVisible();
   });
+});
+
+test("a visitor without an invitation can ask for one", async ({ page }) => {
+  // The home page says joining is by invitation and leads to the form.
+  await page.goto("/");
+  await expect(
+    page.getByRole("main").getByRole("link", { name: "Davet iste", exact: true }),
+  ).toHaveAttribute("href", "/giris#davet");
+
+  await page.goto("/giris");
+  const section = page.getByRole("region", { name: "Davetin yok mu?" });
+  await expect(section.getByLabel("Davetin gideceği adres")).toBeVisible();
+
+  // Nothing typed: the form says what to fix, under the fields, and stores nothing.
+  await section.getByRole("button", { name: "Davet iste" }).click();
+  await expect(section.getByText("Davetin gidebileceği geçerli bir adres yaz.")).toBeVisible();
+  await expect(section.getByText("Devam etmek için kutuyu işaretle.")).toBeVisible();
+  await expect(section.getByLabel("Davetin gideceği adres")).toBeFocused();
 });
 
 test.describe("community", () => {

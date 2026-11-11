@@ -908,6 +908,37 @@ export type Database = {
           },
         ];
       };
+      invite_requests: {
+        Row: {
+          consent: boolean;
+          created_at: string;
+          email: string;
+          id: string;
+          note: string | null;
+          status: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          consent: boolean;
+          created_at?: string;
+          email: string;
+          id?: string;
+          note?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          consent?: boolean;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          note?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       likes: {
         Row: {
           created_at: string;
