@@ -881,17 +881,18 @@ export const tr = {
     noInviteGuides: "Rehberler",
     invite: {
       title: "Davet iste",
-      email: "E-posta",
+      // Not "E-posta": the sign-in form above it has that label.
+      email: "Davetin gideceği adres",
       note: "Kendinden bir cümle",
       noteHint: "Nasıl kahve içtiğini ya da buraya nereden geldiğini yazabilirsin.",
       optional: "(isteğe bağlı)",
-      consent: "E-postamın bana davet göndermek için saklanmasını kabul ediyorum.",
+      consent: "Adresimin bana davet göndermek için saklanmasını kabul ediyorum.",
       consentLink: "Aydınlatma metni",
       submit: "Davet iste",
       sending: "Gönderiliyor…",
       done: "İsteğin alındı. Davet gönderdiğimde e-postana bir bağlantı gelecek.",
       errors: {
-        emailInvalid: "Geçerli bir e-posta adresi yaz.",
+        emailInvalid: "Davetin gidebileceği geçerli bir adres yaz.",
         noteTooLong: "Not en fazla {max} karakter olabilir.",
         consentRequired: "Devam etmek için kutuyu işaretle.",
         invalid: "Formda düzeltilmesi gereken yerler var.",
