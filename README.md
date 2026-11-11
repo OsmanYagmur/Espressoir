@@ -1,8 +1,8 @@
-# ☕ Espressoir
+# Espressoir
 
-**Her fincanın bir hatırası var.** Bir kahve tadım defteri ve arşivi: filtre, V60, kapsül, French press, Türk kahvesi… tüm demleme yöntemleri için. Önce kişisel bir arşiv; zamanla herkesin kendi tadımını girdiği bir topluluk ve bir mobil uygulama.
+**Her fincanın bir hatırası var.** Espressoir bir kahve tadım defteri: içtiğin kahveyi puanlar, nasıl demlediğini ve aklında kalan tatları not edersin. Kişisel bir Notion listesinden doğdu; bugün davetle katılan üyelerin tadımlarını, yorumlarını, kafe ziyaretlerini, demleme rehberlerini ve bir kahve atölyesini barındırıyor. Yayında: [espressoir.com](https://espressoir.com).
 
-Kapsam ve yol haritası: [`PROJECT_BRIEF.md`](./PROJECT_BRIEF.md)
+Kapsam ve yol haritası: [`PROJECT_BRIEF.md`](./PROJECT_BRIEF.md) · Tasarım kuralları: [`design/DESIGN.md`](./design/DESIGN.md) · Kod kuralları ve alınmış kararlar: [`CLAUDE.md`](./CLAUDE.md)
 
 ## Yığın
 
@@ -13,7 +13,8 @@ Next.js 16 (App Router, Cache Components) · TypeScript (strict) · Tailwind CSS
 ```
 design/            Tasarım dili (DESIGN.md), token'lar (tokens.css), bileşen referansı, içerik metinleri
 apps/web/          Next.js uygulaması (Vercel'in Root Directory'si); src/content/ atölye programları ve bilgi yazıları
-packages/core/     siteConfig, Türkçe katlama/slug, puan kademeleri, istatistik, liste filtresi
+apps/mobile/       iPhone uygulaması (düz React Native); aynı kuralları ve metinleri paylaşır
+packages/core/     siteConfig, Türkçe katlama/slug, puan, istatistik, liste filtresi, öneri, demleme, arama
 packages/i18n/     Tüm arayüz metinleri (Türkçe sözlük)
 packages/db/       Şemadan üretilen tipler, arşiv okuma modelleri, tadım formu doğrulaması
 packages/config/   Ortak tsconfig ve ESLint ayarları
@@ -73,7 +74,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 
 | Adres                             | İçerik                                                                                                                                                     |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                               | Önce kahve bilgisi: "Okumaya başla", demleme rehberleri, yazılar, sıradaki atölye, son tadım notları                                                       |
+| `/`                               | Önce defter: "İlk tadımını kaydet", örnek bir kayıt, nasıl çalışır, son tadımlar, en beğenilen kahveler, rehberler, test, atölye                           |
 | `/workshop`, `/workshop/[id]`     | Atölye (Kahve 101): tarih ("Takvime ekle", Google Takvim), konum, kontenjan, program, açılır kapanır sorular, başvuru formu; `/atolye` buraya gelir        |
 | `/teyit/[anahtar]`                | Onaylı kişinin "geliyor musun?" sayfası: WhatsApp'tan gönderilen kişisel bağlantı, Geliyorum / Gelemiyorum                                                 |
 | `/bilgi`, `/bilgi/[yazi]`         | Demleme rehberleri (tarif, fincan sayısına göre ölçeklenen demleme asistanı ve zamanlayıcı, adımlar) ve kısa kahve yazıları; her biri bir Markdown dosyası |
@@ -90,7 +91,7 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 | `/tadim/[id]`                     | Tek bir tadım: beğeni, yorumlar (tek seviye yanıt), şikâyet                                                                                                |
 | `/u/[kullanici]`                  | Üyenin defteri: sayılar, grafikler, tadımlar, listeler, denenecekler; takip                                                                                |
 | `/u/[kullanici]/liste/[liste]`    | Üyenin herkese açık bir listesi: sırasıyla kahveler ve notlar                                                                                              |
-| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; tadım ve kafe ziyareti ekleme                                                                                  |
+| `/giris`, `/panel`                | E-posta kodu, Google ya da parolayla giriş; kayıt kapalıyken "Davet iste" formu; tadım ve kafe ziyareti ekleme                                             |
 | `/panel/isletme`                  | Resmi hesabı olduğun marka ve kafelerin tanıtımı; doğrulama başvuruların                                                                                   |
 | `/panel/oneriler`                 | Sana önerilen kahveler, her birinin gerekçesiyle (yalnızca sen görürsün)                                                                                   |
 | `/hesap`                          | Profil düzenleme, verileri indirme (JSON), hesabı silme                                                                                                    |
@@ -105,35 +106,28 @@ Playwright tarayıcısı kurulu değilse: `pnpm --filter @espressoir/web exec pl
 - [Vercel yayını ve espressoir.com DNS](./docs/deploy-vercel.md)
 - [Yedek ve uyandırma iş akışları](./docs/backup.md)
 - [Mobil uygulama: iPhone'a kurmak](./docs/mobile.md)
+- [Yayın öncesi kontrol listesi: yalnızca senin sağlayabileceklerin](./docs/launch-checklist.md)
 
-## Durum
+## Nasıl çalışır (kısaca)
 
-- [x] **Faz 0: Kurulum.** Monorepo, tasarım temeli, Supabase altyapısı, CI.
-- [x] **Faz 1: Arşiv + çok kullanıcılı altyapı.** Şema, RLS, Notion import, tadım formu, public sayfalar, istatistik, SEO, yedek. Yayında: <https://espressoir.com>
-- [ ] **Faz 2: Topluluk.** Dört adımda ilerliyor, önce davetli beta:
-  - [x] Hazırlık: dev projesi ve önizlemeler.
-  - [x] 2A Hesaplar: e-posta kodu ve Google ile giriş, davet, kullanıcı adı seçimi, profil sayfası, veri indirme, hesap silme, KVKK taslakları.
-  - [x] 2B Topluluk tadımları: kahve arama ve kopya uyarısı, hız sınırları, takip, akış, profil grafikleri.
-  - [x] 2C Etkileşim ve moderasyon: yorum, beğeni, şikâyet, yönetim paneli.
-  - [x] 2D Davet ekranı ve iki görünüm: yönetimden e-posta daveti; daha kolay okunan "Sade" görünüm (varsayılan) ve özgün "Tadım formu", sağ üstteki menüden anında değişir.
-- [x] **Faz 3: Sosyal derinlik.** Altı adımda:
-  - [x] 3A Tat: formda tat etiketleri, tadımda radar grafiği, kahve sayfasında topluluğun tat profili ve öne çıkan tatlar, profilde damak özeti.
-  - [x] 3B Listeler: herkese açık ya da gizli kahve listeleri (sıra ve not ile), kahve sayfasında "Listeye ekle" ve tek tıkla "Denemek istiyorum".
-  - [x] 3C Bildirimler: beğeni, yorum, yanıt ve yeni takipçi; başlıkta okunmamış sayısı.
-  - [x] 3D Fotoğraf: tadım başına bir fotoğraf ve profil resmi; telefonda küçültülür, konum bilgisi silinir; yönetimden silinebilir.
-  - [x] 3E Ana ekran ve hızlı form: telefonda ana ekrana eklenir, uygulama gibi açılır; son içtiğin kahveler tek dokunuşta, yöntem ve cihaz son tadımdan dolu gelir.
-  - [x] 3F Kafeler: her üye kafe ekleyip orada içtiğine puan verir (şehir, semt, isteğe bağlı harita bağlantısı); `/kafeler`, kafe sayfası, profilde ve akışta kafe ziyaretleri; kopya uyarısı, yönetimden doğrulama ve birleştirme. Kahve ortalamalarına karışmaz.
-- [x] **Faz 4: Öneriler, doğrulanmış hesaplar, mobil uygulama.** Beş adımda:
-  - [x] 4A Öneriler: tadımlarına göre henüz denemediğin kahveler, gerekçeleriyle (`/panel/oneriler`); Python'da model kurman için takma adlı veri dışa aktarma ve modelinin sonuçlarını geri yükleme.
-  - [x] 4B Doğrulanmış kavurucu ve kafe hesapları: marka ya da kafe sayfasından başvuru, yönetimden onay; rozet, işletmenin tanıtımını düzenleme, yorumlarda "Resmi yanıt"; resmi hesap kendi kahvesine ya da kafesine puan veremez.
-  - [x] 4C Uygulama: kahveler, kafeler, kahve ve kafe sayfaları, profiller, öneriler; e-posta kodu ya da parolayla giriş. 2026-10-17'den beri Expo'suz, düz React Native; Mac'te Xcode ile derlenip kabloyla iPhone'a kurulur. Kurulum: [docs/mobile.md](./docs/mobile.md)
-  - [x] 4D Uygulama: "Ekle" sekmesinden ya da kahve/kafe sayfasından tadım ve kafe ziyareti ekleme; fotoğraf telefonda küçültülür, konum bilgisi silinir; kaydedilen sitede hemen görünür.
-  - [x] 4E Uygulama: akış (herkes, takip ettiklerim, kafeler), tadım sayfasında beğeni, yorum ve şikâyet; bildirimler ve okunmamış sayısı; takip; kendi profilin (gizli tadımlar, denenecekler, listeler); kahve sayfasından "Denemek istiyorum" ve "Listeye ekle".
-- [x] **Yeni tasarım, atölye ve bilgi** (2026-10-23): krem zemin, espresso kahverengisi, tek tarçın vurgu; Fraunces, Archivo ve IBM Plex Mono; açık ve koyu tema. Kurallar: [`design/DESIGN.md`](./design/DESIGN.md). Atölye sayfası ve başvuru formu (herkes başvurur, başvuruları yalnızca yönetici görür; yönetimden atölye eklenir, başvurular yanıtlanır), bilgi yazıları. Puan çubuklarından örülmüş bir kahve çekirdeği logosu, hafif giriş ve hover hareketleri ("hareketi azalt" tercihine uyar), Unsplash fotoğrafları (ana sayfa, atölye kapağı, yazılar; listesi `apps/web/src/content/photos.ts`).
-- [x] **Kahve bilgisi önce** (2026-10-24): ana sayfa "Kahveyi biraz daha yakından tanı." ile başlar; yedi demleme rehberi (V60, French press, AeroPress, moka pot, espresso ayarları, Türk kahvesi, soğuk demleme: tarif kutusu, ara başlıklar, numaralı adımlar) ve üç yeni yazı (çekirdek farkları, kavrum dereceleri, su ve sıcaklık). Menü: Bilgi, Tadım notları, Atölye. Atölye artık `/workshop` ve adı Kahve 101; form ad soyad ve telefon ister, sık sorulanlar açılır kapanır. Yöneticinin panelinde ve menüsünde "Atölyeler" kısayolu.
-- [x] **Katılım teyidi** (2026-10-24): onaylı her kişinin kişisel bir bağlantısı var; panelden "Teyit sor" ve "Hatırlat" butonları WhatsApp'ı mesaj hazır yazılmış olarak açar. Kişi bağlantıda "Geliyorum" ya da "Gelemiyorum" der, panelde ve indirmelerde görünür; "Gelemiyorum" sana e-postayla bildirilir.
-- [x] **Atölye yönetimi kolaylaştı** (2026-10-24): başvurular tek tıkla yanıtlanır (Onayla, Beklet, Yedeğe al, Reddet; onaylılar için Geldi / Gelmedi), liste Excel ve PDF olarak iner (CSV kalktı), yeni başvuru e-postası Atölyeler sekmesinden denenebilir; formdaki telefon alanında örnek numara.
-- [x] **Yeni yazılar** (2026-10-25): yirmi fikirden seçilen on sekiz içerik, her biri fotoğraflı. Beş yeni demleme rehberi (filtre kahve makinesi, Chemex, Kalita Wave, buzlu filtre, sifon; hepsinde demleme asistanı), kapsül makinesi, espresso içecekleri, kahve paketi, işleme, menşe ülkeler, tek menşe ve harman, kafeinsiz kahve, kahve tadımı, tat notaları, ekstraksiyon, kafein, başlangıç ekipmanı ve dünyada kahve kültürleri. `/bilgi`'de yeni bir bölüm: Tadım. Bilgiler ve kaynakları `design/icerik.md`'de.
-- [x] **Demleme asistanı, arama ve kahve testi** (2026-10-25): her demleme rehberinde fincan sayısına göre ölçeklenen tarif ve adım adım zamanlayıcı (ekran kapanmaz; espressoda süreye göre öğütme önerisi, soğuk demlemede hazır olma saati); `/ara` ile sitede arama (`/` ya da ⌘K); `/kahve-testi`; yazılara paylaşım görseli ve "Paylaş" düğmesi; atölyeye "Takvime ekle"; Google için yapılandırılmış veri (tarif, yazı, etkinlik, gezinti yolu); sayfa geçişleri; kullanılmayan kod temizlendi.
-- [x] **Defter önce: yeni tasarım** (2026-10-28, `defter-tasarimi`): sıcak krem, espresso, yanık bakır ve adaçayı paleti, daha sıcak bir koyu tema; Fraunces ve Manrope (sayılar eşit genişlikli rakamlarla, monospace yok). Ana sayfa artık kişisel kahve defterini anlatıyor: "İçtiğin kahveleri kaydet. Her fincanı hatırla.", "İlk tadımını kaydet" ve örnek bir tadım kartı; ardından nasıl çalışır, son tadımlar, en beğenilen kahveler, rehberler, test, yazılar ve atölye. Menü: Keşfet (Kahveler, Tadım notları, Kafeler, İstatistik), Rehberler, Atölye; üyelere üst menüde "Tadım ekle" ve telefonda alt sekme çubuğu. Kahveler'de önce arama, telefonda açılır filtreler, kaldırılabilir filtre chip'leri; kahve sayfasından o kahveyle açılan "Tadım ekle". Rehberler sayfasında arama, konular ve öne çıkan rehber; tarif kutusunda oran. Atölye süresi saat aralığından hesaplanır. Boş listelerde açıklama ve sonraki adım, yüklenemeyen yorum ve akışta "Tekrar dene". Senden bilgi bekleyenler: [docs/launch-checklist.md](./docs/launch-checklist.md)
-- [x] **Yönetim `/osman`'da** (2026-10-24): e-posta ve şifreyle giriş; Özet (Google Analytics'ten son 28 günün ziyaretleri, topluluğun sayıları, açık atölyeler), Atölyeler (istatistikler, panelden kişi ekleme, katılım takibi, başvuruları CSV indirme), Moderasyon. Ziyaret istatistiği yalnızca altta çıkan çerez sorusuna "Kabul et" diyenleri sayar. Kurulum: [docs/setup-analytics.md](./docs/setup-analytics.md)
+- **Herkese açık sayfalar tamamen statik.** Tek bir önbellekli okuma (`getArchive()`) bütün sayfaları besler; bir tadım kaydedilince önbellek yenilenir. Vercel Hobby'de fonksiyon kullanımı sıfıra yakın kalır, arama motorları içeriğin tamamını HTML'de görür.
+- **Kurallar veritabanında.** Kim neyi okur, kim neye yazar (RLS), günlük sınırlar, bildirimler ve moderasyon Postgres'te; site ve mobil uygulama aynı kuralları paylaşır. 24 tablonun hepsinde RLS açık ve her politika `pnpm check` içinde gömülü bir Postgres'te sınanır.
+- **Kayıt davetle.** Ziyaretçi her şeyi okur; katılmak isteyen `/giris` sayfasından davet ister, istekler `/osman` → Moderasyon → Davetler'de tek tıkla yanıtlanır.
+- **Gizli anahtar yok denecek kadar az.** Uygulama herkese açık anahtarla ve kullanıcının oturumuyla çalışır; üç gizli değerin (davet, atölye e-postası, ziyaret sayıları) her biri tek bir dosyada, tek bir iş için okunur.
+- **Arayüz metinleri tek yerde** (`packages/i18n`), renk ve ölçüler tek yerde (`design/tokens.css`).
+
+## Bugünkü durum
+
+Yayında ve çalışıyor: arşiv ve katalog, tadım formu (fotoğraf, tat notaları), akış, yorum ve beğeni, takip, bildirimler, listeler, kafeler, öneriler, doğrulanmış işletme hesapları, moderasyon paneli, atölye başvuruları ve katılım teyidi, 33 rehber ve yazı, demleme asistanı, arama, kahve testi, açık ve koyu tema, iPhone uygulaması (kabloyla kurulur).
+
+Kapalı ya da taslak: kayıt herkese açık değil (davetle); yasal metinler taslak ve iletişim adresi boş; prod veritabanının yedeği yok. Hepsi [yayın öncesi kontrol listesinde](./docs/launch-checklist.md).
+
+## Sırada ne var
+
+1. Yedekleme (`docs/backup.md`) ve yasal metinlerin incelenmesi: kayıt herkese açılmadan önce şart.
+2. Content-Security-Policy: Turnstile, Google Analytics ve Supabase için izinleriyle birlikte, önce yalnızca raporlayan kipte.
+3. Tek arşiv okumasını parçalara bölmek (katalog, akış, istatistik): üye sayısı artınca her kayıt bütün siteyi yeniden üretmesin.
+4. Mobil uygulamayı sitenin yeni paletine ve fontlarına taşımak.
+5. Büyük dosyaları bölmek: yönetim sayfası (`osman/yonetim/page.tsx`), atölye paneli (`osman/atolyeler/workshops.tsx`) ve tadım formu (`components/panel/tasting-form.tsx`).
+
+Değişikliklerin geçmişi commit'lerde ve birleştirilmiş PR'larda; alınan kararların gerekçeleri `CLAUDE.md`'de.

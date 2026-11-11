@@ -47,13 +47,26 @@ Son gözden geçirme: 2026-10-28 (tasarım yenilemesiyle, `defter-tasarimi` dal�
 - [ ] İptal ve katılım koşulları yazılmadı (onaylı bilgi yok). İstersen atölye programına
       (`apps/web/src/content/atolye/kahveye-giris.ts`) bir soru-cevap olarak eklenir.
 
+## Davet istekleri (2026-11-11)
+
+- [ ] `20261111120000_invite_requests` göçünü önce dev'e, sonra prod'a uygula
+      (`pnpm db:push:dev`, `pnpm db:push:prod`), **PR'ı birleştirmeden önce**. Uygulanana
+      kadar "Davet iste" formu "İstek alınamadı" der, yönetim paneli eksik göçü söyler.
+- [ ] KVKK taslağına "Davet istekleri" bölümü eklendi; hukuki incelemede o da okunmalı.
+- [ ] İstekler `/osman` → Moderasyon → Davetler'in altında. Yedek ve hukuki inceleme
+      bitmeden kendi adreslerin dışında kimseyi davet etme (CLAUDE.md).
+
 ## Altyapı (CLAUDE.md → "Still open")
 
 - [ ] Prod veritabanının yedeği yok: depo gizli yapılmalı, `PROD_DB_URL` ve
       `BACKUP_PASSPHRASE` eklenmeli (`docs/backup.md`).
 - [ ] Kayıt herkese açılmadan önce: CAPTCHA korumasını yeniden aç (`docs/setup-auth.md` §5),
       hukuki inceleme ve yedek tamam olmalı.
-- [ ] `www.espressoir.com` alan adını Vercel → Domains'te ana alan adına yönlendir.
+- [x] `www.espressoir.com` artık kodda kalıcı olarak ana alan adına yönleniyor
+      (`next.config.ts`, 2026-11-11). Vercel → Domains'te de yönlendirmeye çevirirsen istek
+      uygulamaya hiç gelmez; şart değil.
+- [ ] Google Search Console'a `espressoir.com`'u ekle ve `https://espressoir.com/sitemap.xml`
+      adresini gönder (site haritası 84 adres veriyor).
 - [ ] Google Analytics ve atölye e-postası için Vercel değişkenleri
       (`docs/setup-analytics.md`, `docs/deploy-vercel.md`).
 
