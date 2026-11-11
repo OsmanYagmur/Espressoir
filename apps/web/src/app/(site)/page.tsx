@@ -94,7 +94,9 @@ export default async function HomePage() {
           <p className="type-kicker">{t.home.heroKicker}</p>
           <h1 id="giris" className="type-display">
             {t.home.heroTitle}{" "}
-            <em className="block font-medium text-ink-2 italic">{t.home.heroTitleSecond}</em>
+            <em className="block font-display-italic font-medium text-ink-2 italic">
+              {t.home.heroTitleSecond}
+            </em>
           </h1>
           <p className="max-w-read type-lead">{t.home.heroLead}</p>
           <HeroActions />

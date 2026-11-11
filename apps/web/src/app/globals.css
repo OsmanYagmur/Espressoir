@@ -55,6 +55,8 @@
 
   --font-*: initial;
   --font-display: var(--font-display);
+  /* Fraunces italic (next/font, not preloaded); the upright face until it arrives. */
+  --font-display-italic: var(--font-display-italic), var(--font-display);
   --font-sans: var(--font-sans);
 
   --font-weight-*: initial;
