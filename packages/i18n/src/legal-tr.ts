@@ -12,7 +12,7 @@ const CONTACT = "[iletişim e-postası eklenecek]";
 export const legalTr = {
   draftBanner:
     "Taslak: bu metin henüz hukuki incelemeden geçmedi ve yürürlüğe girmeden önce değişebilir.",
-  updated: "Son güncelleme: 24 Ekim 2026",
+  updated: "Son güncelleme: 11 Kasım 2026",
   related: "İlgili metinler",
   contents: "Bu sayfada",
   kvkk: {
@@ -61,6 +61,14 @@ export const legalTr = {
           "Başvuruları yalnızca site sahibi görür; sitede herkes yalnızca atölyede kaç yer kaldığını görür. Yeni bir başvuru geldiğinde site sahibine Resend üzerinden, başvurudaki bilgileri içeren bir bildirim e-postası gider.",
           "Formu doldurmadan, site sahibiyle telefonda ya da yüz yüze anlaşarak katılırsan aynı bilgiler (adın, telefon numaran ya da Instagram kullanıcı adın, kahveyle aran, varsa bir not) senin onayınla yönetim panelinden kaydedilir. Atölyeden sonra katılıp katılmadığın da işaretlenebilir; bu bilgi yalnızca atölyelerin planlanması için kullanılır.",
           `Başvurunun silinmesini istersen: ${CONTACT}.`,
+        ],
+        items: [],
+      },
+      {
+        title: "Davet istekleri",
+        paragraphs: [
+          "Kayıt davetle açılırken “Davet iste” formunu doldurursan e-posta adresin ve yazdıysan kendinle ilgili cümle saklanır. Bu veriler yalnızca sana davet gönderip göndermemeye karar vermek ve daveti göndermek için kullanılır; yalnızca site sahibi görür. Hukuki sebep, formdaki onay kutusuyla verdiğin açık rızadır (KVKK md. 5/1); rızanı istediğin zaman geri alabilirsin.",
+          `İsteğinin silinmesini istersen: ${CONTACT}.`,
         ],
         items: [],
       },

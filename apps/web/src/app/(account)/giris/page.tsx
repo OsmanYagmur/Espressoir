@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { authConfig } from "@/lib/auth-config";
 import { t } from "@/lib/i18n";
 
+import { InviteRequestForm } from "./invite-request-form";
 import { LoginForm } from "./login-form";
 import { LoginNotice } from "./login-notice";
 
@@ -36,10 +37,17 @@ export default function LoginPage() {
           <LoginForm />
         </Card>
         {authConfig.signupEnabled ? null : (
-          // Joining is by invitation: a visitor who came for the notebook learns what is
-          // open to them meanwhile, instead of meeting a closed door.
-          <div className="mt-8 flex flex-col gap-2 border-t border-line pt-6">
-            <h2 className="type-label">{t.auth.noInviteTitle}</h2>
+          // Joining is by invitation: a visitor who came for the notebook can ask for one
+          // here, and learns what is open to them meanwhile, instead of meeting a closed
+          // door. The home page's "Davet iste" lands on this section.
+          <section
+            id="davet"
+            aria-labelledby="davet-baslik"
+            className="mt-8 flex scroll-mt-6 flex-col gap-4 border-t border-line pt-6"
+          >
+            <h2 id="davet-baslik" className="type-card-title">
+              {t.auth.noInviteTitle}
+            </h2>
             <p className="text-ink-2">{t.auth.noInvite}</p>
             <p className="flex flex-wrap gap-x-6 gap-y-2">
               <Link href="/akis" prefetch={false} className={link}>
@@ -52,7 +60,8 @@ export default function LoginPage() {
                 {t.auth.noInviteGuides}
               </Link>
             </p>
-          </div>
+            <InviteRequestForm />
+          </section>
         )}
       </div>
     </PageShell>
